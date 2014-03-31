@@ -70,6 +70,35 @@ int main()
 		taskManager.AddTask( t );
 	}
 
+	// Create a dependency critical task as a test and use anonymous functions.
+	Task *dependent = new Task();
+	dependent->dependencies = 2;
+	dependent->f = []()
+	{
+		std::cout << "Executing the dependency critical task!" << std::endl;
+	};
+
+	Task *dep1 = new Task();
+	dep1->dependencies = 0;
+	dep1->f = []()
+	{
+		std::cout << "Dependency #1 satisfied\n";
+	};
+	dep1->dependents.push_back( dependent );
+
+	Task *dep2 = new Task();
+	dep2->dependencies = 0;
+	dep2->f = []()
+	{
+		std::cout << "Dependency #2 satisfied\n";
+	};
+	dep2->dependents.push_back( dependent );
+
+
+	taskManager.AddTask( dependent );
+	taskManager.AddTask( dep2 );
+	taskManager.AddTask( dep1 );
+
 
 	// Create worker threads
 	for( unsigned int i = 0; i < hardwareThreads; ++i )
