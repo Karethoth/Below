@@ -1,6 +1,4 @@
 #pragma once
-#ifndef THREAD_POOL_HH
-#define THREAD_POOL_HH
 
 #include <vector>
 #include <thread>
@@ -20,6 +18,4 @@ class ThreadPool
 
 	void CleanThreads();
 };
-
-#endif
 

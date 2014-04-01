@@ -1,6 +1,4 @@
 #pragma once
-#ifndef WORKER_CONTEXT_HH
-#define WORKER_CONTEXT_HH
 
 #include <memory>
 #include <thread>
@@ -13,7 +11,4 @@ struct WorkerContext
 	TaskManager *taskManager;
 	bool shouldStop;
 };
-
-
-#endif
 

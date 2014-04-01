@@ -1,6 +1,4 @@
 #pragma once
-#ifndef TASK_HH
-#define TASK_HH
 
 #include <vector>
 #include <atomic>
@@ -18,7 +16,4 @@ class Task
 	std::atomic_uint   dependencies;
 	std::vector<Task*> dependents;
 };
-
-
-#endif
 

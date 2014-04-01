@@ -1,6 +1,4 @@
 #pragma once
-#ifndef TASK_MANAGER_HH
-#define TASK_MANAGER_HH
 
 #include <mutex>
 
@@ -19,7 +17,4 @@ class TaskManager
 	std::mutex taskQueueMutex;
 	std::vector<Task*> taskQueue;
 };
-
-
-#endif
 
