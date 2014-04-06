@@ -3,12 +3,13 @@
 #include <memory>
 #include <thread>
 
-#include "taskManager.hh"
+#include "taskQueue.hh"
+
 
 struct WorkerContext
 {
 	std::thread::id threadId;
-	TaskManager *taskManager;
-	bool shouldStop;
+	TaskQueue      *taskQueue;
+	bool            shouldStop;
 };
 

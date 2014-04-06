@@ -1,7 +1,7 @@
-#include "taskManager.hh"
+#include "taskQueue.hh"
 
 
-Task* TaskManager::GetTask()
+Task* TaskQueue::GetTask()
 {
 	std::lock_guard<std::mutex> taskLock( taskQueueMutex );
 
@@ -29,7 +29,7 @@ Task* TaskManager::GetTask()
 
 
 
-void TaskManager::AddTask( Task *newTask )
+void TaskQueue::AddTask( Task *newTask )
 {
 	std::lock_guard<std::mutex> taskLock( taskQueueMutex );
 	taskQueue.push_back( newTask );
@@ -37,8 +37,9 @@ void TaskManager::AddTask( Task *newTask )
 
 
 
-size_t TaskManager::GetTaskCount()
+size_t TaskQueue::GetTaskCount()
 {
+	std::lock_guard<std::mutex> taskLock( taskQueueMutex );
 	return taskQueue.size();
 }
 

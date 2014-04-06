@@ -21,10 +21,10 @@
     <ClCompile Include="..\src\task.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\taskManager.cc">
+    <ClCompile Include="..\src\threadPool.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\threadPool.cc">
+    <ClCompile Include="..\src\taskQueue.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

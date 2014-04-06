@@ -20,7 +20,7 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 	// Run until thread should stop
 	while( !context->shouldStop )
 	{
-		Task *task = context->taskManager->GetTask();
+		Task *task = context->taskQueue->GetTask();
 		if( !task )
 		{
 			std::this_thread::yield();
@@ -57,8 +57,8 @@ int main()
 {
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
 
-	ThreadPool  threadPool;
-	TaskManager taskManager;
+	ThreadPool threadPool;
+	TaskQueue  taskQueue;
 
 
 	// Create few test tasks
@@ -67,7 +67,7 @@ int main()
 		Task *t = new Task();
 		t->f = TestFunction;
 		t->dependencies = 0;
-		taskManager.AddTask( t );
+		taskQueue.AddTask( t );
 	}
 
 	// Create a dependency critical task as a test and use anonymous functions.
@@ -95,9 +95,9 @@ int main()
 	dep2->dependents.push_back( dependent );
 
 
-	taskManager.AddTask( dependent );
-	taskManager.AddTask( dep2 );
-	taskManager.AddTask( dep1 );
+	taskQueue.AddTask( dependent );
+	taskQueue.AddTask( dep2 );
+	taskQueue.AddTask( dep1 );
 
 
 	// Create worker threads
@@ -106,7 +106,7 @@ int main()
 		// Create the context
 		threadPool.contextListMutex.lock();
 		WorkerContext *context = new WorkerContext();
-		context->taskManager   = &taskManager;
+		context->taskQueue     = &taskQueue;
 		context->shouldStop    = false;
 		threadPool.contexts.push_back( context );
 		threadPool.contextListMutex.unlock();
@@ -124,7 +124,7 @@ int main()
 	size_t taskCount;
 	do
 	{
-		taskCount = taskManager.GetTaskCount();
+		taskCount = taskQueue.GetTaskCount();
 		std::cout << "Task queue size: " << taskCount << std::endl;
 		if( taskCount )
 		{

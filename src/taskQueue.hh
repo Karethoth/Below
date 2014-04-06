@@ -5,7 +5,7 @@
 #include "task.hh"
 
 
-class TaskManager
+class TaskQueue
 {
  public:
 	Task* GetTask();
@@ -13,8 +13,9 @@ class TaskManager
 
 	size_t GetTaskCount();
 
+
  protected:
-	std::mutex taskQueueMutex;
+	std::mutex         taskQueueMutex;
 	std::vector<Task*> taskQueue;
 };
 
