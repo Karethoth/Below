@@ -15,8 +15,9 @@ enum EventSubType
 	UNDEF_SUB_EVENT = 0,
 
 	// Network events
-	CLIENT_JOIN,
-	CLIENT_PART,
+	NETWORK_JOIN,
+	NETWORK_PART,
+	NETWORK_DATA_IN,
 
 	// State events
 	STATE_PAUSE_START,

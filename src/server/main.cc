@@ -73,14 +73,23 @@ struct NetworkListener : public EventListener
 {
 	void HandleEvent( Event *e )
 	{
+		JoinEvent   *join;
+		PartEvent   *part;
+		DataInEvent *dataIn;
+
 		switch( e->subType )
 		{
-			case CLIENT_JOIN:
+			case NETWORK_JOIN:
 				cout << "Client joined!" << endl;
 				break;
 
-			case CLIENT_PART:
+			case NETWORK_PART:
 				cout << "Client parted!" << endl;
+				break;
+
+			case NETWORK_DATA_IN:
+				dataIn = static_cast<DataInEvent*>( e );
+				cout << "Data in \"" << dataIn->data << "\"" << endl;
 				break;
 
 			default:

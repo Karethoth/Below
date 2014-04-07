@@ -24,9 +24,10 @@ void Client::SetRead()
 				{
 					std::cout << "Client disconnected" << std::endl;
 
-					auto partEvent = new Event();
+					auto partEvent = new PartEvent();
 					partEvent->type    = NETWORK_EVENT;
-					partEvent->subType = CLIENT_PART;
+					partEvent->subType = NETWORK_PART;
+					partEvent->client  = this;
 					eventQueue->AddEvent( partEvent );
 
 					return;
@@ -34,9 +35,19 @@ void Client::SetRead()
 				std::cerr << "Client::Read() got error " << ec.value() << ": '" << ec.message() << "'" << std::endl;
 			}
 			m_data[length] = 0x00;
-			// Should generate an event and let the dispatcher do its job.
-			m_received.push_back( std::string( m_data ) );
+			std::string data = std::string( m_data );
 			memset( m_data, 0, maxLength );
+
+			if( !(data.length() == 2 && data[0] == '\r' && data[1] == '\n') &&
+			    !(data.length() == 1 && data[0] == '\n' ) )
+			{
+				auto dataInEvent = new DataInEvent();
+				dataInEvent->type    = NETWORK_EVENT;
+				dataInEvent->subType = NETWORK_DATA_IN;
+				dataInEvent->client  = this;
+				dataInEvent->data    = data;
+				eventQueue->AddEvent( dataInEvent );
+			}
 
 			// Set this as a callback again
 			SetRead();
@@ -123,9 +134,10 @@ void Server::Accept()
 				clientList.push_back( client );
 				clientListMutex.unlock();
 
-				auto joinEvent = new Event();
+				auto joinEvent = new JoinEvent();
 				joinEvent->type    = NETWORK_EVENT;
-				joinEvent->subType = CLIENT_JOIN;
+				joinEvent->subType = NETWORK_JOIN;
+				joinEvent->client  = client.get();
 				eventQueue->AddEvent( joinEvent );
 			}
 
