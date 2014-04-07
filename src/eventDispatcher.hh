@@ -8,13 +8,13 @@
 #include <map>
 
 
-class EventListener
+struct EventListener
 {
 	virtual void HandleEvent( Event* ) = 0;
 };
 
 
-typedef std::auto_ptr<EventListener*> EventListenerPtr;
+typedef std::shared_ptr<EventListener> EventListenerPtr;
 
 
 struct EventListenerCollection
@@ -29,11 +29,14 @@ struct EventListenerCollection
 class EventDispatcher
 {
 public:
+	EventDispatcher();
+	~EventDispatcher();
+
 	void HandleEvent( Event* );
 
 	void AddEventListener( EventType, EventListenerPtr );
 
 	std::mutex eventListenersMutex;
-	std::map<EventType, EventListenerCollection> eventListeners;
+	std::map<EventType, EventListenerCollection*> eventListeners;
 };
 

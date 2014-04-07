@@ -5,7 +5,8 @@ enum EventType
 {
 	UNDEF_EVENT = 0,
 	NETWORK_EVENT,
-	STATE_EVENT
+	STATE_EVENT,
+	EVENT_TYPE_COUNT
 };
 
 

@@ -10,6 +10,7 @@
 #include "server.hh"
 
 #include "../eventQueue.hh"
+#include "../eventDispatcher.hh"
 
 
 using namespace std;
@@ -17,10 +18,11 @@ using boost::asio::ip::tcp;
 
 
 // Some global queues, pools, etc.
-ThreadPool threadPool;
-TaskQueue  taskQueue;
-EventQueue eventQueue;
-Server     server;
+ThreadPool      threadPool;
+TaskQueue       taskQueue;
+EventQueue      eventQueue;
+EventDispatcher eventDispatcher;
+Server          server;
 boost::asio::io_service ioService;
 
 // Server stopper
@@ -67,47 +69,38 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 }
 
 
+struct NetworkListener : public EventListener
+{
+	void HandleEvent( Event *e )
+	{
+		switch( e->subType )
+		{
+			case CLIENT_JOIN:
+				cout << "Client joined!" << endl;
+				break;
+
+			case CLIENT_PART:
+				cout << "Client parted!" << endl;
+				break;
+
+			default:
+				cout << "undef(" << e->subType << "): " << endl;
+		}
+	}
+};
+
 
 void EventHandlerTask()
 {
 	// Get an event
 	Event *e = eventQueue.GetEvent();
-
-	// If we don't have an event, return
 	if( !e )
 	{
 		return;
 	}
 
-	// Pass the event to the listeners but for
-	// now just check what events get generated
-	switch( e->type )
-	{
-		case NETWORK_EVENT:
-			cout << "Network: ";
-			break;
-
-		case STATE_EVENT:
-			cout << "State: ";
-			break;
-
-		default:
-			cout << "UNDEF(" << e->type << "): ";
-	}
-
-	switch( e->subType )
-	{
-		case CLIENT_JOIN:
-			cout << "Client joined!" << endl;
-			break;
-
-		case CLIENT_PART:
-			cout << "Client parted!" << endl;
-			break;
-
-		default:
-			cout << "undef(" << e->subType << "): " << endl;
-	}
+	// Pass the event to the listeners
+	eventDispatcher.HandleEvent( e );
 
 	// Free the event
 	delete e;
@@ -166,6 +159,9 @@ int main( int argc, char **argv )
 
 	// Pass the event queue to the server
 	server.SetEventQueue( &eventQueue );
+
+	auto networkListener = make_shared<NetworkListener>();
+	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
 
 
 	// Try to start the server / open the listening socket

@@ -90,6 +90,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\eventDispatcher.cc" />
     <ClCompile Include="..\src\eventFactory.cc" />
     <ClCompile Include="..\src\eventQueue.cc" />
     <ClCompile Include="..\src\server\main.cc" />
