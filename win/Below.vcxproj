@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\eventDispatcher.cc" />
+    <ClCompile Include="..\src\eventFactory.cc" />
+    <ClCompile Include="..\src\eventQueue.cc" />
     <ClCompile Include="..\src\main.cc" />
     <ClCompile Include="..\src\task.cc" />
     <ClCompile Include="..\src\taskQueue.cc" />
@@ -21,6 +24,9 @@
     <None Include="..\src\taskManager.hh" />
     <None Include="..\src\threadPool.hh" />
     <None Include="..\src\workerContext.hh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\networkEvents.hh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3FD105CF-3502-41A3-AE3F-9AF37A04632F}</ProjectGuid>
