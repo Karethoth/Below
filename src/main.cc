@@ -1,16 +1,16 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <SDL.h>
+#include <SDL_opengl.h>
+#include <GL/glext.h>
 
 #include "threadPool.hh"
 
-
-void TestFunction()
-{
-	for( volatile unsigned int i=0; i < 200000; ++i )
-		for( volatile unsigned int j=0; j < 10; ++j );
-}
-
+#ifdef __WIN32__
+	#pragma comment( lib, "opengl32.lib" )
+	#undef main
+#endif
 
 
 void WorkerLoop( WorkerContext *context, ThreadPool &pool )
@@ -24,12 +24,15 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 		if( !task )
 		{
 			std::this_thread::yield();
-			std::this_thread::sleep_for( std::chrono::microseconds( 10 ) );
 			continue;
 		}
 
+
 		// Execute the task
-		task->f();
+		if (task->f)
+		{
+			task->f();
+		}
 
 		// Delete the task when we're done with it
 		delete task;
@@ -53,7 +56,7 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 
 
 
-int main()
+int main( int argc, char *argv[] )
 {
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
 
@@ -65,7 +68,7 @@ int main()
 	for( int i = 0; i < 10000; ++i )
 	{
 		Task *t = new Task();
-		t->f = TestFunction;
+		t->f = nullptr;
 		t->dependencies = 0;
 		taskQueue.AddTask( t );
 	}
