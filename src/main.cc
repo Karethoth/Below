@@ -9,6 +9,13 @@
 
 #ifdef __WIN32__
 	#pragma comment( lib, "opengl32.lib" )
+
+	#ifndef _DEBUG
+		#pragma comment( lib, "glew32.lib" )
+	#else
+		#pragma comment( lib, "glew32d.lib" )
+	#endif
+
 	#undef main
 #endif
 

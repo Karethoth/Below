@@ -12,6 +12,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cc" />
+    <ClCompile Include="..\src\shader.cc" />
+    <ClCompile Include="..\src\shaderProgram.cc" />
+    <ClCompile Include="..\src\shaderProgramManager.cc" />
     <ClCompile Include="..\src\task.cc" />
     <ClCompile Include="..\src\taskQueue.cc" />
     <ClCompile Include="..\src\threadPool.cc" />
@@ -21,6 +24,12 @@
     <None Include="..\src\taskManager.hh" />
     <None Include="..\src\threadPool.hh" />
     <None Include="..\src\workerContext.hh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\shader.hh" />
+    <ClInclude Include="..\src\shaderProgram.hh" />
+    <ClInclude Include="..\src\shaderProgramManager.hh" />
+    <ClInclude Include="..\src\templateManager.hh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3FD105CF-3502-41A3-AE3F-9AF37A04632F}</ProjectGuid>
