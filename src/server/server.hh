@@ -10,7 +10,7 @@
 
 #include "../eventDispatcher.hh"
 #include "../eventFactory.hh"
-
+#include "../networkEvents.hh"
 
 using boost::asio::ip::tcp;
 using namespace boost;
@@ -56,27 +56,5 @@ class Server : public EventFactory
 	tcp::acceptor *m_acceptor;
 	tcp::socket   *m_socket;
 	short          m_port;
-};
-
-
-
-
-// All network related events
-struct JoinEvent : public Event
-{
-	Client *client;
-};
-
-
-struct PartEvent : public Event
-{
-	Client *client;
-};
-
-
-struct DataInEvent : public Event
-{
-	Client      *client;
-	std::string  data;
 };
 

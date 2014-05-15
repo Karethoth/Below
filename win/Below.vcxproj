@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\eventDispatcher.cc" />
+    <ClCompile Include="..\src\eventFactory.cc" />
+    <ClCompile Include="..\src\eventQueue.cc" />
     <ClCompile Include="..\src\main.cc" />
     <ClCompile Include="..\src\shader.cc" />
     <ClCompile Include="..\src\shaderProgram.cc" />
@@ -30,6 +33,7 @@
     <ClInclude Include="..\src\shaderProgram.hh" />
     <ClInclude Include="..\src\shaderProgramManager.hh" />
     <ClInclude Include="..\src\templateManager.hh" />
+    <ClInclude Include="..\src\networkEvents.hh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3FD105CF-3502-41A3-AE3F-9AF37A04632F}</ProjectGuid>

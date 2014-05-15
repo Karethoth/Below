@@ -191,7 +191,7 @@ int main( int argc, char **argv )
 
 
 	// Create the worker threads
-	cout << "Creating worker thread" << endl;
+	cout << "Creating worker threads" << endl;
 
 	for( unsigned int i = 0; i < hardwareThreads; ++i )
 	{

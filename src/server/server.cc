@@ -1,4 +1,5 @@
 #include "server.hh"
+#include "../networkEvents.hh"
 #include <atomic>
 
 
@@ -24,10 +25,10 @@ void Client::SetRead()
 				{
 					std::cout << "Client disconnected" << std::endl;
 
-					auto partEvent = new PartEvent();
-					partEvent->type    = NETWORK_EVENT;
-					partEvent->subType = NETWORK_PART;
-					partEvent->client  = this;
+					auto partEvent      = new PartEvent();
+					partEvent->type     = NETWORK_EVENT;
+					partEvent->subType  = NETWORK_PART;
+					partEvent->clientId = m_clientId;
 					eventQueue->AddEvent( partEvent );
 
 					return;
@@ -41,11 +42,11 @@ void Client::SetRead()
 			if( !(data.length() == 2 && data[0] == '\r' && data[1] == '\n') &&
 			    !(data.length() == 1 && data[0] == '\n' ) )
 			{
-				auto dataInEvent = new DataInEvent();
-				dataInEvent->type    = NETWORK_EVENT;
-				dataInEvent->subType = NETWORK_DATA_IN;
-				dataInEvent->client  = this;
-				dataInEvent->data    = data;
+				auto dataInEvent      = new DataInEvent();
+				dataInEvent->type     = NETWORK_EVENT;
+				dataInEvent->subType  = NETWORK_DATA_IN;
+				dataInEvent->clientId = m_clientId;
+				dataInEvent->data     = data;
 				eventQueue->AddEvent( dataInEvent );
 			}
 
@@ -134,10 +135,10 @@ void Server::Accept()
 				clientList.push_back( client );
 				clientListMutex.unlock();
 
-				auto joinEvent = new JoinEvent();
-				joinEvent->type    = NETWORK_EVENT;
-				joinEvent->subType = NETWORK_JOIN;
-				joinEvent->client  = client.get();
+				auto joinEvent      = new JoinEvent();
+				joinEvent->type     = NETWORK_EVENT;
+				joinEvent->subType  = NETWORK_JOIN;
+				joinEvent->clientId = client->m_clientId;
 				eventQueue->AddEvent( joinEvent );
 			}
 
