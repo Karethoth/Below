@@ -3,7 +3,6 @@
 #include <vector>
 #include <SDL.h>
 #include <SDL_opengl.h>
-#include <GL/glext.h>
 
 #include "threadPool.hh"
 
