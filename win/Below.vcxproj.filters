@@ -118,8 +118,8 @@
     <ClInclude Include="..\src\managers\templateManager.hh">
       <Filter>Header Files\managers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\templateManager.hh">
-      <Filter>Source Files\managers</Filter>
+    <ClInclude Include="..\src\network\serializable.hh">
+      <Filter>Header Files\network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

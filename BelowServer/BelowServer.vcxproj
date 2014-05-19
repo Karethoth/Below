@@ -105,8 +105,8 @@
     <ClInclude Include="..\src\managers\shaderProgramManager.hh" />
     <ClInclude Include="..\src\managers\templateManager.hh" />
     <ClInclude Include="..\src\network\networkEvents.hh" />
+    <ClInclude Include="..\src\network\serializable.hh" />
     <ClInclude Include="..\src\network\server.hh" />
-    <ClInclude Include="..\src\templateManager.hh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

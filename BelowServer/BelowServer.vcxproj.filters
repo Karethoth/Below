@@ -106,11 +106,11 @@
     <ClInclude Include="..\src\managers\templateManager.hh">
       <Filter>Header Files\managers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\templateManager.hh">
-      <Filter>Source Files\managers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\events\event.hh">
       <Filter>Header Files\events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\serializable.hh">
+      <Filter>Header Files\network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
