@@ -9,9 +9,9 @@
 
 #include "threadPool.hh"
 
-#include "eventQueue.hh"
-#include "eventDispatcher.hh"
-#include "networkEvents.hh"
+#include "events/eventQueue.hh"
+#include "events/eventDispatcher.hh"
+#include "network/networkEvents.hh"
 
 
 #ifdef __WIN32__

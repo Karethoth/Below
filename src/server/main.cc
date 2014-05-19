@@ -7,10 +7,10 @@
 
 
 #include "../threadPool.hh"
-#include "server.hh"
+#include "../network/server.hh"
 
-#include "../eventQueue.hh"
-#include "../eventDispatcher.hh"
+#include "../events/eventQueue.hh"
+#include "../events/eventDispatcher.hh"
 
 
 using namespace std;

@@ -1,5 +1,5 @@
 #include "server.hh"
-#include "../networkEvents.hh"
+#include "networkEvents.hh"
 #include <atomic>
 
 

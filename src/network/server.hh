@@ -8,9 +8,9 @@
 
 #include <boost/asio.hpp>
 
-#include "../eventDispatcher.hh"
-#include "../eventFactory.hh"
-#include "../networkEvents.hh"
+#include "../events/eventDispatcher.hh"
+#include "../events/eventFactory.hh"
+#include "networkEvents.hh"
 
 using boost::asio::ip::tcp;
 using namespace boost;

@@ -11,13 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\eventDispatcher.cc" />
-    <ClCompile Include="..\src\eventFactory.cc" />
-    <ClCompile Include="..\src\eventQueue.cc" />
+    <ClCompile Include="..\src\events\eventDispatcher.cc" />
+    <ClCompile Include="..\src\events\eventFactory.cc" />
+    <ClCompile Include="..\src\events\eventQueue.cc" />
+    <ClCompile Include="..\src\graphics\shader.cc" />
+    <ClCompile Include="..\src\graphics\shaderProgram.cc" />
     <ClCompile Include="..\src\main.cc" />
-    <ClCompile Include="..\src\shader.cc" />
-    <ClCompile Include="..\src\shaderProgram.cc" />
-    <ClCompile Include="..\src\shaderProgramManager.cc" />
+    <ClCompile Include="..\src\managers\shaderProgramManager.cc" />
+    <ClCompile Include="..\src\network\server.cc" />
     <ClCompile Include="..\src\task.cc" />
     <ClCompile Include="..\src\taskQueue.cc" />
     <ClCompile Include="..\src\threadPool.cc" />
@@ -29,11 +30,17 @@
     <None Include="..\src\workerContext.hh" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\shader.hh" />
-    <ClInclude Include="..\src\shaderProgram.hh" />
-    <ClInclude Include="..\src\shaderProgramManager.hh" />
+    <ClInclude Include="..\src\events\event.hh" />
+    <ClInclude Include="..\src\events\eventDispatcher.hh" />
+    <ClInclude Include="..\src\events\eventFactory.hh" />
+    <ClInclude Include="..\src\events\eventQueue.hh" />
+    <ClInclude Include="..\src\graphics\shader.hh" />
+    <ClInclude Include="..\src\graphics\shaderProgram.hh" />
+    <ClInclude Include="..\src\managers\shaderProgramManager.hh" />
+    <ClInclude Include="..\src\managers\templateManager.hh" />
+    <ClInclude Include="..\src\network\networkEvents.hh" />
+    <ClInclude Include="..\src\network\server.hh" />
     <ClInclude Include="..\src\templateManager.hh" />
-    <ClInclude Include="..\src\networkEvents.hh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3FD105CF-3502-41A3-AE3F-9AF37A04632F}</ProjectGuid>

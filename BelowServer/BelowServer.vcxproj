@@ -40,7 +40,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>..\bin\</OutDir>
-    <IntDir>..\obj\$(Configuration)\server\</IntDir>
+    <IntDir>..\obj\$(Configuration)\server</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>..\bin\</OutDir>
@@ -71,11 +71,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\src\event.hh" />
-    <None Include="..\src\eventDispatcher.hh" />
-    <None Include="..\src\eventFactory.hh" />
-    <None Include="..\src\eventQueue.hh" />
-    <None Include="..\src\server\server.hh" />
     <None Include="..\src\task.hh">
       <FileType>Document</FileType>
     </None>
@@ -90,14 +85,28 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\eventDispatcher.cc" />
-    <ClCompile Include="..\src\eventFactory.cc" />
-    <ClCompile Include="..\src\eventQueue.cc" />
+    <ClCompile Include="..\src\events\eventDispatcher.cc" />
+    <ClCompile Include="..\src\events\eventFactory.cc" />
+    <ClCompile Include="..\src\events\eventQueue.cc" />
+    <ClCompile Include="..\src\managers\shaderProgramManager.cc" />
+    <ClCompile Include="..\src\network\server.cc" />
     <ClCompile Include="..\src\server\main.cc" />
-    <ClCompile Include="..\src\server\server.cc" />
     <ClCompile Include="..\src\task.cc" />
     <ClCompile Include="..\src\taskQueue.cc" />
     <ClCompile Include="..\src\threadPool.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\events\event.hh" />
+    <ClInclude Include="..\src\events\eventDispatcher.hh" />
+    <ClInclude Include="..\src\events\eventFactory.hh" />
+    <ClInclude Include="..\src\events\eventQueue.hh" />
+    <ClInclude Include="..\src\graphics\shader.hh" />
+    <ClInclude Include="..\src\graphics\shaderProgram.hh" />
+    <ClInclude Include="..\src\managers\shaderProgramManager.hh" />
+    <ClInclude Include="..\src\managers\templateManager.hh" />
+    <ClInclude Include="..\src\network\networkEvents.hh" />
+    <ClInclude Include="..\src\network\server.hh" />
+    <ClInclude Include="..\src\templateManager.hh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

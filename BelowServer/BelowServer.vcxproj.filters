@@ -13,6 +13,27 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\events">
+      <UniqueIdentifier>{61299e74-0945-498e-bbdc-e037c18b0c7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\network">
+      <UniqueIdentifier>{7d4be09b-e0b2-42bd-a7dd-81cfbd528374}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\graphics">
+      <UniqueIdentifier>{abc8ce7b-861f-48e1-a2d4-5e2afd981c9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\managers">
+      <UniqueIdentifier>{dba80cf9-34bd-4051-bcd1-135c8d8cb12c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\events">
+      <UniqueIdentifier>{54168f5d-9e30-4661-b280-066418b6317f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\managers">
+      <UniqueIdentifier>{49ea33d7-45a8-485e-8578-7004a7f406dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\network">
+      <UniqueIdentifier>{ebad1775-3cb1-4967-a129-4e39697c4008}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\task.hh">
@@ -24,22 +45,7 @@
     <None Include="..\src\workerContext.hh">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="..\src\server\server.hh">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="..\src\event.hh">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="..\src\eventDispatcher.hh">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="..\src\eventQueue.hh">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="..\src\taskQueue.hh">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="..\src\eventFactory.hh">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
@@ -50,23 +56,61 @@
     <ClCompile Include="..\src\threadPool.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\server\main.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\server\server.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\eventQueue.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\taskQueue.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\eventFactory.cc">
+    <ClCompile Include="..\src\events\eventDispatcher.cc">
+      <Filter>Source Files\events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\events\eventFactory.cc">
+      <Filter>Source Files\events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\events\eventQueue.cc">
+      <Filter>Source Files\events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\managers\shaderProgramManager.cc">
+      <Filter>Source Files\managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\network\server.cc">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\server\main.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\eventDispatcher.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\events\event.hh">
+      <Filter>Header Files\events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\events\eventDispatcher.hh">
+      <Filter>Header Files\events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\events\eventFactory.hh">
+      <Filter>Header Files\events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\events\eventQueue.hh">
+      <Filter>Header Files\events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\networkEvents.hh">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\server.hh">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\graphics\shader.hh">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\graphics\shaderProgram.hh">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\managers\shaderProgramManager.hh">
+      <Filter>Header Files\managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\managers\templateManager.hh">
+      <Filter>Header Files\managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\templateManager.hh">
+      <Filter>Source Files\managers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
