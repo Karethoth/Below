@@ -79,9 +79,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\events\event.hh">
-      <Filter>Header Files\events</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\events\eventDispatcher.hh">
       <Filter>Header Files\events</Filter>
     </ClInclude>
@@ -111,6 +108,9 @@
     </ClInclude>
     <ClInclude Include="..\src\templateManager.hh">
       <Filter>Source Files\managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\events\event.hh">
+      <Filter>Header Files\events</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
