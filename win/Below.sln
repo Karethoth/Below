@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2012 for Windows Desktop
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Below", "Below.vcxproj", "{3FD105CF-3502-41A3-AE3F-9AF37A04632F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BelowServer", "..\BelowServer\BelowServer.vcxproj", "{5CCFB5BE-3AB8-4F5C-86E4-BA030EB4D618}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BelowServer", "BelowServer.vcxproj", "{5CCFB5BE-3AB8-4F5C-86E4-BA030EB4D618}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
