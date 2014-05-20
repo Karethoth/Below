@@ -72,6 +72,9 @@
     <ClCompile Include="..\src\network\server.cc">
       <Filter>Source Files\network</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\network\serverConnection.cc">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\task.hh">
@@ -120,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="..\src\taskQueue.hh">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\network\serverConnection.hh">
+      <Filter>Header Files\network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

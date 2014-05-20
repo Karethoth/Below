@@ -13,6 +13,7 @@
 #include "events/eventQueue.hh"
 #include "events/eventDispatcher.hh"
 #include "network/networkEvents.hh"
+#include "network/serverConnection.hh"
 
 
 #ifdef __WIN32__
@@ -40,6 +41,8 @@ TaskQueue       taskQueue;
 EventQueue      eventQueue;
 EventDispatcher eventDispatcher;
 boost::asio::io_service ioService;
+
+std::shared_ptr<ServerConnection> connection;
 
 // SDL and OpenGL globals
 SDL_Window *sdlWindow = 0;
@@ -106,6 +109,7 @@ struct NetworkListener : public EventListener
 
 			case NETWORK_PART:
 				cout << "We disconnected!" << endl;
+				stopClient = true;
 				break;
 
 			case NETWORK_DATA_IN:
@@ -247,22 +251,6 @@ int main( int argc, char **argv )
 	SDL_GL_SetSwapInterval( 1 );
 
 
-	// Try to connect to the server
-	cout << "Connecting to the server..." << endl;
-	try
-	{
-		// TODO: Connect
-	}
-	catch( std::exception &e )
-	{
-		cerr << "Failed to connect: " << e.what() << endl;
-		cout << "Press enter to quit." << endl;
-		getc( stdin );
-		return 1;
-	}
-	cout << "Connected!" << endl;
-
-
 	// Create the worker threads
 	cout << "Creating worker threads" << endl;
 
@@ -326,9 +314,28 @@ int main( int argc, char **argv )
 	taskQueue.AddTask( ioTasker );
 
 
+	// Try to connect to the server
+	cout << "Connecting to the server..." << endl;
+	try
+	{
+		connection = make_shared<ServerConnection>( ioService, "localhost", 22001 );
+		connection->SetEventQueue( &eventQueue );
+		connection->Connect( ioService );
+	}
+	catch( std::exception &e )
+	{
+		cerr << "Failed to connect: " << e.what() << endl;
+		stopClient = true;
+	}
+
+	if( connection->IsConnected() )
+	{
+		cout << "Connected!" << endl;
+	}
+
 
 	// For timing in the main loop
-	auto nextInfo = clock.now() + std::chrono::milliseconds( 200 );
+	auto nextInfo = clock.now() + std::chrono::milliseconds( 500 );
 
 	// Main loop
 	cout << "Starting the main loop" << endl;

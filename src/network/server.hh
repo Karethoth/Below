@@ -49,8 +49,6 @@ class Server : public EventFactory
 	std::mutex clientListMutex;
 	std::vector<std::shared_ptr<Client>> clientList;
 
-	void HandleEvent( Event *e );
-
 
  private:
 	tcp::acceptor *m_acceptor;

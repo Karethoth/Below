@@ -19,6 +19,7 @@
     <ClCompile Include="..\src\main.cc" />
     <ClCompile Include="..\src\managers\shaderProgramManager.cc" />
     <ClCompile Include="..\src\network\server.cc" />
+    <ClCompile Include="..\src\network\serverConnection.cc" />
     <ClCompile Include="..\src\task.cc" />
     <ClCompile Include="..\src\taskQueue.cc" />
     <ClCompile Include="..\src\threadPool.cc" />
@@ -40,6 +41,7 @@
     <ClInclude Include="..\src\network\networkEvents.hh" />
     <ClInclude Include="..\src\network\serializable.hh" />
     <ClInclude Include="..\src\network\server.hh" />
+    <ClInclude Include="..\src\network\serverConnection.hh" />
     <ClInclude Include="..\src\taskQueue.hh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
