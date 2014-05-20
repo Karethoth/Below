@@ -1,16 +1,18 @@
 #pragma once
+#define EVENT_TYPE_LENGTH sizeof( unsigned char );
+#define EVENT_SUB_TYPE_LENGTH sizeof( unsigned short );
 
-
-enum EventType
+enum EventType : unsigned char
 {
 	UNDEF_EVENT = 0,
 	NETWORK_EVENT,
 	STATE_EVENT,
+	OBJECT_EVENT,
 	EVENT_TYPE_COUNT
 };
 
 
-enum EventSubType
+enum EventSubType : unsigned short
 {
 	UNDEF_SUB_EVENT = 0,
 
@@ -20,8 +22,13 @@ enum EventSubType
 	NETWORK_DATA_IN,
 
 	// State events
-	STATE_PAUSE_START,
-	STATE_PAUSE_END
+	STATE_RUN_START,
+	STATE_RUN_PAUSE,
+
+	// Object events
+	OBJECT_CREATION,
+	OBJECT_DESTROYED,
+	OBJECT_UPDATE
 };
 
 

@@ -352,7 +352,7 @@ int main( int argc, char **argv )
 		cout << "Event queue size: " << eventCount << endl;
 
 		std::this_thread::yield();
-		nextInfo = clock.now( ) + std::chrono::milliseconds( 200 );
+		nextInfo = clock.now( ) + std::chrono::milliseconds( 500 );
 	}
 	while( !stopClient );
 
