@@ -77,9 +77,6 @@
     <None Include="..\src\task.hh">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="..\src\taskManager.hh">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="..\src\threadPool.hh">
       <Filter>Header Files</Filter>
     </None>
@@ -120,6 +117,9 @@
     </ClInclude>
     <ClInclude Include="..\src\network\serializable.hh">
       <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\taskQueue.hh">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

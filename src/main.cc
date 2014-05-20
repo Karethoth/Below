@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -16,6 +17,8 @@
 
 #ifdef __WIN32__
 	#pragma comment( lib, "opengl32.lib" )
+	#pragma comment( lib, "SDL2.lib" )
+	//#pragma comment( lib, "SDL2main.lib" )
 
 	#ifndef _DEBUG
 		#pragma comment( lib, "glew32.lib" )
@@ -38,6 +41,9 @@ EventQueue      eventQueue;
 EventDispatcher eventDispatcher;
 boost::asio::io_service ioService;
 
+// SDL and OpenGL globals
+SDL_Window *sdlWindow = 0;
+SDL_GLContext openglContext;
 
 bool stopClient = false;
 
@@ -163,13 +169,82 @@ void IoStepTask()
 
 
 
+void HandleSdlEvents()
+{
+	SDL_Event event;
+
+	while( SDL_PollEvent( &event ) )
+	{
+		switch( event.type )
+		{
+			case SDL_KEYDOWN:
+				break;
+
+			case SDL_KEYUP:
+				if( event.key.keysym.sym == SDLK_ESCAPE )
+					stopClient = true;
+				break;
+
+			case SDL_QUIT:
+				stopClient = true;
+				break;
+		}
+	}
+}
+
+
+
+void Render()
+{
+	glClearColor( 0.5, 0.0, 0.0, 1.0 );
+	glClear( GL_COLOR_BUFFER_BIT );
+
+	SDL_GL_SwapWindow( sdlWindow );
+}
+
+
+
 int main( int argc, char **argv )
 {
 	// Get count of hardware threads
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
 
+	// Create the clock
+	std::chrono::steady_clock clock;
+
 	auto networkListener = make_shared<NetworkListener>();
 	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
+
+	SDL_Init( SDL_INIT_VIDEO );
+
+	// set the opengl context version
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
+
+	// turn on double buffering set the depth buffer to 24 bits
+	// you may need to change this to 16 or 32 for your system
+	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
+
+	// create the sdl2 window
+	sdlWindow = SDL_CreateWindow(
+		"Below Client", SDL_WINDOWPOS_CENTERED,
+		SDL_WINDOWPOS_CENTERED, 512, 512,
+		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
+	);
+
+	// create the opengl3 context
+	openglContext = SDL_GL_CreateContext(sdlWindow);
+
+	GLenum status = glewInit();
+	if( status != GLEW_OK )
+	{
+		std::cerr << "GLEW Error: " << glewGetErrorString( status ) << "\n";
+		return 1;
+	}
+
+	// sync buffer swap with monitor's vertical refresh rate
+	SDL_GL_SetSwapInterval( 1 );
 
 
 	// Try to connect to the server
@@ -218,7 +293,7 @@ int main( int argc, char **argv )
 	eventTasker->dependencies = 0;
 	eventTasker->f = []()
 	{
-		while( true )
+		while( !stopClient )
 		{
 			if( eventQueue.GetEventCount() )
 			{
@@ -252,10 +327,22 @@ int main( int argc, char **argv )
 
 
 
+	// For timing in the main loop
+	auto nextInfo = clock.now() + std::chrono::milliseconds( 200 );
+
 	// Main loop
 	cout << "Starting the main loop" << endl;
+
 	do
 	{
+		// Do the main stuff
+		HandleSdlEvents();
+		Render();
+
+		// And right away again, if it isn't the time for the info update
+		if( clock.now() < nextInfo )
+			continue;
+
 		size_t taskCount  = taskQueue.GetTaskCount();
 		size_t eventCount = eventQueue.GetEventCount();
 
@@ -265,10 +352,11 @@ int main( int argc, char **argv )
 		cout << "Event queue size: " << eventCount << endl;
 
 		std::this_thread::yield();
-		std::this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
+		nextInfo = clock.now( ) + std::chrono::milliseconds( 200 );
 	}
 	while( !stopClient );
-	cout << "Main loop ended!" << endl;
+
+	cout << endl << "Main loop ended!" << endl;
 
 
 	// Command worker threads to stop
@@ -289,7 +377,6 @@ int main( int argc, char **argv )
 
 	while( threadPool.threads.size() > 0 )
 	{
-
 		// Remove unjoinable threads
 		threadPool.CleanThreads();
 
@@ -299,9 +386,15 @@ int main( int argc, char **argv )
 
 
 	// Finish
-	std::cout << "Finished, press enter to quit." << std::endl;
-	getc( stdin );
+	cout << "Cleaning contexts." << endl;
 
+	SDL_GL_DeleteContext( openglContext );
+	SDL_DestroyWindow( sdlWindow );
+	SDL_Quit();
+
+	std::cout << "Finished, press enter to quit." << std::endl;
+
+	getc( stdin );
 	return 0;
 }
 

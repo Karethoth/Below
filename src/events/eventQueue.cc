@@ -2,12 +2,14 @@
 
 EventQueue::~EventQueue()
 {
+	/*
 	for( auto it  = eventQueue.begin();
 	          it != eventQueue.end();
 	          it++ )
 	{
 		delete *it;
 	}
+	*/
 }
 
 

@@ -25,7 +25,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\task.hh" />
-    <None Include="..\src\taskManager.hh" />
     <None Include="..\src\threadPool.hh" />
     <None Include="..\src\workerContext.hh" />
   </ItemGroup>
@@ -41,6 +40,7 @@
     <ClInclude Include="..\src\network\networkEvents.hh" />
     <ClInclude Include="..\src\network\serializable.hh" />
     <ClInclude Include="..\src\network\server.hh" />
+    <ClInclude Include="..\src\taskQueue.hh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3FD105CF-3502-41A3-AE3F-9AF37A04632F}</ProjectGuid>
