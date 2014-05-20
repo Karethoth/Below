@@ -144,6 +144,17 @@ void ServerConnection::Connect( asio::io_service& ioService )
 }
 
 
+
+void ServerConnection::Disconnect()
+{
+	if( m_socket && connected )
+	{
+		m_socket->close();
+	}
+}
+
+
+
 bool ServerConnection::IsConnected()
 {
 	return connected;

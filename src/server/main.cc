@@ -73,6 +73,7 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 }
 
 
+
 struct NetworkListener : public EventListener
 {
 	void HandleEvent( Event *e )
@@ -101,6 +102,7 @@ struct NetworkListener : public EventListener
 		}
 	}
 };
+
 
 
 void EventHandlerTask()

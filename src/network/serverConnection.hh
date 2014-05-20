@@ -26,10 +26,12 @@ public:
 	void Init( asio::io_service& ioService, std::string host, short port );
 
 	void Connect( asio::io_service& ioService );
+	void Disconnect();
 	bool IsConnected();
 
 	void Write( std::string msg );
 	void SetRead();
+
 
 private:
 	tcp::endpoint  m_endpoint;

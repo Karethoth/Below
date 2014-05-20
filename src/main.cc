@@ -98,6 +98,7 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 }
 
 
+
 struct NetworkListener : public EventListener
 {
 	void HandleEvent( Event *e )
@@ -127,6 +128,7 @@ struct NetworkListener : public EventListener
 		}
 	}
 };
+
 
 
 // Task for handling an event
@@ -200,6 +202,7 @@ void EventHandlerGenerator()
 }
 
 
+
 // Acknowledge SDL events, user input, etc.
 void HandleSdlEvents()
 {
@@ -247,25 +250,25 @@ int main( int argc, char **argv )
 	auto networkListener = make_shared<NetworkListener>();
 	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
 
-	SDL_Init( SDL_INIT_VIDEO );
+	SDL_Init( SDL_INIT_EVERYTHING );
 
-	// set the opengl context version
+
+	// Set the opengl context version
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
 
-	// turn on double buffering set the depth buffer to 24 bits
-	// you may need to change this to 16 or 32 for your system
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
 
-	// create the sdl2 window
+
+	// Create the SDL2 window
 	sdlWindow = SDL_CreateWindow(
 		"Below Client", SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED, 512, 512,
 		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
 	);
 
-	// create the opengl3 context
+	// Create the OpenGL context
 	openglContext = SDL_GL_CreateContext(sdlWindow);
 
 	GLenum status = glewInit();
@@ -275,7 +278,7 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
-	// sync buffer swap with monitor's vertical refresh rate
+	// VSync
 	SDL_GL_SetSwapInterval( 1 );
 
 
@@ -382,6 +385,11 @@ int main( int argc, char **argv )
 
 	cout << endl << "Main loop ended!" << endl;
 
+	// If we're connected, disconnect
+	if( connection->IsConnected() )
+	{
+		connection->Disconnect();
+	}
 
 	// Command worker threads to stop
 	cout << "Stopping the worker threads!" << endl;
