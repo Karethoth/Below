@@ -21,19 +21,14 @@ void Client::SetRead()
 		{
 			if( ec.value() )
 			{
-				if( ec.value() == boost::asio::error::eof )
-				{
-					std::cout << "Client disconnected" << std::endl;
-
-					auto partEvent      = new PartEvent();
-					partEvent->type     = NETWORK_EVENT;
-					partEvent->subType  = NETWORK_PART;
-					partEvent->clientId = m_clientId;
-					eventQueue->AddEvent( partEvent );
-
-					return;
-				}
 				std::cerr << "Client::Read() got error " << ec.value() << ": '" << ec.message() << "'" << std::endl;
+
+				auto partEvent      = new PartEvent();
+				partEvent->type     = NETWORK_EVENT;
+				partEvent->subType  = NETWORK_PART;
+				partEvent->clientId = m_clientId;
+				eventQueue->AddEvent( partEvent );
+				return;
 			}
 			m_data[length] = 0x00;
 			std::string data = std::string( m_data );

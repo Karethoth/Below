@@ -25,6 +25,8 @@ EventDispatcher eventDispatcher;
 Server          server;
 boost::asio::io_service ioService;
 
+std::atomic<unsigned int> eventHandlerTasks = 0;
+
 // Server stopper
 bool stopServer = false;
 
@@ -50,6 +52,8 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 
 		// Delete the task when we're done with it
 		delete task;
+
+		std::this_thread::sleep_for( std::chrono::microseconds( 10 ) );
 	}
 
 
@@ -113,6 +117,8 @@ void EventHandlerTask()
 
 	// Free the event
 	delete e;
+
+	eventHandlerTasks--;
 }
 
 
@@ -141,6 +147,26 @@ void ReaderTask()
 	readerTask->dependencies = 0;
 	readerTask->f = ReaderTask;
 	taskQueue.AddTask( readerTask );
+}
+
+
+
+// The generator of Event handler tasks
+void EventHandlerGenerator()
+{
+	while( eventQueue.GetEventCount() > eventHandlerTasks )
+	{
+		Task *eventTask = new Task();
+		eventTask->dependencies = 0;
+		eventTask->f = EventHandlerTask;
+		taskQueue.AddTask( eventTask );
+		eventHandlerTasks++;
+	}
+
+	Task *eventTasker = new Task();
+	eventTasker->dependencies = 0;
+	eventTasker->f = EventHandlerGenerator;
+	taskQueue.AddTask( eventTasker );
 }
 
 
@@ -218,20 +244,7 @@ int main( int argc, char **argv )
 
 	Task *eventTasker = new Task();
 	eventTasker->dependencies = 0;
-	eventTasker->f = []()
-	{
-		while( true )
-		{
-			if( eventQueue.GetEventCount() )
-			{
-				Task *eventTask = new Task();
-				eventTask->dependencies = 0;
-				eventTask->f = EventHandlerTask;
-				taskQueue.AddTask( eventTask );
-			}
-			this_thread::yield();
-		}
-	};
+	eventTasker->f = EventHandlerGenerator;
 	taskQueue.AddTask( eventTasker );
 
 

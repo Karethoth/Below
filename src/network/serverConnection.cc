@@ -2,6 +2,7 @@
 #include "networkEvents.hh"
 #include <atomic>
 #include <memory>
+#include <ostream>
 
 using namespace std;
 
@@ -55,8 +56,10 @@ void ServerConnection::SetRead()
 				partEvent->type     = NETWORK_EVENT;
 				partEvent->subType  = NETWORK_PART;
 				partEvent->clientId = 0;
-
 				eventQueue->AddEvent( partEvent );
+
+				m_socket->close();
+				return;
 			}
 
 			m_data[length] = 0x00;
@@ -64,7 +67,8 @@ void ServerConnection::SetRead()
 			memset( m_data, 0, maxLength );
 
 			if( !(data.length() == 2 && data[0] == '\r' && data[1] == '\n') &&
-			    !(data.length() == 1 && data[0] == '\n' ) )
+			    !(data.length() == 1 && data[0] == '\n' ) &&
+				  data.length() > 0 )
 			{
 				auto dataInEvent      = new DataInEvent();
 				dataInEvent->type     = NETWORK_EVENT;
@@ -83,17 +87,14 @@ void ServerConnection::SetRead()
 
 void ServerConnection::Write( std::string msg )
 {
-	auto self( shared_from_this() );
-	asio::async_write(
-		*m_socket,
-		asio::buffer( m_data, msg.length() ),
-		[this, self]( boost::system::error_code ec, std::size_t )
-		{
-			if( ec.value() )
-			{
-				std::cerr << "Client::Write() got error '" << ec.message() << "'" << std::endl;
-			}
-		});
+	if( !m_socket )
+		return;
+
+	boost::asio::streambuf request;
+    std::ostream requestStream( &request );
+    requestStream << msg;
+	boost::asio::write( *m_socket, request );
+
 }
 
 

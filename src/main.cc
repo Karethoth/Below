@@ -44,6 +44,9 @@ boost::asio::io_service ioService;
 
 std::shared_ptr<ServerConnection> connection;
 
+std::atomic<unsigned int> eventHandlerTasks = 0;
+
+
 // SDL and OpenGL globals
 SDL_Window *sdlWindow = 0;
 SDL_GLContext openglContext;
@@ -67,13 +70,15 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 
 
 		// Execute the task
-		if (task->f)
+		if( task->f )
 		{
 			task->f();
 		}
 
 		// Delete the task when we're done with it
 		delete task;
+
+		std::this_thread::sleep_for( std::chrono::microseconds( 10 ) );
 	}
 
 
@@ -124,6 +129,7 @@ struct NetworkListener : public EventListener
 };
 
 
+// Task for handling an event
 void EventHandlerTask()
 {
 	// Get an event
@@ -138,6 +144,8 @@ void EventHandlerTask()
 
 	// Free the event
 	delete e;
+
+	eventHandlerTasks--;
 }
 
 
@@ -173,6 +181,26 @@ void IoStepTask()
 
 
 
+// The generator of Event handler tasks
+void EventHandlerGenerator()
+{
+	while( eventQueue.GetEventCount() > eventHandlerTasks )
+	{
+		Task *eventTask = new Task();
+		eventTask->dependencies = 0;
+		eventTask->f = EventHandlerTask;
+		taskQueue.AddTask( eventTask );
+		eventHandlerTasks++;
+	}
+
+	Task *eventTasker = new Task();
+	eventTasker->dependencies = 0;
+	eventTasker->f = EventHandlerGenerator;
+	taskQueue.AddTask( eventTasker );
+}
+
+
+// Acknowledge SDL events, user input, etc.
 void HandleSdlEvents()
 {
 	SDL_Event event;
@@ -275,24 +303,11 @@ int main( int argc, char **argv )
 
 
 	// Create a task to generate tasks to handle events
-	cout << "Creating the event handler tasker." << endl;
+	cout << "Creating the event handler generator." << endl;
 
 	Task *eventTasker = new Task();
 	eventTasker->dependencies = 0;
-	eventTasker->f = []()
-	{
-		while( !stopClient )
-		{
-			if( eventQueue.GetEventCount() )
-			{
-				Task *eventTask = new Task();
-				eventTask->dependencies = 0;
-				eventTask->f = EventHandlerTask;
-				taskQueue.AddTask( eventTask );
-			}
-			this_thread::yield();
-		}
-	};
+	eventTasker->f = EventHandlerGenerator;
 	taskQueue.AddTask( eventTasker );
 
 
@@ -345,6 +360,8 @@ int main( int argc, char **argv )
 		// Do the main stuff
 		HandleSdlEvents();
 		Render();
+
+		std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
 
 		// And right away again, if it isn't the time for the info update
 		if( clock.now() < nextInfo )
