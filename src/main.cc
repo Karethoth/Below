@@ -2,6 +2,7 @@
 #include <thread>
 #include <vector>
 #include <GL/glew.h>
+#include <SDL_Main.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -24,8 +25,14 @@
 	//#pragma comment( lib, "SDL2main.lib" )
 
 	#ifndef _DEBUG
+		#define DEBUG_MODE false
 		#pragma comment( lib, "glew32.lib" )
+
+		// Let's disable the console
+		#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+
 	#else
+		#define DEBUG_MODE true
 		#pragma comment( lib, "glew32d.lib" )
 	#endif
 
@@ -242,7 +249,7 @@ void Render()
 
 
 
-int main( int argc, char **argv )
+int main( int argc, char *argv[] )
 {
 	// Get count of hardware threads
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
