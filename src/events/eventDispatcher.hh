@@ -28,7 +28,7 @@ struct EventListenerCollection
 
 class EventDispatcher
 {
-public:
+ public:
 	EventDispatcher();
 	~EventDispatcher();
 

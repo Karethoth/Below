@@ -10,7 +10,7 @@ class EventFactory
 	EventFactory();
 	void SetEventQueue( EventQueue *eventQueue );
 
-protected:
+ protected:
 	EventQueue *eventQueue;
 };
 
