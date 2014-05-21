@@ -271,6 +271,25 @@ int main( int argc, char **argv )
 		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
 	);
 
+
+	// Create the icon for the window
+	SDL_Surface *icon = SDL_LoadBMP( "../data/icons/windowIcon.bmp" );
+	if( !icon )
+	{
+		cerr << "Icon couldn't be loaded!" << endl;
+	}
+	else
+	{
+		// Set magenta as the transparent color
+		unsigned int colorkey = SDL_MapRGB( icon->format, 255, 0, 255 );
+		SDL_SetColorKey( icon, GL_SOURCE1_ALPHA, colorkey );
+
+		// Set the icon
+		SDL_SetWindowIcon( sdlWindow, icon );
+		SDL_FreeSurface( icon );
+	}
+
+
 	// Create the OpenGL context
 	openglContext = SDL_GL_CreateContext(sdlWindow);
 
