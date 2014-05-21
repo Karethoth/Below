@@ -41,7 +41,7 @@ glm::mat4 WorldNode::GetModelMatrix()
 
 
 
-void WorldNode::UpdateModelMatrix( WorldNode *parent=nullptr )
+void WorldNode::UpdateModelMatrix( WorldNode *parentPtr=nullptr )
 {
 	// Generate the local matrix
 	modelMatrix = glm::translate( position ) *
@@ -49,9 +49,15 @@ void WorldNode::UpdateModelMatrix( WorldNode *parent=nullptr )
 	              glm::scale( scale );
 
 	// If we have parent, take it into account
-	if( parent )
+	if( parentPtr )
 	{
-		modelMatrix = modelMatrix * parent->GetModelMatrix();
+		modelMatrix = modelMatrix * parentPtr->GetModelMatrix();
+	}
+
+	// If a pointer wasn't provided, but we have an ID for the parent
+	else if( parent )
+	{
+		// TODO: Find the parent and apply the model matrix to it's.
 	}
 
 
@@ -61,7 +67,6 @@ void WorldNode::UpdateModelMatrix( WorldNode *parent=nullptr )
 	               [this]( unsigned int &childId )
 	{
 		// Find the child
-		// Call update
 		// child->UpdateModelMatrix( this );
 	} );
 }
