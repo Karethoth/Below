@@ -365,24 +365,31 @@ int main( int argc, char *argv[] )
 	taskQueue.AddTask( ioTasker );
 
 
-	// Try to connect to the server
-	cout << "Connecting to the server..." << endl;
-	try
+	//  Create task for connecting to the server:
+	Task *connectTask = new Task();
+	connectTask->dependencies = 0;
+	connectTask->f = []()
 	{
-		connection = make_shared<ServerConnection>( ioService, "localhost", 22001 );
-		connection->SetEventQueue( &eventQueue );
-		connection->Connect( ioService );
-	}
-	catch( std::exception &e )
-	{
-		cerr << "Failed to connect: " << e.what() << endl;
-		stopClient = true;
-	}
+		// Try to connect to the server
+		cout << "Connecting to the server..." << endl;
+		try
+		{
+			connection = make_shared<ServerConnection>( ioService, "localhost", 22001 );
+			connection->SetEventQueue( &eventQueue );
+			connection->Connect( ioService );
+		}
+		catch( std::exception &e )
+		{
+			cerr << "Failed to connect: " << e.what() << endl;
+			stopClient = true;
+		}
 
-	if( connection->IsConnected() )
-	{
-		cout << "Connected!" << endl;
-	}
+		if( connection->IsConnected() )
+		{
+			cout << "Connected!" << endl;
+		}
+	};
+	taskQueue.AddTask( connectTask );
 
 
 	// For timing in the main loop
