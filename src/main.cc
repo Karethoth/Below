@@ -17,6 +17,8 @@
 #include "network/serverConnection.hh"
 
 #include "world/entity.hh"
+#include "managers/shaderProgramManager.hh"
+
 
 #if _DEBUG || DEBUG
 	#define DEBUG_MODE 1
@@ -59,6 +61,10 @@ io_service      ioService;
 std::shared_ptr<ServerConnection> connection;
 
 std::atomic<unsigned int> eventHandlerTasks = 0;
+
+
+// Managers
+ShaderProgramManager shaderProgramManager;
 
 
 // SDL and OpenGL globals

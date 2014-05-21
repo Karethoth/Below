@@ -19,9 +19,6 @@
     <Filter Include="Header Files\network">
       <UniqueIdentifier>{7d4be09b-e0b2-42bd-a7dd-81cfbd528374}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\graphics">
-      <UniqueIdentifier>{abc8ce7b-861f-48e1-a2d4-5e2afd981c9c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\managers">
       <UniqueIdentifier>{dba80cf9-34bd-4051-bcd1-135c8d8cb12c}</UniqueIdentifier>
     </Filter>
@@ -71,9 +68,6 @@
     <ClCompile Include="..\src\events\eventQueue.cc">
       <Filter>Source Files\events</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\managers\shaderProgramManager.cc">
-      <Filter>Source Files\managers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\network\server.cc">
       <Filter>Source Files\network</Filter>
     </ClCompile>
@@ -96,15 +90,6 @@
     </ClInclude>
     <ClInclude Include="..\src\network\server.hh">
       <Filter>Header Files\network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\graphics\shader.hh">
-      <Filter>Header Files\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\graphics\shaderProgram.hh">
-      <Filter>Header Files\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\managers\shaderProgramManager.hh">
-      <Filter>Header Files\managers</Filter>
     </ClInclude>
     <ClInclude Include="..\src\managers\templateManager.hh">
       <Filter>Header Files\managers</Filter>

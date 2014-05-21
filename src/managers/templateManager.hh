@@ -7,7 +7,7 @@
 #include <memory>
 
 
-template<typename T>
+template<typename K, typename T>
 class TemplateManager
 {
  public:
@@ -18,22 +18,22 @@ class TemplateManager
 
 
 	virtual bool Load( const std::string& filepath ) = 0;
-	virtual bool Load( const std::string& filepath, const std::string& key ) = 0;
+	virtual bool Load( const std::string& filepath, const K& key ) = 0;
 
 
-	virtual void Add( const std::string& key, const std::shared_ptr<T> &item )
+	virtual void Add( const K& key, const std::shared_ptr<T> &item )
 	{
 		items[key] = item;
 	}
 
 
-	virtual std::shared_ptr<T> Get( const std::string& key )
+	virtual std::shared_ptr<T> Get( const K& key )
 	{
 		return items[key];
 	}
 
 
-	virtual std::shared_ptr<T> Remove( const std::string& key )
+	virtual std::shared_ptr<T> Remove( const K& key )
 	{
 		std::shared_ptr<T> ret = items[key];
 		items.erase( key );
@@ -42,7 +42,7 @@ class TemplateManager
 
 
  protected:
-	std::map< std::string, std::shared_ptr<T> > items;
+	std::map< K, std::shared_ptr<T> > items;
 };
 
 #endif

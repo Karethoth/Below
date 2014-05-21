@@ -88,7 +88,6 @@
     <ClCompile Include="..\src\events\eventDispatcher.cc" />
     <ClCompile Include="..\src\events\eventFactory.cc" />
     <ClCompile Include="..\src\events\eventQueue.cc" />
-    <ClCompile Include="..\src\managers\shaderProgramManager.cc" />
     <ClCompile Include="..\src\network\server.cc" />
     <ClCompile Include="..\src\server\main.cc" />
     <ClCompile Include="..\src\task.cc" />
@@ -100,9 +99,6 @@
     <ClInclude Include="..\src\events\eventDispatcher.hh" />
     <ClInclude Include="..\src\events\eventFactory.hh" />
     <ClInclude Include="..\src\events\eventQueue.hh" />
-    <ClInclude Include="..\src\graphics\shader.hh" />
-    <ClInclude Include="..\src\graphics\shaderProgram.hh" />
-    <ClInclude Include="..\src\managers\shaderProgramManager.hh" />
     <ClInclude Include="..\src\managers\templateManager.hh" />
     <ClInclude Include="..\src\network\networkEvents.hh" />
     <ClInclude Include="..\src\network\serializable.hh" />

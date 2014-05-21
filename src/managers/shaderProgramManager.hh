@@ -8,7 +8,7 @@
 #include "../graphics/shaderProgram.hh"
 
 
-class ShaderProgramManager : public TemplateManager<ShaderProgram>
+class ShaderProgramManager : public TemplateManager<std::string, ShaderProgram>
 {
  public:
 	virtual ~ShaderProgramManager();
