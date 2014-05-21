@@ -125,34 +125,6 @@ void EventHandlerTask()
 
 
 
-// Task to read from the clients,
-// generates itself again at the end
-void ReaderTask()
-{
-	server.clientListMutex.lock();
-	for( auto it  = server.clientList.begin();
-	          it != server.clientList.end();
-	          it++ )
-	{
-		while( (*it)->m_received.size() > 0 )
-		{
-			auto tmp = *(*it)->m_received.begin();
-			string tmpData = string( tmp );
-			(*it)->m_received.erase( (*it)->m_received.begin() );
-			cout << "Got data: '" << tmpData << "'" << endl;
-		}
-	}
-	server.clientListMutex.unlock();
-
-	// Generate the task for the next read:
-	Task *readerTask = new Task();
-	readerTask->dependencies = 0;
-	readerTask->f = ReaderTask;
-	taskQueue.AddTask( readerTask );
-}
-
-
-
 // The generator of Event handler tasks
 void EventHandlerGenerator()
 {
@@ -240,7 +212,6 @@ int main( int argc, char **argv )
 	}
 
 
-
 	// Create a task to generate tasks to handle events
 	cout << "Creating the event handler tasker." << endl;
 
@@ -248,15 +219,6 @@ int main( int argc, char **argv )
 	eventTasker->dependencies = 0;
 	eventTasker->f = EventHandlerGenerator;
 	taskQueue.AddTask( eventTasker );
-
-
-	// Create a task to handle reading from clients
-	cout << "Creating the reader tasker." << endl;
-
-	Task *readerTasker = new Task();
-	readerTasker->dependencies = 0;
-	readerTasker->f = ReaderTask;
-	taskQueue.AddTask( readerTasker );
 
 
 	// Create a task to run the network io services

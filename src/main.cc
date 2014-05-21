@@ -172,21 +172,6 @@ void EventHandlerTask()
 
 
 
-// Task to read from the server,
-// generates itself again at the end
-void ReaderTask()
-{
-	// TODO: add the actual reading part here
-
-	// Generate the task for the next read:
-	Task *readerTask = new Task();
-	readerTask->dependencies = 0;
-	readerTask->f = ReaderTask;
-	taskQueue.AddTask( readerTask );
-}
-
-
-
 // Task to step time after time the I/O services,
 // generates itself again at the end
 void IoStepTask()
@@ -343,7 +328,6 @@ int main( int argc, char *argv[] )
 	}
 
 
-
 	// Create a task to generate tasks to handle events
 	cout << "Creating the event handler generator." << endl;
 
@@ -351,15 +335,6 @@ int main( int argc, char *argv[] )
 	eventTasker->dependencies = 0;
 	eventTasker->f = EventHandlerGenerator;
 	taskQueue.AddTask( eventTasker );
-
-
-	// Create a task to handle reading from the server
-	cout << "Creating the reader tasker." << endl;
-
-	Task *readerTasker = new Task();
-	readerTasker->dependencies = 0;
-	readerTasker->f = ReaderTask;
-	taskQueue.AddTask( readerTasker );
 
 
 	// Create a task to run the network io services
