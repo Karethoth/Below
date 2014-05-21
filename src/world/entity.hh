@@ -3,8 +3,7 @@
 #include "worldNode.hh"
 
 
-class Entity : public WorldNode,
-               public Serializable
+class Entity : public WorldNode
 {
 	unsigned int meshId;
 	unsigned int textureId;
