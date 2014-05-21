@@ -20,17 +20,18 @@ class WorldNode: public Serializable
 	// For node and entity identification:
 	unsigned int id;
 
-	// Update transformation matrix:
+	glm::mat4 GetModelMatrix();
+
+	// Update the model matrix:
 	// - Updates childrens recursively.
-	virtual void UpdateTransformations();
+	virtual void UpdateModelMatrix( WorldNode *parent );
 
 
  private:
 	glm::vec3 position;
 	glm::quat rotation;
 	glm::vec3 scale;
-	glm::mat4 transformMatrix;
-	glm::mat4 parentTransformMatrix;
+	glm::mat4 modelMatrix;
 
 	unsigned int parent;
 	std::vector<unsigned int> children;

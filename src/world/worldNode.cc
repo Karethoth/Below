@@ -34,30 +34,35 @@ bool WorldNode::Unserialize( SerializedData data )
 
 
 
-void WorldNode::UpdateTransformations()
+glm::mat4 WorldNode::GetModelMatrix()
+{
+	return modelMatrix;
+}
+
+
+
+void WorldNode::UpdateModelMatrix( WorldNode *parent=nullptr )
 {
 	// Generate the local matrix
-	transformMatrix = glm::translate( position ) *
-		              glm::toMat4( rotation ) *
-		              glm::scale( scale );
+	modelMatrix = glm::translate( position ) *
+	              glm::toMat4( rotation ) *
+	              glm::scale( scale );
 
-	// If we have parent, find it and get the transformation matrix,
+	// If we have parent, take it into account
 	if( parent )
 	{
-		// TODO: get the matrix
-		glm::mat4 parentMatrix; // Just an identity matrix for now.
-
-		// Apply it:
-		transformMatrix = transformMatrix * parentMatrix;
+		modelMatrix = modelMatrix * parent->GetModelMatrix();
 	}
 
 
 	// Update the children
 	std::for_each( children.begin(),
-	               children.end(), [this]( unsigned int &childId )
+	               children.end(),
+	               [this]( unsigned int &childId )
 	{
 		// Find the child
 		// Call update
+		// child->UpdateModelMatrix( this );
 	} );
 }
 
