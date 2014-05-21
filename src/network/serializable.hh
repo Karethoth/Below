@@ -2,10 +2,14 @@
 #include <vector>
 #include <memory>
 
+typedef std::unique_ptr<std::vector<std::string>> SerializeVarList;
+typedef std::unique_ptr<std::vector<unsigned char>> SerializedData;
+
 
 class Serializable
 {
-	virtual std::unique_ptr<std::vector<unsigned char>> Serialize()         = 0;
-	virtual bool Unserialize( std::unique_ptr<std::vector<unsigned char>> ) = 0;
+ public:
+	virtual SerializedData Serialize( SerializeVarList vars ) = 0;
+	virtual bool Unserialize( SerializedData data ) = 0;
 };
 

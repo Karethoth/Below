@@ -15,6 +15,8 @@
 #include "network/networkEvents.hh"
 #include "network/serverConnection.hh"
 
+#include "world/entity.hh"
+
 
 #ifdef __WIN32__
 	#pragma comment( lib, "opengl32.lib" )
@@ -33,6 +35,7 @@
 
 using namespace std;
 using boost::asio::ip::tcp;
+using boost::asio::io_service;
 
 
 // Some global queues, pools, etc.
@@ -40,7 +43,7 @@ ThreadPool      threadPool;
 TaskQueue       taskQueue;
 EventQueue      eventQueue;
 EventDispatcher eventDispatcher;
-boost::asio::io_service ioService;
+io_service      ioService;
 
 std::shared_ptr<ServerConnection> connection;
 
