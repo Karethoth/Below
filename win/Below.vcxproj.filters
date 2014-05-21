@@ -40,6 +40,9 @@
     <Filter Include="Header Files\world">
       <UniqueIdentifier>{83661214-431a-4cb2-b9be-e9de19ca18df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\world">
+      <UniqueIdentifier>{ccf3d738-91aa-43c5-a4d8-f0cba0f6c6d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\task.cc">
@@ -77,6 +80,12 @@
     </ClCompile>
     <ClCompile Include="..\src\network\serverConnection.cc">
       <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\world\worldNode.cc">
+      <Filter>Source Files\world</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\world\entity.cc">
+      <Filter>Source Files\world</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

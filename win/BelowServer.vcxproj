@@ -93,6 +93,8 @@
     <ClCompile Include="..\src\task.cc" />
     <ClCompile Include="..\src\taskQueue.cc" />
     <ClCompile Include="..\src\threadPool.cc" />
+    <ClCompile Include="..\src\world\entity.cc" />
+    <ClCompile Include="..\src\world\worldNode.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\events\event.hh" />

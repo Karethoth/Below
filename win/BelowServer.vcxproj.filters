@@ -34,6 +34,9 @@
     <Filter Include="Header Files\world">
       <UniqueIdentifier>{125b7438-3bad-447d-8565-f9e1bebaed12}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\world">
+      <UniqueIdentifier>{03180f09-7c9b-4482-a9c4-f14c0693758d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\task.hh">
@@ -73,6 +76,12 @@
     </ClCompile>
     <ClCompile Include="..\src\server\main.cc">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\world\worldNode.cc">
+      <Filter>Source Files\world</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\world\entity.cc">
+      <Filter>Source Files\world</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
