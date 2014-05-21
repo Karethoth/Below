@@ -18,21 +18,25 @@
 
 #include "world/entity.hh"
 
+#if _DEBUG || DEBUG
+	#define DEBUG_MODE 1
+#else
+	#define DEBUG_MODE 0
+#endif
+
 
 #ifdef __WIN32__
 	#pragma comment( lib, "opengl32.lib" )
 	#pragma comment( lib, "SDL2.lib" )
 	//#pragma comment( lib, "SDL2main.lib" )
 
-	#ifndef _DEBUG
-		#define DEBUG_MODE false
+	#if !DEBUG_MODE
 		#pragma comment( lib, "glew32.lib" )
 
 		// Let's disable the console
 		#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 
 	#else
-		#define DEBUG_MODE true
 		#pragma comment( lib, "glew32d.lib" )
 	#endif
 
