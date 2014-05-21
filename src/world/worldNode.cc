@@ -57,7 +57,7 @@ void WorldNode::UpdateTransformations()
 	               children.end(), [this]( unsigned int &childId )
 	{
 		// Find the child
-		Serialize( nullptr );
+		// Call update
 	} );
 }
 
