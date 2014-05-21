@@ -43,6 +43,11 @@
     <ClInclude Include="..\src\network\server.hh" />
     <ClInclude Include="..\src\network\serverConnection.hh" />
     <ClInclude Include="..\src\taskQueue.hh" />
+    <ClInclude Include="..\src\world\entity.hh" />
+    <ClInclude Include="..\src\world\worldNode.hh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\data\client_resource.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3FD105CF-3502-41A3-AE3F-9AF37A04632F}</ProjectGuid>
@@ -77,8 +82,8 @@
     <IntDir>..\obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\..\bin\</OutDir>
-    <IntDir>..\..\bin\</IntDir>
+    <OutDir>..\bin\</OutDir>
+    <IntDir>..\obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

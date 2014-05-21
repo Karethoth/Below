@@ -34,6 +34,9 @@
     <Filter Include="Source Files\network">
       <UniqueIdentifier>{ebad1775-3cb1-4967-a129-4e39697c4008}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\world">
+      <UniqueIdentifier>{125b7438-3bad-447d-8565-f9e1bebaed12}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\task.hh">
@@ -112,5 +115,16 @@
     <ClInclude Include="..\src\network\serializable.hh">
       <Filter>Header Files\network</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\world\entity.hh">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\world\worldNode.hh">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\data\server_resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

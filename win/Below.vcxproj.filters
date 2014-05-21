@@ -37,6 +37,9 @@
     <Filter Include="Source Files\network">
       <UniqueIdentifier>{0cf8e7c7-872f-4ca1-8c04-5bca986602eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\world">
+      <UniqueIdentifier>{83661214-431a-4cb2-b9be-e9de19ca18df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\task.cc">
@@ -127,5 +130,16 @@
     <ClInclude Include="..\src\network\serverConnection.hh">
       <Filter>Header Files\network</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\world\entity.hh">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\world\worldNode.hh">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\data\client_resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
