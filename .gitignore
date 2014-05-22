@@ -2,6 +2,8 @@ bin
 obj
 Debug
 Release
+below
+belowServer
 *.obj
 *.exe
 *.tmp
