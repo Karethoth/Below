@@ -452,7 +452,7 @@ int main( int argc, char *argv[] )
 	SDL_DestroyWindow( sdlWindow );
 	SDL_Quit();
 
-	std::cout << "Finished, press enter to quit." << std::endl;
+	std::cout << endl << "Finished, press enter to quit." << std::endl;
 
 	getc( stdin );
 	return 0;

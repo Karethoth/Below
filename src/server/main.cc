@@ -268,7 +268,7 @@ int main( int argc, char **argv )
 
 
 	// Command worker threads to stop
-	cout << "Stopping the worker threads!" << endl;
+	cout << "Commanding the threads to stop." << endl;
 
 	threadPool.contextListMutex.lock();
 	for( auto context  = threadPool.contexts.begin();
@@ -281,27 +281,22 @@ int main( int argc, char **argv )
 
 
 	// Wait for the thread pool to empty
-	cout << "Worker threads have been commanded to stop." << endl;
+	cout << "Waiting for the threads to stop." << endl;
 
-	int maxThreads = 0;
+	int maxThreads = ignoreLastThread ? 1 : 0;
 
-	while( threadPool.threads.size() > maxThreads )
+	do
 	{
-		// Remove unjoinable threads
 		threadPool.CleanThreads();
-
-		if( ignoreLastThread )
-		{
-			maxThreads = 1;
-		}
-
 		std::this_thread::yield();
 	}
-	cout << "Worker threads stopped!" << endl;
+	while( threadPool.threads.size() > maxThreads );
+
+	cout << "Threads stopped!" << endl;
 
 
 	// Finish
-	std::cout << "Finished, press enter to quit." << std::endl;
+	std::cout << endl << "Finished, press enter to quit." << std::endl;
 	getc( stdin );
 
 	return 0;
