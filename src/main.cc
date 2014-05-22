@@ -2,12 +2,11 @@
 #include <thread>
 #include <vector>
 #include <GL/glew.h>
-#include <SDL_Main.h>
-#include <SDL.h>
-#include <SDL_opengl.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 
 #include <exception>
-#include <boost\asio.hpp>
+#include <boost/asio.hpp>
 
 #include "threadPool.hh"
 
@@ -60,7 +59,7 @@ io_service      ioService;
 
 std::shared_ptr<ServerConnection> connection;
 
-std::atomic<unsigned int> eventHandlerTasks = 0;
+std::atomic<unsigned int> eventHandlerTasks;
 
 
 // Managers
@@ -258,14 +257,6 @@ int main( int argc, char *argv[] )
 	SDL_Init( SDL_INIT_EVERYTHING );
 
 
-	// Set the opengl context version
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
-
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
-
-
 	// Create the SDL2 window
 	sdlWindow = SDL_CreateWindow(
 		"Below Client", SDL_WINDOWPOS_CENTERED,
@@ -273,9 +264,14 @@ int main( int argc, char *argv[] )
 		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
 	);
 
+	if( !sdlWindow )
+	{
+		cerr << "SDL Error: " << SDL_GetError() << endl;
+	}
+
 
 	// Create the icon for the window
-	SDL_Surface *icon = SDL_LoadBMP( "../data/icons/windowIcon.bmp" );
+	SDL_Surface *icon = SDL_LoadBMP( "data/icons/windowIcon.bmp" );
 	if( !icon )
 	{
 		cerr << "Icon couldn't be loaded!" << endl;
@@ -292,13 +288,25 @@ int main( int argc, char *argv[] )
 	}
 
 
-	// Create the OpenGL context
-	openglContext = SDL_GL_CreateContext(sdlWindow);
+	// Set the opengl context version
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
+
+	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
+
+
+	// Create the OpenGL context //
+	openglContext = SDL_GL_CreateContext( sdlWindow );
+	if( !openglContext )
+	{
+		cerr << "SDL Error: " << SDL_GetError() << endl;
+	}
 
 	GLenum status = glewInit();
 	if( status != GLEW_OK )
 	{
-		std::cerr << "GLEW Error: " << glewGetErrorString( status ) << "\n";
+		cerr << "GLEW Error: " << glewGetErrorString( status ) << "\n";
 		return 1;
 	}
 
