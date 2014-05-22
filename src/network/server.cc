@@ -84,17 +84,6 @@ Server::Server( asio::io_service& ioService, short port )
 
 Server::~Server()
 {
-	if( m_acceptor )
-	{
-		m_acceptor->close();
-		delete m_acceptor;
-	}
-
-	if( m_socket )
-	{
-		m_socket->close();
-		delete m_socket;
-	}
 }
 
 

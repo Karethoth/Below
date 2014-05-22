@@ -86,7 +86,6 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 			continue;
 		}
 
-
 		// Execute the task
 		if( task->f )
 		{
@@ -170,22 +169,6 @@ void EventHandlerTask()
 
 
 
-// Task to step time after time the I/O services,
-// generates itself again at the end
-void IoStepTask()
-{
-	// Run one step
-	ioService.run_one();
-
-	// Generate the next task
-	Task *ioStepTask = new Task();
-	ioStepTask->dependencies = 0;
-	ioStepTask->f = IoStepTask;
-	taskQueue.AddTask( ioStepTask );
-}
-
-
-
 // The generator of Event handler tasks
 void EventHandlerGenerator()
 {
@@ -202,6 +185,22 @@ void EventHandlerGenerator()
 	eventTasker->dependencies = 0;
 	eventTasker->f = EventHandlerGenerator;
 	taskQueue.AddTask( eventTasker );
+}
+
+
+
+// Task to step time after time the I/O services,
+// generates itself again at the end
+void IoStepTask()
+{
+	// Run one step
+	ioService.run_one();
+
+	// Generate the next task
+	Task *ioStepTask = new Task();
+	ioStepTask->dependencies = 0;
+	ioStepTask->f = IoStepTask;
+	taskQueue.AddTask( ioStepTask );
 }
 
 
@@ -250,11 +249,12 @@ int main( int argc, char *argv[] )
 	// Create the clock
 	std::chrono::steady_clock clock;
 
+
 	auto networkListener = make_shared<NetworkListener>();
 	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
 
-	SDL_Init( SDL_INIT_EVERYTHING );
 
+	SDL_Init( SDL_INIT_EVERYTHING );
 
 	// Create the SDL2 window
 	sdlWindow = SDL_CreateWindow(
@@ -288,8 +288,8 @@ int main( int argc, char *argv[] )
 
 
 	// Set the opengl context version
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
 
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );

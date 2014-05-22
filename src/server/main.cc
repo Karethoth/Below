@@ -2,6 +2,7 @@
 #include <thread>
 #include <vector>
 #include <exception>
+#include <csignal>
 
 #include <boost/asio.hpp>
 
@@ -29,6 +30,7 @@ std::atomic<unsigned int> eventHandlerTasks;
 
 // Server stopper
 bool stopServer = false;
+bool ignoreLastThread = false;
 
 
 
@@ -43,12 +45,14 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 		if( !task )
 		{
 			std::this_thread::yield();
-			std::this_thread::sleep_for( std::chrono::microseconds( 10 ) );
 			continue;
 		}
 
 		// Execute the task
-		task->f();
+		if( task->f )
+		{
+			task->f();
+		}
 
 		// Delete the task when we're done with it
 		delete task;
@@ -160,11 +164,23 @@ void IoStepTask()
 }
 
 
+void SignalHandler( int sig )
+{
+	stopServer       = true;
+	ignoreLastThread = true;
+}
+
+
 
 int main( int argc, char **argv )
 {
 	// Get count of hardware threads
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
+
+	signal( SIGABRT, SignalHandler );
+	signal( SIGTERM, SignalHandler );
+	signal( SIGINT,  SignalHandler );
+
 
 	// Pass the event queue to the server
 	server.SetEventQueue( &eventQueue );
@@ -267,11 +283,17 @@ int main( int argc, char **argv )
 	// Wait for the thread pool to empty
 	cout << "Worker threads have been commanded to stop." << endl;
 
-	while( threadPool.threads.size() > 0 )
-	{
+	int maxThreads = 0;
 
+	while( threadPool.threads.size() > maxThreads )
+	{
 		// Remove unjoinable threads
 		threadPool.CleanThreads();
+
+		if( ignoreLastThread )
+		{
+			maxThreads = 1;
+		}
 
 		std::this_thread::yield();
 	}
