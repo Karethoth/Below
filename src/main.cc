@@ -29,13 +29,12 @@
 #ifdef __WIN32__
 	#pragma comment( lib, "opengl32.lib" )
 	#pragma comment( lib, "SDL2.lib" )
-	//#pragma comment( lib, "SDL2main.lib" )
 
 	#if !DEBUG_MODE
 		#pragma comment( lib, "glew32.lib" )
 
 		// Let's disable the console
-		#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+		#pragma comment( linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup" )
 
 	#else
 		#pragma comment( lib, "glew32d.lib" )
