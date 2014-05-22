@@ -3,7 +3,7 @@
 #include <vector>
 #include <exception>
 
-#include <boost\asio.hpp>
+#include <boost/asio.hpp>
 
 
 #include "../threadPool.hh"
@@ -25,7 +25,7 @@ EventDispatcher eventDispatcher;
 Server          server;
 boost::asio::io_service ioService;
 
-std::atomic<unsigned int> eventHandlerTasks = 0;
+std::atomic<unsigned int> eventHandlerTasks;
 
 // Server stopper
 bool stopServer = false;

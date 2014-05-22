@@ -2,12 +2,11 @@
 #include <thread>
 #include <vector>
 #include <GL/glew.h>
-#include <SDL_Main.h>
-#include <SDL.h>
-#include <SDL_opengl.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 
 #include <exception>
-#include <boost\asio.hpp>
+#include <boost/asio.hpp>
 
 #include "threadPool.hh"
 
@@ -60,7 +59,7 @@ io_service      ioService;
 
 std::shared_ptr<ServerConnection> connection;
 
-std::atomic<unsigned int> eventHandlerTasks = 0;
+std::atomic<unsigned int> eventHandlerTasks;
 
 
 // Managers
