@@ -40,6 +40,7 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 
 	// Run until thread should stop
 	while( !context->shouldStop )
+	while( !context->shouldStop )
 	{
 		Task *task = context->taskQueue->GetTask();
 		if( !task )
@@ -48,11 +49,22 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 			continue;
 		}
 
+		// Mark task as started
+		task->timer.Start();
+
 		// Execute the task
 		if( task->f )
 		{
 			task->f();
 		}
+
+		// Mark task as ended
+		task->timer.End();
+
+
+		//ExecutionTimer timer = task->timer;
+		//cout << task->name << ": Wait( " << timer.waitDuration.count()
+		//     << " ) \tDuration( " << timer.executionDuration.count() << " )" << endl;
 
 		// Delete the task when we're done with it
 		delete task;
@@ -134,16 +146,18 @@ void EventHandlerGenerator()
 {
 	while( eventQueue.GetEventCount() > eventHandlerTasks )
 	{
-		Task *eventTask = new Task();
-		eventTask->dependencies = 0;
-		eventTask->f = EventHandlerTask;
-		taskQueue.AddTask( eventTask );
+		Task *eventTask = new Task(
+			std::string( "EventHandlerTask" ),
+			EventHandlerTask
+		);
+
 		eventHandlerTasks++;
 	}
 
-	Task *eventTasker = new Task();
-	eventTasker->dependencies = 0;
-	eventTasker->f = EventHandlerGenerator;
+	Task *eventTasker = new Task(
+		std::string( "EventHandlerGenerator" ),
+		EventHandlerGenerator
+	);
 	taskQueue.AddTask( eventTasker );
 }
 
@@ -157,13 +171,16 @@ void IoStepTask()
 	ioService.run_one();
 
 	// Generate the next task
-	Task *ioStepTask = new Task();
-	ioStepTask->dependencies = 0;
-	ioStepTask->f = IoStepTask;
-	taskQueue.AddTask( ioStepTask );
+	Task *nextStep = new Task(
+		std::string( "IoStepTask" ),
+		IoStepTask
+	);
+
+	taskQueue.AddTask( nextStep );
 }
 
 
+// Signal handler for few possible events
 void SignalHandler( int sig )
 {
 	stopServer       = true;
@@ -172,44 +189,12 @@ void SignalHandler( int sig )
 
 
 
-int main( int argc, char **argv )
+bool GenerateWorkerThreads( unsigned int count )
 {
-	// Get count of hardware threads
-	unsigned int hardwareThreads = std::thread::hardware_concurrency();
-
-	signal( SIGABRT, SignalHandler );
-	signal( SIGTERM, SignalHandler );
-	signal( SIGINT,  SignalHandler );
-
-
-	// Pass the event queue to the server
-	server.SetEventQueue( &eventQueue );
-
-	auto networkListener = make_shared<NetworkListener>();
-	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
-
-
-	// Try to start the server / open the listening socket
-	cout << "Starting server..." << endl;
-	try
-	{
-		server.Init( ioService, 22001 );
-		server.Accept();
-	}
-	catch( std::exception &e )
-	{
-		cerr << "Failed to start: " << e.what() << endl;
-		cout << "Press enter to quit." << endl;
-		getc( stdin );
-		return 1;
-	}
-	cout << "Server started! Port is " << 22001 << "." << endl;
-
-
 	// Create the worker threads
 	cout << "Creating worker threads" << endl;
 
-	for( unsigned int i = 0; i < hardwareThreads; ++i )
+	for( unsigned int i = 0; i < count; ++i )
 	{
 		// Create the context
 		threadPool.contextListMutex.lock();
@@ -227,23 +212,81 @@ int main( int argc, char **argv )
 		threadPool.threadListMutex.unlock();
 	}
 
+	return true;
+}
 
+
+
+void GenerateVitalTasks()
+{
 	// Create a task to generate tasks to handle events
-	cout << "Creating the event handler tasker." << endl;
+	cout << "Creating the event handler generator." << endl;
 
-	Task *eventTasker = new Task();
-	eventTasker->dependencies = 0;
-	eventTasker->f = EventHandlerGenerator;
+	Task *eventTasker = new Task(
+		std::string( "EventHandlerGenerator" ),
+		EventHandlerGenerator
+	);
 	taskQueue.AddTask( eventTasker );
 
 
 	// Create a task to run the network io services
 	cout << "Creating the network I/O tasker." << endl;
 
-	Task *ioTasker = new Task();
-	ioTasker->dependencies = 0;
-	ioTasker->f = IoStepTask;
+	Task *ioTasker = new Task(
+		std::string( "IoStepTask" ),
+		IoStepTask
+	);
 	taskQueue.AddTask( ioTasker );
+}
+
+
+
+int main( int argc, char **argv )
+{
+	// Get count of hardware threads
+	unsigned int hardwareThreads = std::thread::hardware_concurrency();
+
+	// Set the SignalHandler to handle abort,
+	// terminate and interrupt signals
+	signal( SIGABRT, SignalHandler );
+	signal( SIGTERM, SignalHandler );
+	signal( SIGINT,  SignalHandler );
+
+
+	// Pass the event queue to the server
+	server.SetEventQueue( &eventQueue );
+
+	// Temporary network listener, for testing purposes
+	auto networkListener = make_shared<NetworkListener>();
+	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
+
+
+	// Create the threads
+	if( !GenerateWorkerThreads( hardwareThreads ) )
+	{
+		cerr << __FILE__ << ":" << __LINE__-2 << ":GenerateWorkerThreads() failed, exiting." << endl;
+		return 1;
+	}
+
+	// Create the core tasks
+	GenerateVitalTasks();
+
+
+	// Try to start the server / open the listening socket
+	cout << "Starting server..." << endl;
+	try
+	{
+		server.Init( ioService, 22001 );
+		server.Accept();
+	}
+	catch( std::exception &e )
+	{
+		cerr << "Failed to start: " << e.what() << endl;
+		cout << "Press enter to quit." << endl;
+		getc( stdin );
+		return 1;
+	}
+	cout << "Server started! Port is " << 22001 << "." << endl;
 
 
 

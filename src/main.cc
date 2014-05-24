@@ -69,9 +69,11 @@ ShaderProgramManager shaderProgramManager;
 SDL_Window *sdlWindow = 0;
 SDL_GLContext openglContext;
 
+
 bool stopClient = false;
 
 
+// The worker loop, threads fetch tasks and execute them.
 void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 {
 	context->threadId = std::this_thread::get_id();
@@ -99,9 +101,9 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 		task->timer.End();
 
 
-		ExecutionTimer timer = task->timer;
-		cout << task->name << ": Wait( " << timer.waitDuration.count()
-		     << " ) \tDuration( " << timer.executionDuration.count() << " )" << endl;
+		//ExecutionTimer timer = task->timer;
+		//cout << task->name << ": Wait( " << timer.waitDuration.count()
+		//     << " ) \tDuration( " << timer.executionDuration.count() << " )" << endl;
 
 		// Delete the task when we're done with it
 		delete task;
@@ -185,18 +187,19 @@ void EventHandlerGenerator()
 {
 	while( eventQueue.GetEventCount() > eventHandlerTasks )
 	{
-		Task *eventTask = new Task();
-		eventTask->name = "EventHandlerTask";
-		eventTask->dependencies = 0;
-		eventTask->f = EventHandlerTask;
-		taskQueue.AddTask( eventTask );
+		Task *eventTask = new Task(
+			std::string( "EventHandlerTask" ),
+			EventHandlerTask
+		);
+
 		eventHandlerTasks++;
 	}
 
-	Task *eventTasker = new Task();
-	eventTasker->name = "EventHandlerGenerator";
-	eventTasker->dependencies = 0;
-	eventTasker->f = EventHandlerGenerator;
+	Task *eventTasker = new Task(
+		std::string( "EventHandlerGenerator" ),
+		EventHandlerGenerator
+	);
+
 	taskQueue.AddTask( eventTasker );
 }
 
@@ -210,11 +213,12 @@ void IoStepTask()
 	ioService.run_one();
 
 	// Generate the next task
-	Task *ioStepTask = new Task();
-	ioStepTask->name = "IoStepTask";
-	ioStepTask->dependencies = 0;
-	ioStepTask->f = IoStepTask;
-	taskQueue.AddTask( ioStepTask );
+	Task *nextStep = new Task(
+		std::string( "IoStepTask" ),
+		IoStepTask
+	);
+
+	taskQueue.AddTask( nextStep );
 }
 
 
@@ -255,19 +259,9 @@ void Render()
 
 
 
-int main( int argc, char *argv[] )
+bool InitSDL()
 {
-	// Get count of hardware threads
-	unsigned int hardwareThreads = std::thread::hardware_concurrency();
-
-	// Create the clock
-	std::chrono::steady_clock clock;
-
-
-	auto networkListener = make_shared<NetworkListener>();
-	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
-
-
+	// Handle the SDL stuff
 	SDL_Init( SDL_INIT_EVERYTHING );
 
 	// Create the SDL2 window
@@ -280,6 +274,7 @@ int main( int argc, char *argv[] )
 	if( !sdlWindow )
 	{
 		cerr << "SDL Error: " << SDL_GetError() << endl;
+		return false;
 	}
 
 
@@ -288,19 +283,24 @@ int main( int argc, char *argv[] )
 	if( !icon )
 	{
 		cerr << "Icon couldn't be loaded!" << endl;
-	}
-	else
-	{
-		// Set magenta as the transparent color
-		unsigned int colorkey = SDL_MapRGB( icon->format, 255, 0, 255 );
-		SDL_SetColorKey( icon, GL_SOURCE1_ALPHA, colorkey );
-
-		// Set the icon
-		SDL_SetWindowIcon( sdlWindow, icon );
-		SDL_FreeSurface( icon );
+		return false;
 	}
 
+	// Set magenta as the transparent color
+	unsigned int colorkey = SDL_MapRGB( icon->format, 255, 0, 255 );
+	SDL_SetColorKey( icon, GL_SOURCE1_ALPHA, colorkey );
 
+	// Set the icon
+	SDL_SetWindowIcon( sdlWindow, icon );
+	SDL_FreeSurface( icon );
+
+	return true;
+}
+
+
+
+bool InitGL()
+{
 	// Set the opengl context version
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
@@ -314,23 +314,29 @@ int main( int argc, char *argv[] )
 	if( !openglContext )
 	{
 		cerr << "SDL Error: " << SDL_GetError() << endl;
+		return false;
 	}
 
 	GLenum status = glewInit();
 	if( status != GLEW_OK )
 	{
 		cerr << "GLEW Error: " << glewGetErrorString( status ) << "\n";
-		return 1;
+		return false;
 	}
 
 	// VSync
 	SDL_GL_SetSwapInterval( 1 );
+	return true;
+}
 
 
+
+bool GenerateWorkerThreads( unsigned int count )
+{
 	// Create the worker threads
 	cout << "Creating worker threads" << endl;
 
-	for( unsigned int i = 0; i < hardwareThreads; ++i )
+	for( unsigned int i = 0; i < count; ++i )
 	{
 		// Create the context
 		threadPool.contextListMutex.lock();
@@ -348,25 +354,74 @@ int main( int argc, char *argv[] )
 		threadPool.threadListMutex.unlock();
 	}
 
+	return true;
+}
 
+
+
+void GenerateVitalTasks()
+{
 	// Create a task to generate tasks to handle events
 	cout << "Creating the event handler generator." << endl;
 
-	Task *eventTasker = new Task();
-	eventTasker->name = "EventHandlerGenerator";
-	eventTasker->dependencies = 0;
-	eventTasker->f = EventHandlerGenerator;
+	Task *eventTasker = new Task(
+		std::string( "EventHandlerGenerator" ),
+		EventHandlerGenerator
+	);
 	taskQueue.AddTask( eventTasker );
 
 
 	// Create a task to run the network io services
 	cout << "Creating the network I/O tasker." << endl;
 
-	Task *ioTasker = new Task();
-	eventTasker->name = "IoStepTask";
-	ioTasker->dependencies = 0;
-	ioTasker->f = IoStepTask;
+	Task *ioTasker = new Task(
+		std::string( "IoStepTask" ),
+		IoStepTask
+	);
 	taskQueue.AddTask( ioTasker );
+}
+
+
+
+int main( int argc, char *argv[] )
+{
+	// Get count of hardware threads
+	unsigned int hardwareThreads = std::thread::hardware_concurrency();
+
+	// Create the clock
+	std::chrono::steady_clock clock;
+
+	// Instantiate a network event listener
+	auto networkListener = make_shared<NetworkListener>();
+	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
+
+
+	// Init graphics
+	if( !InitSDL() )
+	{
+		cerr << __FILE__ << ":" << __LINE__-2 << ":InitSDL() failed, exiting." << endl;
+		return 1;
+	}
+
+
+	if( !InitGL() )
+	{
+		cerr << __FILE__ << ":" << __LINE__-2 << ":InitGL() failed, exiting." << endl;
+		SDL_DestroyWindow( sdlWindow );
+		SDL_Quit();
+		return 1;
+	}
+
+
+	// Create the threads
+	if( !GenerateWorkerThreads( hardwareThreads ) )
+	{
+		cerr << __FILE__ << ":" << __LINE__-2 << ":GenerateWorkerThreads() failed, exiting." << endl;
+		return 1;
+	}
+
+	// Create the core tasks
+	GenerateVitalTasks();
 
 
 	//  Create task for connecting to the server:
