@@ -1,19 +1,25 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include <atomic>
 
+#include "statistics/executionTimer.hh"
 
-class Task
+
+struct Task
 {
  public:
+	Task();
 	virtual ~Task();
 
 	bool HasDependenciesLeft();
 
-	void (*f)(void);
-
+	std::string        name;
 	std::atomic_uint   dependencies;
 	std::vector<Task*> dependents;
+	ExecutionTimer     timer;
+
+	void (*f)(void);
 };
 

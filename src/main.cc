@@ -86,11 +86,22 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 			continue;
 		}
 
+		// Mark task as started
+		task->timer.Start();
+
 		// Execute the task
 		if( task->f )
 		{
 			task->f();
 		}
+
+		// Mark task as ended
+		task->timer.End();
+
+
+		ExecutionTimer timer = task->timer;
+		cout << task->name << ": Wait( " << timer.waitDuration.count()
+		     << " ) \tDuration( " << timer.executionDuration.count() << " )" << endl;
 
 		// Delete the task when we're done with it
 		delete task;
@@ -175,6 +186,7 @@ void EventHandlerGenerator()
 	while( eventQueue.GetEventCount() > eventHandlerTasks )
 	{
 		Task *eventTask = new Task();
+		eventTask->name = "EventHandlerTask";
 		eventTask->dependencies = 0;
 		eventTask->f = EventHandlerTask;
 		taskQueue.AddTask( eventTask );
@@ -182,6 +194,7 @@ void EventHandlerGenerator()
 	}
 
 	Task *eventTasker = new Task();
+	eventTasker->name = "EventHandlerGenerator";
 	eventTasker->dependencies = 0;
 	eventTasker->f = EventHandlerGenerator;
 	taskQueue.AddTask( eventTasker );
@@ -198,6 +211,7 @@ void IoStepTask()
 
 	// Generate the next task
 	Task *ioStepTask = new Task();
+	ioStepTask->name = "IoStepTask";
 	ioStepTask->dependencies = 0;
 	ioStepTask->f = IoStepTask;
 	taskQueue.AddTask( ioStepTask );
@@ -339,6 +353,7 @@ int main( int argc, char *argv[] )
 	cout << "Creating the event handler generator." << endl;
 
 	Task *eventTasker = new Task();
+	eventTasker->name = "EventHandlerGenerator";
 	eventTasker->dependencies = 0;
 	eventTasker->f = EventHandlerGenerator;
 	taskQueue.AddTask( eventTasker );
@@ -348,6 +363,7 @@ int main( int argc, char *argv[] )
 	cout << "Creating the network I/O tasker." << endl;
 
 	Task *ioTasker = new Task();
+	eventTasker->name = "IoStepTask";
 	ioTasker->dependencies = 0;
 	ioTasker->f = IoStepTask;
 	taskQueue.AddTask( ioTasker );
@@ -355,6 +371,7 @@ int main( int argc, char *argv[] )
 
 	//  Create task for connecting to the server:
 	Task *connectTask = new Task();
+	connectTask->name = "TryConnectingTask";
 	connectTask->dependencies = 0;
 	connectTask->f = []()
 	{

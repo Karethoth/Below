@@ -1,6 +1,13 @@
 #include "task.hh"
 
 
+Task::Task() : name( "Unnamed Task" )
+{
+	timer.Reset();
+}
+
+
+
 Task::~Task()
 {
 	for( auto dep  = dependents.begin();
@@ -9,6 +16,7 @@ Task::~Task()
 	{
 		(*dep)->dependencies -= 1;
 	}
+	timer.End();
 }
 
 
