@@ -1,6 +1,9 @@
 #pragma once
+#include "../statistics/executionTimer.hh"
+
 #define EVENT_TYPE_LENGTH sizeof( unsigned char );
 #define EVENT_SUB_TYPE_LENGTH sizeof( unsigned short );
+
 
 enum EventType : unsigned char
 {
@@ -39,7 +42,10 @@ enum EventSubType : unsigned short
 
 struct Event
 {
-	EventType    type;
-	EventSubType subType;
+	Event();
+
+	EventType      type;
+	EventSubType   subType;
+	ExecutionTimer timer;
 };
 

@@ -43,6 +43,12 @@
     <Filter Include="Source Files\world">
       <UniqueIdentifier>{ccf3d738-91aa-43c5-a4d8-f0cba0f6c6d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\statistics">
+      <UniqueIdentifier>{83099848-e856-4063-932a-bf4cc0241fd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\statistics">
+      <UniqueIdentifier>{91adec4a-06dc-4f7c-ba50-af0e51568abd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\task.cc">
@@ -86,6 +92,12 @@
     </ClCompile>
     <ClCompile Include="..\src\world\entity.cc">
       <Filter>Source Files\world</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\statistics\executionTimer.cc">
+      <Filter>Source Files\statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\events\event.cc">
+      <Filter>Source Files\events</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +156,9 @@
     </ClInclude>
     <ClInclude Include="..\src\events\eventFactory.hh">
       <Filter>Header Files\events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\statistics\executionTimer.hh">
+      <Filter>Header Files\statistics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
