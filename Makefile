@@ -9,6 +9,7 @@ DIRS = $(OBJDIR) \
 	   $(OBJDIR)/managers \
 	   $(OBJDIR)/network \
 	   $(OBJDIR)/server \
+	   $(OBJDIR)/statistics \
 	   $(OBJDIR)/world
 
 CLIENT_LIBS = -lboost_system -lGL -lGLEW -lSDL2 -lX11 -lXxf86vm -lXrandr -pthread -lXi
@@ -25,6 +26,7 @@ TGTDIR = .
 
 
 COMMON_OBJS=\
+      $(OBJDIR)/events/event.o \
       $(OBJDIR)/events/eventDispatcher.o \
       $(OBJDIR)/events/eventFactory.o \
       $(OBJDIR)/events/eventQueue.o \
@@ -33,6 +35,7 @@ COMMON_OBJS=\
       $(OBJDIR)/network/serverConnection.o \
       $(OBJDIR)/world/entity.o \
       $(OBJDIR)/world/worldNode.o \
+      $(OBJDIR)/statistics/executionTimer.o \
       $(OBJDIR)/task.o \
       $(OBJDIR)/taskQueue.o \
       $(OBJDIR)/threadPool.o
