@@ -1,12 +1,21 @@
 #include "task.hh"
 
 
-Task::Task() : name( "Unnamed Task" )
+Task::Task()
 {
-	timer.Reset();
+	Task( "Unnamed Task", nullptr, 0 );
 }
 
 
+Task::Task( std::string taskName,
+            void( *func )(void),
+            unsigned int taskDependencies )
+{
+	name         = taskName;
+	f            = func;
+	dependencies = taskDependencies;
+	timer.Reset();
+}
 
 Task::~Task()
 {

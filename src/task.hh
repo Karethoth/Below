@@ -11,6 +11,10 @@ struct Task
 {
  public:
 	Task();
+	Task( std::string taskName,
+	      void (*func)(void) = nullptr,
+	      unsigned int taskDependencies = 0 );
+
 	virtual ~Task();
 
 	bool HasDependenciesLeft();
