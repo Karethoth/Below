@@ -191,6 +191,7 @@ void EventHandlerGenerator()
 			std::string( "EventHandlerTask" ),
 			EventHandlerTask
 		);
+		taskQueue.AddTask( eventTask );
 
 		eventHandlerTasks++;
 	}

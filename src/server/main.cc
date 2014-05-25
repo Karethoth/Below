@@ -150,6 +150,7 @@ void EventHandlerGenerator()
 			std::string( "EventHandlerTask" ),
 			EventHandlerTask
 		);
+		taskQueue.AddTask( eventTask );
 
 		eventHandlerTasks++;
 	}
@@ -326,7 +327,7 @@ int main( int argc, char **argv )
 	// Wait for the thread pool to empty
 	cout << "Waiting for the threads to stop." << endl;
 
-	int maxThreads = ignoreLastThread ? 1 : 0;
+	unsigned int maxThreads = ignoreLastThread ? 1 : 0;
 
 	do
 	{
