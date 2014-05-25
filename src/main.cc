@@ -308,6 +308,10 @@ struct NetworkListener : public EventListener
 						update->data = dataStream.str();
 						eventQueue.AddEvent( update );
 						break;
+
+
+					default:
+						break;
 				}
 				break;
 
