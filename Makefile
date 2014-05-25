@@ -33,9 +33,11 @@ COMMON_OBJS=\
       $(OBJDIR)/managers/shaderProgramManager.o \
       $(OBJDIR)/network/server.o \
       $(OBJDIR)/network/serverConnection.o \
+      $(OBJDIR)/network/serializable.o \
       $(OBJDIR)/world/entity.o \
       $(OBJDIR)/world/worldNode.o \
       $(OBJDIR)/statistics/executionTimer.o \
+      $(OBJDIR)/logger.o \
       $(OBJDIR)/task.o \
       $(OBJDIR)/taskQueue.o \
       $(OBJDIR)/threadPool.o
@@ -44,6 +46,7 @@ CLIENT_OBJS=\
 	$(COMMON_OBJS) \
 	$(OBJDIR)/graphics/shader.o \
 	$(OBJDIR)/graphics/shaderProgram.o \
+	$(OBJDIR)/managers/clientObjectManager.o \
 	$(OBJDIR)/main.o
 
 SERVER_OBJS=\

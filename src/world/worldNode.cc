@@ -129,7 +129,7 @@ bool WorldNode::Unserialize( string data )
 
 bool WorldNode::SerializeField( std::string &fieldName, std::stringstream &stream )
 {
-	stringstream  fieldStream     = stringstream( SS_RW_BIN );
+	stringstream  fieldStream( SS_RW_BIN );
 	unsigned char fieldDataLength = 0;
 	string        fieldDataString;
 
