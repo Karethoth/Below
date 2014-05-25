@@ -174,10 +174,10 @@ void EventHandlerTask()
 	// Pass the event to the listeners
 	eventDispatcher.HandleEvent( e );
 
+	eventHandlerTasks--;
+
 	// Free the event
 	delete e;
-
-	eventHandlerTasks--;
 }
 
 
@@ -388,6 +388,11 @@ int main( int argc, char *argv[] )
 {
 	// Get count of hardware threads
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
+	if( hardwareThreads <= 1 )
+	{
+		cout << "Hardware supports just one real thread." << endl;
+		hardwareThreads = 2;
+	}
 
 	// Create the clock
 	std::chrono::steady_clock clock;
