@@ -107,6 +107,7 @@
     <ClInclude Include="..\src\network\networkEvents.hh" />
     <ClInclude Include="..\src\network\serializable.hh" />
     <ClInclude Include="..\src\network\server.hh" />
+    <ClInclude Include="..\src\ringBuffer.hh" />
     <ClInclude Include="..\src\statistics\executionTimer.hh" />
     <ClInclude Include="..\src\world\entity.hh" />
     <ClInclude Include="..\src\world\worldNode.hh" />

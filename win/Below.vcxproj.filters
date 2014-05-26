@@ -160,6 +160,9 @@
     <ClInclude Include="..\src\statistics\executionTimer.hh">
       <Filter>Header Files\statistics</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ringBuffer.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\client_resource.rc">

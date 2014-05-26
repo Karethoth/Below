@@ -46,6 +46,7 @@
     <ClInclude Include="..\src\network\serializable.hh" />
     <ClInclude Include="..\src\network\server.hh" />
     <ClInclude Include="..\src\network\serverConnection.hh" />
+    <ClInclude Include="..\src\ringBuffer.hh" />
     <ClInclude Include="..\src\statistics\executionTimer.hh" />
     <ClInclude Include="..\src\taskQueue.hh" />
     <ClInclude Include="..\src\world\entity.hh" />
