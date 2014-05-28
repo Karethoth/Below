@@ -70,7 +70,11 @@ SDL_Window *sdlWindow = 0;
 SDL_GLContext openglContext;
 
 
-bool stopClient = false;
+// Few global flags
+bool sdlInitialized = false;
+bool glInitialized  = false;
+bool stopClient     = false;
+bool windowFocus    = false;
 
 
 // The worker loop, threads fetch tasks and execute them.
@@ -244,6 +248,19 @@ void HandleSdlEvents()
 			case SDL_QUIT:
 				stopClient = true;
 				break;
+
+			case SDL_WINDOWEVENT:
+				switch( event.window.event )
+				{
+					case SDL_WINDOWEVENT_FOCUS_GAINED:
+						windowFocus = true;
+						break;
+
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						windowFocus = false;
+						break;
+				}
+				break;
 		}
 	}
 }
@@ -388,9 +405,6 @@ void GenerateVitalTasks()
 }
 
 
-bool sdlInitialized  = false;
-bool glInitialized = false;
-
 
 void Quit( int returnCode )
 {
@@ -448,6 +462,7 @@ void Quit( int returnCode )
 
 	exit( returnCode );
 }
+
 
 
 int main( int argc, char *argv[] )
