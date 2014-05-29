@@ -1,5 +1,7 @@
 #include "serverConnection.hh"
 #include "networkEvents.hh"
+#include "../logger.hh"
+
 #include <atomic>
 #include <memory>
 #include <ostream>
@@ -50,7 +52,7 @@ void ServerConnection::SetRead()
 		{
 			if( ec.value() )
 			{
-				std::cerr << "Client::Read() got error " << ec.value() << ": '" << ec.message() << "'" << std::endl;
+				LOG_ERROR( "Client::Read() got error " << ec.value() << ": '" << ec.message() << "'" );
 
 				auto partEvent      = new PartEvent();
 				partEvent->type     = NETWORK_EVENT;
@@ -103,7 +105,7 @@ void ServerConnection::Connect( asio::io_service& ioService )
 {
 	if( !m_socket )
 	{
-		std::cerr << "ServerConnection::Connect() Error: m_socket is uninitialized!" << std::endl;
+		LOG_ERROR( "ServerConnection::Connect() Error: m_socket is uninitialized!" );
 	}
 
 	std::stringstream sstream;

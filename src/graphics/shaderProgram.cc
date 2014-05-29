@@ -1,4 +1,6 @@
 #include "shaderProgram.hh"
+#include "../logger.hh"
+
 #include <iostream>
 
 
@@ -27,13 +29,13 @@ bool ShaderProgram::Load( const Shader& vertexShader,
 {
 	if( !program )
 	{
-		std::cerr << "Failed to create shader program.\n";
+		LOG_ERROR( "Failed to create shader program." );
 		return false;
 	}
 
 	if( linked )
 	{
-		std::cerr << "Error: Trying to use single ShaderProgram object to link multiple shaders!\n";
+		LOG_ERROR( "Error: Trying to use single ShaderProgram object to link multiple shaders!" );
 		return false;
 	}
 
@@ -70,7 +72,7 @@ bool ShaderProgram::Load( const Shader& vertexShader,
 			{
 				errorMsg = "Error linking shader program and also failed to allocate memory for infolog!";
 			}
-			std::cerr << errorMsg << "\n";
+			LOG_ERROR( errorMsg );
 		}
 
 		glDeleteProgram( program );
@@ -106,7 +108,7 @@ const GLint ShaderProgram::GetUniform( const std::string& uniformName )
 	GLint uniform = -1;
 	if( it != uniforms.end() )
 	{
-	   uniform = it->second;
+		uniform = it->second;
 	}
 	else
 	{
@@ -116,8 +118,8 @@ const GLint ShaderProgram::GetUniform( const std::string& uniformName )
 
 	if( uniform == -1 )
 	{
-		std::cerr << "Error: Tried to get location of shader uniform '"
-	              << uniformName << "', which doesn't exist.\n";
+		LOG_ERROR( "Error: Tried to get location of shader uniform '"
+		           << uniformName << "', which doesn't exist." );
 	}
 
 	return uniform;
@@ -135,11 +137,11 @@ const GLuint ShaderProgram::GetAttribute( const std::string& attributeName )
 
 	if( it != attributes.end() )
 	{
-	   return it->second;
+		return it->second;
 	}
 
-	std::cerr << "Error: Tried to get location of shader attribute '"
-	          << attributeName << "', which doesn't exist.\n";
+	LOG_ERROR( "Error: Tried to get location of shader attribute '"
+			   << attributeName << "', which doesn't exist." );
 
 	return 0;
 }

@@ -6,6 +6,7 @@
 
 #include <boost/asio.hpp>
 
+#include "../logger.hh"
 
 #include "../threadPool.hh"
 #include "../network/server.hh"
@@ -101,20 +102,20 @@ struct NetworkListener : public EventListener
 		switch( e->subType )
 		{
 			case NETWORK_JOIN:
-				cout << "Client joined!" << endl;
+				LOG( "Client joined!" );
 				break;
 
 			case NETWORK_PART:
-				cout << "Client parted!" << endl;
+				LOG( "Client parted!" );
 				break;
 
 			case NETWORK_DATA_IN:
 				dataIn = static_cast<DataInEvent*>( e );
-				cout << "Data in \"" << dataIn->data << "\"" << endl;
+				LOG( "Data in '" << dataIn->data << "'" );
 				break;
 
 			default:
-				cout << "undef(" << e->subType << "): " << endl;
+				LOG( "Undefined event sub type: '" << e->subType );
 		}
 	}
 };
@@ -193,7 +194,7 @@ void SignalHandler( int sig )
 bool GenerateWorkerThreads( unsigned int count )
 {
 	// Create the worker threads
-	cout << "Creating worker threads" << endl;
+	LOG( "Creating worker threads" );
 
 	for( unsigned int i = 0; i < count; ++i )
 	{
@@ -208,7 +209,7 @@ bool GenerateWorkerThreads( unsigned int count )
 		// Create the thread
 		threadPool.threadListMutex.lock();
 		std::thread *newThread = new std::thread( WorkerLoop, context, std::ref( threadPool ) );
-		cout << "Created thread: " << newThread->get_id() << endl;
+		LOG( "Created thread: " << newThread->get_id() );
 		threadPool.threads.push_back( newThread );
 		threadPool.threadListMutex.unlock();
 	}
@@ -221,7 +222,7 @@ bool GenerateWorkerThreads( unsigned int count )
 void GenerateVitalTasks()
 {
 	// Create a task to generate tasks to handle events
-	cout << "Creating the event handler generator." << endl;
+	LOG( "Creating the event handler generator." );
 
 	Task *eventTasker = new Task(
 		std::string( "EventHandlerGenerator" ),
@@ -231,7 +232,7 @@ void GenerateVitalTasks()
 
 
 	// Create a task to run the network io services
-	cout << "Creating the network I/O tasker." << endl;
+	LOG( "Creating the network I/O tasker." );
 
 	Task *ioTasker = new Task(
 		std::string( "IoStepTask" ),
@@ -248,7 +249,7 @@ int main( int argc, char **argv )
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
 	if( hardwareThreads <= 1 )
 	{
-		cout << "Hardware supports just one real thread." << endl;
+		LOG( "Hardware supports just one real thread." );
 		hardwareThreads = 2;
 	}
 
@@ -270,7 +271,7 @@ int main( int argc, char **argv )
 	// Create the threads
 	if( !GenerateWorkerThreads( hardwareThreads ) )
 	{
-		cerr << __FILE__ << ":" << __LINE__-2 << ":GenerateWorkerThreads() failed, exiting." << endl;
+		LOG_ERROR( __FILE__ << ":" << __LINE__-2 << ": GenerateWorkerThreads() failed, exiting." );
 		return 1;
 	}
 
@@ -279,7 +280,7 @@ int main( int argc, char **argv )
 
 
 	// Try to start the server / open the listening socket
-	cout << "Starting server..." << endl;
+	LOG( "Starting server..." );
 	try
 	{
 		server.Init( ioService, 22001 );
@@ -287,17 +288,17 @@ int main( int argc, char **argv )
 	}
 	catch( std::exception &e )
 	{
-		cerr << "Failed to start: " << e.what() << endl;
-		cout << "Press enter to quit." << endl;
+		LOG_ERROR( "Failed to start: " << e.what() );
+		LOG( "Press enter to quit." );
 		getc( stdin );
 		return 1;
 	}
-	cout << "Server started! Port is " << 22001 << "." << endl;
+	LOG( "Server started! Port is " << 22001 << "." );
 
 
 
 	// Main loop
-	cout << "Starting the main loop" << endl;
+	LOG( "Starting the main loop" );
 
 	do
 	{
@@ -305,19 +306,19 @@ int main( int argc, char **argv )
 		size_t eventCount = eventQueue.GetEventCount();
 
 		// Print out at least some stats
-		cout << "------------------------" <<  endl;
-		cout << "Task  queue size: " << taskCount  << endl;
-		cout << "Event queue size: " << eventCount << endl;
+		LOG( "------------------------" <<  endl <<
+		     "Task  queue size: " << taskCount << endl <<
+		     "Event queue size: " << eventCount );
 
 		std::this_thread::yield();
 		std::this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
 	}
 	while( !stopServer );
-	cout << "Main loop ended!" << endl;
+	LOG( "Main loop ended!" );
 
 
 	// Command worker threads to stop
-	cout << "Commanding the threads to stop." << endl;
+	LOG( "Commanding the threads to stop." );
 
 	threadPool.contextListMutex.lock();
 	for( auto context  = threadPool.contexts.begin();
@@ -330,7 +331,7 @@ int main( int argc, char **argv )
 
 
 	// Wait for the thread pool to empty
-	cout << "Waiting for the threads to stop." << endl;
+	LOG( "Waiting for the threads to stop." );
 
 	unsigned int maxThreads = ignoreLastThread ? 1 : 0;
 
@@ -341,11 +342,11 @@ int main( int argc, char **argv )
 	}
 	while( threadPool.threads.size() > maxThreads );
 
-	cout << "Threads stopped!" << endl;
+	LOG( "Threads stopped!" );
 
 
 	// Finish
-	std::cout << endl << "Finished, press enter to quit." << std::endl;
+	LOG( "Finished, press enter to quit." );
 	getc( stdin );
 
 	return 0;

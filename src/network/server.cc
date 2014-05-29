@@ -1,5 +1,6 @@
 #include "server.hh"
 #include "networkEvents.hh"
+#include "../logger.hh"
 #include <atomic>
 
 
@@ -21,7 +22,7 @@ void Client::SetRead()
 		{
 			if( ec.value() )
 			{
-				std::cerr << "Client::Read() got error " << ec.value() << ": '" << ec.message() << "'" << std::endl;
+				LOG_ERROR( "Client::Read() got error " << ec.value() << ": '" << ec.message() << "'" );
 
 				auto partEvent      = new PartEvent();
 				partEvent->type     = NETWORK_EVENT;
@@ -62,7 +63,7 @@ void Client::Write( std::size_t length )
 		{
 			if( ec.value() )
 			{
-				std::cerr << "Client::Write() got error '" << ec.message() << "'" << std::endl;
+				LOG_ERROR( "Client::Write() got error '" << ec.message() << "'" );
 			}
 		});
 }
@@ -103,7 +104,7 @@ void Server::Accept()
 {
 	if( !m_acceptor || !m_socket )
 	{
-		std::cerr << "Server::Accept() Error: Server is uninitialized!" << std::endl;
+		LOG_ERROR( "Server::Accept() Error: Server is uninitialized!" );
 	}
 
 	m_acceptor->async_accept(

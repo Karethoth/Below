@@ -1,4 +1,6 @@
 #include "shader.hh"
+#include "../logger.hh"
+
 #include <memory>
 #include <string>
 #include <fstream>
@@ -27,7 +29,7 @@ bool Shader::Load( const string& source )
 {
 	if( compiled || shader )
 	{
-		std::cerr << "Error: Trying to use single Shader object to load multiple shaders!\n";
+		LOG_ERROR( "Error: Trying to use single Shader object to load multiple shaders!" );
 		return false;
 	}
 
@@ -60,7 +62,7 @@ bool Shader::Load( const string& source )
 			{
 				errorMsg = "Error compiling shader and also failed to allocate memory for infolog!";
 			}
-			std::cerr << errorMsg << "\n";
+			LOG_ERROR( errorMsg );
 		}
 
 		glDeleteShader( shader );
@@ -81,7 +83,7 @@ bool Shader::LoadFromFile( const string& filepath )
 
 	if( !file.is_open() )
 	{
-		std::cerr << "Error: Failed to load shader from file \"" << filepath << "\"\n";
+		LOG_ERROR( "Error: Failed to load shader from file '" << filepath << "'" );
 		return false;
 	}
 

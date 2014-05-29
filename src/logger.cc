@@ -26,6 +26,8 @@ void Logger::Log( string message )
 	loggerMutex.unlock();
 }
 
+
+
 void Logger::LogError( string message )
 {
 	loggerMutex.lock();
@@ -34,3 +36,4 @@ void Logger::LogError( string message )
 
 	loggerMutex.unlock();
 }
+

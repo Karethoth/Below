@@ -27,8 +27,8 @@ class Logger
 // - Thanks to Mr.Ree's answer to
 //   http://stackoverflow.com/questions/303562/
 #define ToString( MSG ) \
-	((dynamic_cast<ostringstream &>(\
-	ostringstream().seekp( 0, ios_base::cur ) << MSG \
+	((dynamic_cast<std::ostringstream &>(\
+	std::ostringstream().seekp( 0, std::ios_base::cur ) << MSG \
 	)).str())
 
 

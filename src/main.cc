@@ -160,7 +160,7 @@ struct NetworkListener : public EventListener
 				break;
 
 			default:
-				LOG( "Undefined event type: '" << e->subType );
+				LOG( "Undefined event sub type: '" << e->subType );
 		}
 	}
 };
@@ -359,7 +359,7 @@ bool InitGL()
 bool GenerateWorkerThreads( unsigned int count )
 {
 	// Create the worker threads
-	logger.Log( "Creating worker threads" );
+	LOG( "Creating worker threads" );
 
 	for( unsigned int i = 0; i < count; ++i )
 	{

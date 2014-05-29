@@ -95,6 +95,9 @@
     <ClCompile Include="..\src\events\event.cc">
       <Filter>Source Files\events</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\logger.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\events\eventDispatcher.hh">
@@ -131,6 +134,9 @@
       <Filter>Header Files\statistics</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ringBuffer.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\logger.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
