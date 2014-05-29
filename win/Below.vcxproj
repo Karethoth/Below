@@ -17,6 +17,7 @@
     <ClCompile Include="..\src\events\eventQueue.cc" />
     <ClCompile Include="..\src\graphics\shader.cc" />
     <ClCompile Include="..\src\graphics\shaderProgram.cc" />
+    <ClCompile Include="..\src\logger.cc" />
     <ClCompile Include="..\src\main.cc" />
     <ClCompile Include="..\src\managers\shaderProgramManager.cc" />
     <ClCompile Include="..\src\network\server.cc" />
@@ -40,6 +41,7 @@
     <ClInclude Include="..\src\events\eventQueue.hh" />
     <ClInclude Include="..\src\graphics\shader.hh" />
     <ClInclude Include="..\src\graphics\shaderProgram.hh" />
+    <ClInclude Include="..\src\logger.hh" />
     <ClInclude Include="..\src\managers\shaderProgramManager.hh" />
     <ClInclude Include="..\src\managers\templateManager.hh" />
     <ClInclude Include="..\src\network\networkEvents.hh" />

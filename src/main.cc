@@ -8,6 +8,8 @@
 #include <exception>
 #include <boost/asio.hpp>
 
+#include "logger.hh"
+
 #include "threadPool.hh"
 
 #include "events/eventQueue.hh"
@@ -63,6 +65,7 @@ std::atomic<unsigned int> eventHandlerTasks;
 
 // Managers
 ShaderProgramManager shaderProgramManager;
+
 
 
 // SDL and OpenGL globals
@@ -132,7 +135,6 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 }
 
 
-
 struct NetworkListener : public EventListener
 {
 	void HandleEvent( Event *e )
@@ -144,21 +146,21 @@ struct NetworkListener : public EventListener
 		switch( e->subType )
 		{
 			case NETWORK_JOIN:
-				cout << "We joined!" << endl;
+				LOG( "We connected!" );
 				break;
 
 			case NETWORK_PART:
-				cout << "We disconnected!" << endl;
+				LOG( "We disconnected!" );
 				stopClient = true;
 				break;
 
 			case NETWORK_DATA_IN:
 				dataIn = static_cast<DataInEvent*>( e );
-				cout << "Data in \"" << dataIn->data << "\"" << endl;
+				LOG( "Data in: '" << dataIn->data << "'" );
 				break;
 
 			default:
-				cout << "undef(" << e->subType << "): " << endl;
+				LOG( "Undefined event type: '" << e->subType );
 		}
 	}
 };
@@ -282,7 +284,7 @@ bool InitSDL()
 	// Handle the SDL stuff
 	if( SDL_Init( SDL_INIT_EVERYTHING ) )
 	{
-		cerr << "SDL Error: " << SDL_GetError() << endl;
+		LOG_ERROR( "SDL Error: " << SDL_GetError() );
 		return false;
 	};
 
@@ -295,7 +297,7 @@ bool InitSDL()
 
 	if( !sdlWindow )
 	{
-		cerr << "SDL Error: " << SDL_GetError() << endl;
+		LOG_ERROR( "SDL Error: " << SDL_GetError() );
 		return false;
 	}
 
@@ -304,7 +306,7 @@ bool InitSDL()
 	SDL_Surface *icon = SDL_LoadBMP( "data/icons/windowIcon.bmp" );
 	if( !icon )
 	{
-		cerr << "Warning: Icon couldn't be loaded!" << endl;
+		LOG_ERROR( "Warning: Icon couldn't be loaded!" );
 	}
 	else
 	{
@@ -336,14 +338,14 @@ bool InitGL()
 	openglContext = SDL_GL_CreateContext( sdlWindow );
 	if( !openglContext )
 	{
-		cerr << "SDL Error: " << SDL_GetError() << endl;
+		LOG_ERROR( "SDL Error: " << SDL_GetError() );
 		return false;
 	}
 
 	GLenum status = glewInit();
 	if( status != GLEW_OK )
 	{
-		cerr << "GLEW Error: " << glewGetErrorString( status ) << "\n";
+		LOG_ERROR( "GLEW Error: " << glewGetErrorString( status ) );
 		return false;
 	}
 
@@ -357,7 +359,7 @@ bool InitGL()
 bool GenerateWorkerThreads( unsigned int count )
 {
 	// Create the worker threads
-	cout << "Creating worker threads" << endl;
+	logger.Log( "Creating worker threads" );
 
 	for( unsigned int i = 0; i < count; ++i )
 	{
@@ -372,7 +374,7 @@ bool GenerateWorkerThreads( unsigned int count )
 		// Create the thread
 		threadPool.threadListMutex.lock();
 		std::thread *newThread = new std::thread( WorkerLoop, context, std::ref( threadPool ) );
-		cout << "Created thread: " << newThread->get_id() << endl;
+		LOG( "Created thread: " << newThread->get_id() );
 		threadPool.threads.push_back( newThread );
 		threadPool.threadListMutex.unlock();
 	}
@@ -385,7 +387,7 @@ bool GenerateWorkerThreads( unsigned int count )
 void GenerateVitalTasks()
 {
 	// Create a task to generate tasks to handle events
-	cout << "Creating the event handler generator." << endl;
+	LOG( "Creating the event handler generator." );
 
 	Task *eventTasker = new Task(
 		std::string( "EventHandlerGenerator" ),
@@ -395,7 +397,7 @@ void GenerateVitalTasks()
 
 
 	// Create a task to run the network io services
-	cout << "Creating the network I/O tasker." << endl;
+	LOG( "Creating the network I/O tasker." );
 
 	Task *ioTasker = new Task(
 		std::string( "IoStepTask" ),
@@ -415,7 +417,7 @@ void Quit( int returnCode )
 	}
 
 	// Command worker threads to stop
-	cout << "Stopping the worker threads!" << endl;
+	LOG( "Stopping the worker threads!" );
 
 	threadPool.contextListMutex.lock();
 	for( auto context  = threadPool.contexts.begin();
@@ -428,7 +430,7 @@ void Quit( int returnCode )
 
 
 	// Wait for the thread pool to empty
-	cout << "Worker threads have been commanded to stop." << endl;
+	LOG( "Worker threads have been commanded to stop." );
 
 	while( threadPool.threads.size() > 0 )
 	{
@@ -437,11 +439,10 @@ void Quit( int returnCode )
 
 		std::this_thread::yield();
 	}
-	cout << "Worker threads stopped!" << endl;
+	LOG( "Worker threads stopped!" );
 
 
 	// Finish
-	cout << "Cleaning contexts." << endl;
 
 	if( glInitialized )
 	{
@@ -456,7 +457,7 @@ void Quit( int returnCode )
 
 
 #if DEBUG_MODE
-	std::cout << endl << "Finished, press enter to quit." << std::endl;
+	LOG( "Finished, press enter to quit." );
 	getc( stdin );
 #endif
 
@@ -471,7 +472,7 @@ int main( int argc, char *argv[] )
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
 	if( hardwareThreads <= 1 )
 	{
-		cout << "Hardware supports just one real thread." << endl;
+		LOG( "Hardware supports just one real thread." );
 		hardwareThreads = 2;
 	}
 
@@ -486,7 +487,8 @@ int main( int argc, char *argv[] )
 	// Create the threads
 	if( !GenerateWorkerThreads( hardwareThreads ) )
 	{
-		cerr << __FILE__ << ":" << __LINE__-2 << ":GenerateWorkerThreads() failed, exiting." << endl;
+		LOG_ERROR( __FILE__ << ":" << __LINE__-2 << ": GenerateWorkerThreads() failed, exiting." );
+
 		Quit( 1 );
 	}
 
@@ -497,7 +499,7 @@ int main( int argc, char *argv[] )
 	// Init graphics
 	if( !InitSDL() )
 	{
-		cerr << __FILE__ << ":" << __LINE__-2 << ":InitSDL() failed, exiting." << endl;
+		LOG_ERROR( __FILE__ << ":" << __LINE__-2 << ": InitSDL() failed, exiting." );
 		Quit( 1 );
 	}
 	sdlInitialized = true;
@@ -505,7 +507,7 @@ int main( int argc, char *argv[] )
 
 	if( !InitGL() )
 	{
-		cerr << __FILE__ << ":" << __LINE__-2 << ":InitGL() failed, exiting." << endl;
+		LOG_ERROR( __FILE__ << ":" << __LINE__-2 << ": InitGL() failed, exiting." );
 		Quit( 1 );
 	}
 	glInitialized = true;
@@ -518,7 +520,8 @@ int main( int argc, char *argv[] )
 	connectTask->f = []()
 	{
 		// Try to connect to the server
-		cout << "Connecting to the server..." << endl;
+		LOG( "Connecting to the server..." );
+
 		try
 		{
 			connection = make_shared<ServerConnection>( ioService, "localhost", 22001 );
@@ -527,13 +530,13 @@ int main( int argc, char *argv[] )
 		}
 		catch( std::exception &e )
 		{
-			cerr << "Failed to connect: " << e.what() << endl;
+			LOG_ERROR( "Failed to connect: " << e.what() );
 			stopClient = true;
 		}
 
 		if( connection->IsConnected() )
 		{
-			cout << "Connected!" << endl;
+			LOG( "Connected!" );
 		}
 	};
 	taskQueue.AddTask( connectTask );
@@ -543,7 +546,7 @@ int main( int argc, char *argv[] )
 	auto nextInfo = clock.now() + std::chrono::milliseconds( 500 );
 
 	// Main loop
-	cout << "Starting the main loop" << endl;
+	LOG( "Starting the main loop" );
 
 	do
 	{
@@ -561,16 +564,16 @@ int main( int argc, char *argv[] )
 		size_t eventCount = eventQueue.GetEventCount();
 
 		// Print out at least some stats
-		cout << "------------------------" <<  endl;
-		cout << "Task  queue size: " << taskCount  << endl;
-		cout << "Event queue size: " << eventCount << endl;
+		LOG( "------------------------" <<  endl <<
+		     "Task  queue size: " << taskCount << endl <<
+		     "Event queue size: " << eventCount );
 
 		std::this_thread::yield();
 		nextInfo = clock.now( ) + std::chrono::milliseconds( 500 );
 	}
 	while( !stopClient );
 
-	cout << endl << "Main loop ended!" << endl;
+	LOG( "Main loop ended!" );
 
 	Quit( 0 );
 
