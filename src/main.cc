@@ -70,7 +70,11 @@ SDL_Window *sdlWindow = 0;
 SDL_GLContext openglContext;
 
 
-bool stopClient = false;
+// Few global flags
+bool sdlInitialized = false;
+bool glInitialized  = false;
+bool stopClient     = false;
+bool windowFocus    = false;
 
 
 // The worker loop, threads fetch tasks and execute them.
@@ -174,10 +178,10 @@ void EventHandlerTask()
 	// Pass the event to the listeners
 	eventDispatcher.HandleEvent( e );
 
+	eventHandlerTasks--;
+
 	// Free the event
 	delete e;
-
-	eventHandlerTasks--;
 }
 
 
@@ -191,6 +195,7 @@ void EventHandlerGenerator()
 			std::string( "EventHandlerTask" ),
 			EventHandlerTask
 		);
+		taskQueue.AddTask( eventTask );
 
 		eventHandlerTasks++;
 	}
@@ -243,6 +248,19 @@ void HandleSdlEvents()
 			case SDL_QUIT:
 				stopClient = true;
 				break;
+
+			case SDL_WINDOWEVENT:
+				switch( event.window.event )
+				{
+					case SDL_WINDOWEVENT_FOCUS_GAINED:
+						windowFocus = true;
+						break;
+
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						windowFocus = false;
+						break;
+				}
+				break;
 		}
 	}
 }
@@ -262,7 +280,11 @@ void Render()
 bool InitSDL()
 {
 	// Handle the SDL stuff
-	SDL_Init( SDL_INIT_EVERYTHING );
+	if( SDL_Init( SDL_INIT_EVERYTHING ) )
+	{
+		cerr << "SDL Error: " << SDL_GetError() << endl;
+		return false;
+	};
 
 	// Create the SDL2 window
 	sdlWindow = SDL_CreateWindow(
@@ -282,17 +304,18 @@ bool InitSDL()
 	SDL_Surface *icon = SDL_LoadBMP( "data/icons/windowIcon.bmp" );
 	if( !icon )
 	{
-		cerr << "Icon couldn't be loaded!" << endl;
-		return false;
+		cerr << "Warning: Icon couldn't be loaded!" << endl;
 	}
+	else
+	{
+		// Set magenta as the transparent color
+		unsigned int colorkey = SDL_MapRGB( icon->format, 255, 0, 255 );
+		SDL_SetColorKey( icon, GL_SOURCE1_ALPHA, colorkey );
 
-	// Set magenta as the transparent color
-	unsigned int colorkey = SDL_MapRGB( icon->format, 255, 0, 255 );
-	SDL_SetColorKey( icon, GL_SOURCE1_ALPHA, colorkey );
-
-	// Set the icon
-	SDL_SetWindowIcon( sdlWindow, icon );
-	SDL_FreeSurface( icon );
+		// Set the icon
+		SDL_SetWindowIcon( sdlWindow, icon );
+		SDL_FreeSurface( icon );
+	}
 
 	return true;
 }
@@ -383,10 +406,74 @@ void GenerateVitalTasks()
 
 
 
+void Quit( int returnCode )
+{
+	// If we're connected, disconnect
+	if( connection && connection->IsConnected() )
+	{
+		connection->Disconnect();
+	}
+
+	// Command worker threads to stop
+	cout << "Stopping the worker threads!" << endl;
+
+	threadPool.contextListMutex.lock();
+	for( auto context  = threadPool.contexts.begin();
+	          context != threadPool.contexts.end();
+	          context++ )
+	{
+		(*context)->shouldStop = true;
+	}
+	threadPool.contextListMutex.unlock();
+
+
+	// Wait for the thread pool to empty
+	cout << "Worker threads have been commanded to stop." << endl;
+
+	while( threadPool.threads.size() > 0 )
+	{
+		// Remove unjoinable threads
+		threadPool.CleanThreads();
+
+		std::this_thread::yield();
+	}
+	cout << "Worker threads stopped!" << endl;
+
+
+	// Finish
+	cout << "Cleaning contexts." << endl;
+
+	if( glInitialized )
+	{
+		SDL_GL_DeleteContext( openglContext );
+	}
+
+	if( sdlInitialized )
+	{
+		SDL_DestroyWindow( sdlWindow );
+		SDL_Quit();
+	}
+
+
+#if DEBUG_MODE
+	std::cout << endl << "Finished, press enter to quit." << std::endl;
+	getc( stdin );
+#endif
+
+	exit( returnCode );
+}
+
+
+
 int main( int argc, char *argv[] )
 {
 	// Get count of hardware threads
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
+	if( hardwareThreads <= 1 )
+	{
+		cout << "Hardware supports just one real thread." << endl;
+		hardwareThreads = 2;
+	}
 
 	// Create the clock
 	std::chrono::steady_clock clock;
@@ -396,32 +483,32 @@ int main( int argc, char *argv[] )
 	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
 
 
+	// Create the threads
+	if( !GenerateWorkerThreads( hardwareThreads ) )
+	{
+		cerr << __FILE__ << ":" << __LINE__-2 << ":GenerateWorkerThreads() failed, exiting." << endl;
+		Quit( 1 );
+	}
+
+	// Create the core tasks
+	GenerateVitalTasks();
+
+
 	// Init graphics
 	if( !InitSDL() )
 	{
 		cerr << __FILE__ << ":" << __LINE__-2 << ":InitSDL() failed, exiting." << endl;
-		return 1;
+		Quit( 1 );
 	}
+	sdlInitialized = true;
 
 
 	if( !InitGL() )
 	{
 		cerr << __FILE__ << ":" << __LINE__-2 << ":InitGL() failed, exiting." << endl;
-		SDL_DestroyWindow( sdlWindow );
-		SDL_Quit();
-		return 1;
+		Quit( 1 );
 	}
-
-
-	// Create the threads
-	if( !GenerateWorkerThreads( hardwareThreads ) )
-	{
-		cerr << __FILE__ << ":" << __LINE__-2 << ":GenerateWorkerThreads() failed, exiting." << endl;
-		return 1;
-	}
-
-	// Create the core tasks
-	GenerateVitalTasks();
+	glInitialized = true;
 
 
 	//  Create task for connecting to the server:
@@ -485,48 +572,8 @@ int main( int argc, char *argv[] )
 
 	cout << endl << "Main loop ended!" << endl;
 
-	// If we're connected, disconnect
-	if( connection->IsConnected() )
-	{
-		connection->Disconnect();
-	}
+	Quit( 0 );
 
-	// Command worker threads to stop
-	cout << "Stopping the worker threads!" << endl;
-
-	threadPool.contextListMutex.lock();
-	for( auto context  = threadPool.contexts.begin();
-	          context != threadPool.contexts.end();
-	          context++ )
-	{
-		(*context)->shouldStop = true;
-	}
-	threadPool.contextListMutex.unlock();
-
-
-	// Wait for the thread pool to empty
-	cout << "Worker threads have been commanded to stop." << endl;
-
-	while( threadPool.threads.size() > 0 )
-	{
-		// Remove unjoinable threads
-		threadPool.CleanThreads();
-
-		std::this_thread::yield();
-	}
-	cout << "Worker threads stopped!" << endl;
-
-
-	// Finish
-	cout << "Cleaning contexts." << endl;
-
-	SDL_GL_DeleteContext( openglContext );
-	SDL_DestroyWindow( sdlWindow );
-	SDL_Quit();
-
-	std::cout << endl << "Finished, press enter to quit." << std::endl;
-
-	getc( stdin );
 	return 0;
 }
 

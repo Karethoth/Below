@@ -133,10 +133,10 @@ void EventHandlerTask()
 	// Pass the event to the listeners
 	eventDispatcher.HandleEvent( e );
 
+	eventHandlerTasks--;
+
 	// Free the event
 	delete e;
-
-	eventHandlerTasks--;
 }
 
 
@@ -150,6 +150,7 @@ void EventHandlerGenerator()
 			std::string( "EventHandlerTask" ),
 			EventHandlerTask
 		);
+		taskQueue.AddTask( eventTask );
 
 		eventHandlerTasks++;
 	}
@@ -245,6 +246,11 @@ int main( int argc, char **argv )
 {
 	// Get count of hardware threads
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
+	if( hardwareThreads <= 1 )
+	{
+		cout << "Hardware supports just one real thread." << endl;
+		hardwareThreads = 2;
+	}
 
 	// Set the SignalHandler to handle abort,
 	// terminate and interrupt signals
@@ -326,7 +332,7 @@ int main( int argc, char **argv )
 	// Wait for the thread pool to empty
 	cout << "Waiting for the threads to stop." << endl;
 
-	int maxThreads = ignoreLastThread ? 1 : 0;
+	unsigned int maxThreads = ignoreLastThread ? 1 : 0;
 
 	do
 	{
