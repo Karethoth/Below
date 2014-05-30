@@ -50,8 +50,11 @@ class Server : public EventFactory
 
 	void Accept();
 
+	std::shared_ptr<Client> GetClient( unsigned int id );
+
+
 	std::mutex clientListMutex;
-	std::vector<std::shared_ptr<Client>> clientList;
+	std::map<unsigned int, std::shared_ptr<Client>> clientList;
 
 
  private:

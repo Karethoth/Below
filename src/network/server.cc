@@ -2,11 +2,14 @@
 #include "networkEvents.hh"
 #include "../logger.hh"
 #include <atomic>
+#include <memory>
+
+using namespace std;
 
 
-static std::atomic<unsigned int> clientIdCounter( 0 ); // Should be good enough.
+static atomic<unsigned int> clientIdCounter( 0 ); // Should be good enough.
 
-Client::Client( tcp::socket socket ) : m_socket( std::move( socket ) )
+Client::Client( tcp::socket socket ) : m_socket( move( socket ) )
 {
 	m_clientId = ++clientIdCounter;
 	memset( m_data, 0, maxLength );
@@ -18,7 +21,7 @@ void Client::SetRead()
 	auto self( shared_from_this() );
 	m_socket.async_read_some(
 		asio::buffer( m_data, maxLength ),
-		[this, self]( boost::system::error_code ec, std::size_t length )
+		[this, self]( boost::system::error_code ec, size_t length )
 		{
 			if( ec.value() )
 			{
@@ -32,7 +35,7 @@ void Client::SetRead()
 				return;
 			}
 			m_data[length] = 0x00;
-			std::string data = std::string( m_data );
+			string data = string( m_data );
 			memset( m_data, 0, maxLength );
 
 			if( !(data.length() == 2 && data[0] == '\r' && data[1] == '\n') &&
@@ -53,12 +56,12 @@ void Client::SetRead()
 
 
 
-void Client::Write( std::string msg )
+void Client::Write( string msg )
 {
-	std::lock_guard<std::mutex> writeLock( writeMutex );
+	lock_guard<mutex> writeLock( writeMutex );
 
 	boost::asio::streambuf request;
-    std::ostream requestStream( &request );
+    ostream requestStream( &request );
     requestStream << msg;
 
 	boost::asio::write( m_socket, request );
@@ -109,11 +112,11 @@ void Server::Accept()
 		{
 			if( !ec )
 			{
-				auto client = std::make_shared<Client>( std::move( *m_socket ) );
+				auto client = make_shared<Client>( move( *m_socket ) );
 				client->SetEventQueue( eventQueue );
 				client->SetRead();
 				clientListMutex.lock();
-				clientList.push_back( client );
+				clientList[client->m_clientId] = client;
 				clientListMutex.unlock();
 
 				auto joinEvent      = new JoinEvent();
@@ -125,5 +128,11 @@ void Server::Accept()
 
 			Accept();
 		});
+}
+
+std::shared_ptr<Client> Server::GetClient( unsigned int id )
+{
+	lock_guard<mutex> clientListLock( clientListMutex );
+	return clientList[id];
 }
 
