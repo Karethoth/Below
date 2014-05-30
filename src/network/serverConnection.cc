@@ -92,11 +92,12 @@ void ServerConnection::Write( std::string msg )
 	if( !m_socket )
 		return;
 
+	std::lock_guard<std::mutex> writeLock( writeMutex );
+
 	boost::asio::streambuf request;
     std::ostream requestStream( &request );
     requestStream << msg;
 	boost::asio::write( *m_socket, request );
-
 }
 
 

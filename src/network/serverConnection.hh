@@ -5,6 +5,8 @@
 #include <memory>
 #include <utility>
 #include <mutex>
+#include <list>
+#include <vector>
 
 #include <boost/asio.hpp>
 
@@ -33,6 +35,7 @@ public:
 	void SetRead();
 
 
+
 private:
 	tcp::endpoint  m_endpoint;
 	tcp::socket   *m_socket;
@@ -43,5 +46,7 @@ private:
 
 	enum { maxLength = 1024 };
 	char m_data[maxLength];
+
+	std::mutex writeMutex;
 };
 
