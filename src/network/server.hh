@@ -24,13 +24,17 @@ struct Client
 	Client( tcp::socket socket ) ;
 
 	void SetRead();
-	void Write( std::size_t length );
+	void Write( std::string );
 
 	unsigned int m_clientId;
 	tcp::socket m_socket;
 	enum { maxLength = 1024 };
 	char m_data[maxLength];
 	std::vector<std::string> m_received;
+
+
+private:
+	std::mutex writeMutex;
 };
 
 

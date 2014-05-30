@@ -53,19 +53,15 @@ void Client::SetRead()
 
 
 
-void Client::Write( std::size_t length )
+void Client::Write( std::string msg )
 {
-	auto self( shared_from_this() );
-	asio::async_write(
-		m_socket,
-		asio::buffer( m_data, length ),
-		[this, self]( boost::system::error_code ec, std::size_t )
-		{
-			if( ec.value() )
-			{
-				LOG_ERROR( "Client::Write() got error '" << ec.message() << "'" );
-			}
-		});
+	std::lock_guard<std::mutex> writeLock( writeMutex );
+
+	boost::asio::streambuf request;
+    std::ostream requestStream( &request );
+    requestStream << msg;
+
+	boost::asio::write( m_socket, request );
 }
 
 
