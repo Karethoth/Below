@@ -13,7 +13,7 @@ class Entity : public WorldNode
 	void Render();
 
 	// For serialization and unserialization:
-	virtual SerializedData Serialize( SerializeVarList vars );
-	virtual bool Unserialize( SerializedData data );
+	virtual std::string Serialize( std::vector<std::string> vars );
+	virtual bool Unserialize( std::string data );
 };
 
