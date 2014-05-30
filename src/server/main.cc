@@ -102,16 +102,19 @@ struct NetworkListener : public EventListener
 		switch( e->subType )
 		{
 			case NETWORK_JOIN:
-				LOG( "Client joined!" );
+				join = static_cast<JoinEvent*>( e );
+				LOG( "Client " << join->clientId << " joined!" );
 				break;
 
 			case NETWORK_PART:
-				LOG( "Client parted!" );
+				part = static_cast<PartEvent*>( e );
+				LOG( "Client " << part->clientId << " parted!" );
 				break;
 
 			case NETWORK_DATA_IN:
 				dataIn = static_cast<DataInEvent*>( e );
-				LOG( "Data in '" << dataIn->data << "'" );
+				LOG( "Data in from client " << dataIn->clientId << ": '" << dataIn->data << "'" );
+				server.GetClient( dataIn->clientId )->Write( dataIn->data );
 				break;
 
 			default:

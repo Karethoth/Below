@@ -147,6 +147,7 @@ struct NetworkListener : public EventListener
 		{
 			case NETWORK_JOIN:
 				LOG( "We connected!" );
+				connection->Write( "Hello!" );
 				break;
 
 			case NETWORK_PART:
@@ -157,6 +158,7 @@ struct NetworkListener : public EventListener
 			case NETWORK_DATA_IN:
 				dataIn = static_cast<DataInEvent*>( e );
 				LOG( "Data in: '" << dataIn->data << "'" );
+				connection->Write( dataIn->data );
 				break;
 
 			default:
