@@ -1,4 +1,6 @@
 #include "worldNode.hh"
+#include "../logger.hh"
+
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
@@ -109,6 +111,43 @@ string WorldNode::Serialize( vector<string> vars )
 
 bool WorldNode::Unserialize( string data )
 {
+	stringstream dataStream( SS_RW_BIN );
+	dataStream << data;
+
+	// Field count:
+	uint8_t fieldCount = UnserializeUint8( dataStream );
+
+	for( int i=0; i < fieldCount; i++ )
+	{
+		// Read the byte count for this field
+		uint8_t fieldLength = UnserializeUint8( dataStream );
+
+		// Fetch the field name
+		string fieldName;
+		string fieldData;
+
+		if( !getline( dataStream, fieldName, ':' ) )
+		{
+			LOG_ERROR( "Error: WorldNode::Unserialize() failed to find field name!" );
+			break;
+		}
+
+		// Calculate the amount of data and allocate the buffer:
+		uint8_t fieldDataLength = fieldLength - fieldName.length() - 1;
+		char   *buffer          = new char[fieldLength];
+
+		// Copy the field data to other stream
+		stringstream fieldDataStream( SS_RW_BIN );
+		dataStream.read( buffer, fieldDataLength );
+		fieldDataStream.write( buffer, fieldDataLength );
+		fieldData = fieldDataStream.str();
+		delete[] buffer;
+
+		// Apply the field:
+		LOG( ToString( "Got field " << fieldName << "(" << (int)fieldDataLength << ") with value '" \
+		                            << fieldData << "'" ) );
+	}
+
 	return false;
 }
 

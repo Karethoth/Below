@@ -470,6 +470,15 @@ void Quit( int returnCode )
 
 int main( int argc, char *argv[] )
 {
+	WorldNode rootNode;
+	string serialized = rootNode.Serialize( vector<string>() );
+
+	WorldNode copyNode;
+	copyNode.Unserialize( serialized );
+
+	getc( stdin );
+	return 0;
+
 	// Get count of hardware threads
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
 	if( hardwareThreads <= 1 )
