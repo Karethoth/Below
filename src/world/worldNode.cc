@@ -30,7 +30,8 @@ WorldNode::~WorldNode()
 
 string WorldNode::Serialize( vector<string> vars )
 {
-	// TODO: serialize just given fields, if we got any
+	// TODO: Serialize just the given fields, if we got any.
+	//       Otherwise serialize every field.
 
 
 	// Stream for the serialized data
@@ -50,14 +51,14 @@ string WorldNode::Serialize( vector<string> vars )
 	// Position:
 	fieldStream = stringstream( SS_RW_BIN );
 	fieldStream << "position:";
-	fieldStream.write( reinterpret_cast<char*>( &position.x ), sizeof( position.x ) );
-	fieldStream.write( reinterpret_cast<char*>( &position.y ), sizeof( position.y ) );
-	fieldStream.write( reinterpret_cast<char*>( &position.z ), sizeof( position.z ) );
+	SerializeFloat( fieldStream, position.x );
+	SerializeFloat( fieldStream, position.y );
+	SerializeFloat( fieldStream, position.z );
 
 	fieldData       = fieldStream.str();
 	fieldDataLength = fieldData.length();
 
-	dataStream.write( reinterpret_cast<char*>( &fieldDataLength ), sizeof fieldDataLength );
+	SerializeUint8( dataStream, fieldDataLength );
 	dataStream << fieldData;
 	fieldCount++;
 
@@ -65,15 +66,15 @@ string WorldNode::Serialize( vector<string> vars )
 	// Rotation:
 	fieldStream = stringstream( SS_RW_BIN );
 	fieldStream << "rotation:";
-	fieldStream.write( reinterpret_cast<char*>( &rotation.x ), sizeof( rotation.x ) );
-	fieldStream.write( reinterpret_cast<char*>( &rotation.y ), sizeof( rotation.y ) );
-	fieldStream.write( reinterpret_cast<char*>( &rotation.z ), sizeof( rotation.z ) );
-	fieldStream.write( reinterpret_cast<char*>( &rotation.w ), sizeof( rotation.w ) );
+	SerializeFloat( fieldStream, rotation.x );
+	SerializeFloat( fieldStream, rotation.y );
+	SerializeFloat( fieldStream, rotation.z );
+	SerializeFloat( fieldStream, rotation.w );
 
 	fieldData       = fieldStream.str();
 	fieldDataLength = fieldData.length();
 
-	dataStream.write( reinterpret_cast<char*>( &fieldDataLength ), sizeof fieldDataLength );
+	SerializeUint8( dataStream, fieldDataLength );
 	dataStream << fieldData;
 	fieldCount++;
 
@@ -81,21 +82,21 @@ string WorldNode::Serialize( vector<string> vars )
 	// Scale:
 	fieldStream = stringstream( SS_RW_BIN );
 	fieldStream << "scale:";
-	fieldStream.write( reinterpret_cast<char*>( &scale.x ), sizeof( scale.x ) );
-	fieldStream.write( reinterpret_cast<char*>( &scale.y ), sizeof( scale.y ) );
-	fieldStream.write( reinterpret_cast<char*>( &scale.z ), sizeof( scale.z ) );
+	SerializeFloat( fieldStream, scale.x );
+	SerializeFloat( fieldStream, scale.y );
+	SerializeFloat( fieldStream, scale.z );
 
 	fieldData       = fieldStream.str();
 	fieldDataLength = fieldData.length();
 
-	dataStream.write( reinterpret_cast<char*>( &fieldDataLength ), sizeof fieldDataLength );
+	SerializeUint8( dataStream, fieldDataLength );
 	dataStream << fieldData;
 	fieldCount++;
 
 
 	// Create the header; it's just the count of fields
 	stringstream headerStream( SS_RW_BIN );
-	headerStream.write( reinterpret_cast<char*>( &fieldCount ), sizeof( fieldCount ) );
+	SerializeUint8( headerStream, fieldCount );
 
 	// Join header and the fields and return the result
 	string serialized  = headerStream.str();

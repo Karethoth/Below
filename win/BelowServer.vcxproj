@@ -90,6 +90,7 @@
     <ClCompile Include="..\src\events\eventFactory.cc" />
     <ClCompile Include="..\src\events\eventQueue.cc" />
     <ClCompile Include="..\src\logger.cc" />
+    <ClCompile Include="..\src\network\serializable.cc" />
     <ClCompile Include="..\src\network\server.cc" />
     <ClCompile Include="..\src\server\main.cc" />
     <ClCompile Include="..\src\statistics\executionTimer.cc" />

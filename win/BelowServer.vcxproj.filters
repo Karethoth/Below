@@ -98,6 +98,9 @@
     <ClCompile Include="..\src\logger.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\network\serializable.cc">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\events\eventDispatcher.hh">

@@ -20,6 +20,7 @@
     <ClCompile Include="..\src\logger.cc" />
     <ClCompile Include="..\src\main.cc" />
     <ClCompile Include="..\src\managers\shaderProgramManager.cc" />
+    <ClCompile Include="..\src\network\serializable.cc" />
     <ClCompile Include="..\src\network\server.cc" />
     <ClCompile Include="..\src\network\serverConnection.cc" />
     <ClCompile Include="..\src\statistics\executionTimer.cc" />
