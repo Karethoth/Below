@@ -105,6 +105,9 @@
     <ClCompile Include="..\src\network\serializable.cc">
       <Filter>Source Files\network</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\managers\clientObjectManager.cc">
+      <Filter>Source Files\managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\task.hh">
@@ -174,6 +177,9 @@
     </ClInclude>
     <ClInclude Include="..\src\world\worldObjectTypes.hh">
       <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\managers\clientObjectManager.hh">
+      <Filter>Header Files\managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

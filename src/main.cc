@@ -19,6 +19,7 @@
 
 #include "world/entity.hh"
 #include "managers/shaderProgramManager.hh"
+#include "managers/clientObjectManager.hh"
 
 
 #if _DEBUG || DEBUG
@@ -64,8 +65,8 @@ std::atomic<unsigned int> eventHandlerTasks;
 
 
 // Managers
-ShaderProgramManager shaderProgramManager;
-
+std::shared_ptr<ShaderProgramManager> shaderProgramManager;
+std::shared_ptr<ClientObjectManager>  objectManager;
 
 
 // SDL and OpenGL globals
@@ -353,6 +354,7 @@ bool InitGL()
 
 	// VSync
 	SDL_GL_SetSwapInterval( 1 );
+
 	return true;
 }
 
@@ -493,6 +495,10 @@ int main( int argc, char *argv[] )
 	// Instantiate a network event listener
 	auto networkListener = make_shared<NetworkListener>();
 	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
+
+	// Instantiate an object manager and add it as an object event listener
+	objectManager = make_shared<ClientObjectManager>();
+	eventDispatcher.AddEventListener( OBJECT_EVENT, objectManager );
 
 
 	// Create the threads
