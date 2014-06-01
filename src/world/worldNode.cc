@@ -5,8 +5,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 #include <sstream>
+#include <atomic>
 
 using namespace std;
+
+
+// Static counter for the id, matters only on server
+static std::atomic<unsigned int> nodeIdCounter;
 
 
 // Bundling few flags to clean a bit the creation of stringstreams:
@@ -15,7 +20,7 @@ using namespace std;
 
 WorldNode::WorldNode()
 {
-	id       = 0;
+	id       = ++nodeIdCounter;
 	parent   = 0;
 	position = glm::vec3( 0 );
 	rotation = glm::quat();
