@@ -114,6 +114,7 @@
     <ClInclude Include="..\src\statistics\executionTimer.hh" />
     <ClInclude Include="..\src\world\entity.hh" />
     <ClInclude Include="..\src\world\worldNode.hh" />
+    <ClInclude Include="..\src\world\worldObjectTypes.hh" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\server_resource.rc" />

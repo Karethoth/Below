@@ -54,6 +54,7 @@
     <ClInclude Include="..\src\taskQueue.hh" />
     <ClInclude Include="..\src\world\entity.hh" />
     <ClInclude Include="..\src\world\worldNode.hh" />
+    <ClInclude Include="..\src\world\worldObjectTypes.hh" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\client_resource.rc" />

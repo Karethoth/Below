@@ -172,6 +172,9 @@
     <ClInclude Include="..\src\logger.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\world\worldObjectTypes.hh">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\client_resource.rc">
