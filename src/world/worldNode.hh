@@ -18,6 +18,7 @@ class WorldNode: public Serializable
 	// For serialization and unserialization:
 	virtual std::string Serialize( std::vector<std::string> vars );
 	virtual bool Unserialize( std::string data );
+	virtual bool UnserializeField( std::string &fieldName, std::string &data );
 
 	// For node and entity identification:
 	unsigned int id;

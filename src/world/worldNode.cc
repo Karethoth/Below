@@ -23,6 +23,8 @@ WorldNode::WorldNode()
 	id       = ++nodeIdCounter;
 	parent   = 0;
 	position = glm::vec3( 0 );
+	position.y = 5;
+	position.z = -5;
 	rotation = glm::quat();
 	scale    = glm::vec3( 1.f );
 }
@@ -139,21 +141,137 @@ bool WorldNode::Unserialize( string data )
 
 		// Calculate the amount of data and allocate the buffer:
 		uint8_t fieldDataLength = fieldLength - fieldName.length() - 1;
+		assert( fieldDataLength > 0 );
 		char   *buffer          = new char[fieldLength];
 
 		// Copy the field data to other stream
 		stringstream fieldDataStream( SS_RW_BIN );
 		dataStream.read( buffer, fieldDataLength );
 		fieldDataStream.write( buffer, fieldDataLength );
-		fieldData = fieldDataStream.str();
 		delete[] buffer;
+		fieldData = fieldDataStream.str();
 
-		// Apply the field:
-		LOG( ToString( "Got field " << fieldName << "(" << (int)fieldDataLength << ") with value '" \
-		                            << fieldData << "'" ) );
+		// Unserialize and handle the field:
+		if( !UnserializeField( fieldName, fieldData ) )
+		{
+			return false;
+		}
 	}
 
 	return false;
+}
+
+
+
+bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
+{
+	LOG( ToString( "Got field " << fieldName << "(" << (int)data.length() << ") with value '" \
+		                        << data << "'" ) );
+
+	size_t dataLength = data.length();
+	stringstream dataStream( SS_RW_BIN );
+	dataStream << data;
+
+	// POSITION
+	if( !fieldName.compare( "position" ) )
+	{
+		if( dataLength != (size_t)(sizeof( position.x ) * 3) )
+		{
+			LOG_ERROR( ToString(
+				"UnserializeField failed for " << fieldName <<
+				", expected data to have length " << sizeof( position.x ) * 3 <<
+				" instead of " << dataLength << "!"
+			) );
+
+			return false;
+		}
+
+		position.x = UnserializeFloat( dataStream );
+		position.y = UnserializeFloat( dataStream );
+		position.z = UnserializeFloat( dataStream );
+
+
+		LOG( ToString(
+			"Result: position = <" <<
+			position.x << "," <<
+			position.y << "," <<
+			position.z << ">" <<
+			endl
+		) );
+	}
+
+
+	// ROTATION
+	else if( !fieldName.compare( "rotation" ) )
+	{
+		if( dataLength != sizeof( rotation.x ) * 4 )
+		{
+			LOG_ERROR( ToString(
+				"UnserializeField failed for " << fieldName <<
+				", expected data to have length " << sizeof( position.x ) * 4 <<
+				" instead of " << dataLength << "!"
+			) );
+
+			return false;
+		}
+
+		rotation.x = UnserializeFloat( dataStream );
+		rotation.y = UnserializeFloat( dataStream );
+		rotation.z = UnserializeFloat( dataStream );
+		rotation.w = UnserializeFloat( dataStream );
+
+
+		LOG( ToString(
+			"Result: rotation = <" <<
+			rotation.x << "," <<
+			rotation.y << "," <<
+			rotation.z << "," <<
+			rotation.w << ">" <<
+			endl
+		) );
+	}
+
+
+	// SCALE
+	else if( !fieldName.compare( "scale" ) )
+	{
+		if( dataLength != sizeof( scale.x ) * 3 )
+		{
+			LOG_ERROR( ToString(
+				"UnserializeField failed for " << fieldName <<
+				", expected data to have length " << sizeof( position.x ) * 3 <<
+				" instead of " << dataLength << "!"
+			) );
+
+			return false;
+		}
+
+		scale.x = UnserializeFloat( dataStream );
+		scale.y = UnserializeFloat( dataStream );
+		scale.z = UnserializeFloat( dataStream );
+
+
+		LOG( ToString(
+			"Result: scale = <" <<
+			scale.x << "," <<
+			scale.y << "," <<
+			scale.z << ">" <<
+			endl
+		) );
+	}
+
+
+	// No such field was found
+	else
+	{
+		LOG_ERROR( ToString(
+			"UnserializeField failed because field '" << fieldName << "' is not known!"
+		) );
+
+		return false;
+	}
+
+	return true;
 }
 
 
