@@ -181,6 +181,12 @@
     <ClInclude Include="..\src\managers\clientObjectManager.hh">
       <Filter>Header Files\managers</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\events\eventListenerCollection.hh">
+      <Filter>Header Files\events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\events\eventListener.hh">
+      <Filter>Header Files\events</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\client_resource.rc">

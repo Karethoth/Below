@@ -40,6 +40,8 @@
     <ClInclude Include="..\src\events\event.hh" />
     <ClInclude Include="..\src\events\eventDispatcher.hh" />
     <ClInclude Include="..\src\events\eventFactory.hh" />
+    <ClInclude Include="..\src\events\eventListener.hh" />
+    <ClInclude Include="..\src\events\eventListenerCollection.hh" />
     <ClInclude Include="..\src\events\eventQueue.hh" />
     <ClInclude Include="..\src\graphics\shader.hh" />
     <ClInclude Include="..\src\graphics\shaderProgram.hh" />
