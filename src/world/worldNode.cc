@@ -57,6 +57,19 @@ string WorldNode::Serialize( vector<string> vars )
 	stringstream  fieldStream;
 
 
+	// Id:
+	fieldStream = stringstream( SS_RW_BIN );
+	fieldStream << "id:";
+	SerializeUint32( fieldStream, id );
+
+	fieldData       = fieldStream.str();
+	fieldDataLength = fieldData.length();
+
+	SerializeUint8( dataStream, fieldDataLength );
+	dataStream << fieldData;
+	fieldCount++;
+
+
 	// Position:
 	fieldStream = stringstream( SS_RW_BIN );
 	fieldStream << "position:";
@@ -172,8 +185,28 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
 	stringstream dataStream( SS_RW_BIN );
 	dataStream << data;
 
+	// ID
+	if( !fieldName.compare( "id" ) )
+	{
+		if( dataLength != (size_t)(sizeof( unsigned int ) ) )
+		{
+			LOG_ERROR( ToString(
+				"UnserializeField failed for " << fieldName <<
+				", expected data to have length " << sizeof( unsigned int ) <<
+				" instead of " << dataLength << "!"
+			) );
+
+			return false;
+		}
+
+		id = UnserializeUint32( dataStream );
+
+		LOG( ToString( "Result: id = " << id << endl ) );
+	}
+
+
 	// POSITION
-	if( !fieldName.compare( "position" ) )
+	else if( !fieldName.compare( "position" ) )
 	{
 		if( dataLength != (size_t)(sizeof( position.x ) * 3) )
 		{
@@ -189,7 +222,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
 		position.x = UnserializeFloat( dataStream );
 		position.y = UnserializeFloat( dataStream );
 		position.z = UnserializeFloat( dataStream );
-
 
 		LOG( ToString(
 			"Result: position = <" <<
@@ -220,7 +252,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
 		rotation.z = UnserializeFloat( dataStream );
 		rotation.w = UnserializeFloat( dataStream );
 
-
 		LOG( ToString(
 			"Result: rotation = <" <<
 			rotation.x << "," <<
@@ -249,7 +280,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
 		scale.x = UnserializeFloat( dataStream );
 		scale.y = UnserializeFloat( dataStream );
 		scale.z = UnserializeFloat( dataStream );
-
 
 		LOG( ToString(
 			"Result: scale = <" <<
