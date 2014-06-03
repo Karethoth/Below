@@ -37,7 +37,7 @@ void Client::SetRead()
 				auto partEvent      = new PartEvent();
 				partEvent->type     = NETWORK_EVENT;
 				partEvent->subType  = NETWORK_PART;
-				partEvent->clientId = 0;
+				partEvent->clientId = m_clientId;
 				eventQueue->AddEvent( partEvent );
 
 				m_socket.close();
