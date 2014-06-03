@@ -219,7 +219,7 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 	// ID
 	if( !fieldName.compare( "id" ) )
 	{
-		if( streamLength != (size_t)(sizeof( unsigned int ) ) )
+		if( streamLength != sizeof( unsigned int )  )
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
@@ -239,7 +239,7 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 	// POSITION
 	else if( !fieldName.compare( "position" ) )
 	{
-		if( streamLength != (size_t)(sizeof( position.x ) * 3) )
+		if( streamLength != sizeof( position.x ) * 3 )
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
