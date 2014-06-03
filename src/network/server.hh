@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 #include <mutex>
+#include <sstream>
 
 #include <boost/asio.hpp>
 
@@ -35,6 +36,7 @@ struct Client
 
 private:
 	std::mutex writeMutex;
+	std::stringstream readStream;
 };
 
 

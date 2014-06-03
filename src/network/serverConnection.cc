@@ -1,5 +1,6 @@
 #include "serverConnection.hh"
 #include "networkEvents.hh"
+#include "serializable.hh"
 #include "../logger.hh"
 
 #include <atomic>
@@ -43,14 +44,23 @@ void ServerConnection::Init( asio::io_service& ioService, std::string host, shor
 }
 
 
+static stringstream readStream(
+	stringstream::in |
+	stringstream::out |
+	stringstream::binary
+);
+
 
 void ServerConnection::SetRead()
 {
 	auto self( shared_from_this() );
 	m_socket->async_read_some(
 		asio::buffer( m_data, maxLength ),
-		[this, self]( boost::system::error_code ec, std::size_t length )
+		[this, self]( boost::system::error_code ec, size_t length )
 		{
+			char buffer[USHRT_MAX];
+
+			// Check for errors
 			if( ec.value() )
 			{
 				LOG_ERROR( "Client::Read() got error " << ec.value() << ": '" << ec.message() << "'" );
@@ -65,28 +75,47 @@ void ServerConnection::SetRead()
 				return;
 			}
 
-			stringstream stream(
+			// Apped the received data to the readStream
+			readStream.write( m_data, length );
+
+			// Read more if we don't have enough data even
+			// for the header alone
+			size_t streamLength = readStream.str().length();
+			if( streamLength < sizeof( unsigned short ) )
+			{
+				SetRead();
+				return;
+			}
+
+			// Read the package byte count
+			size_t packetLength = UnserializeUint16( readStream );
+
+			// Reverse the reading point back and
+			// wait for more data if we don't have enough
+			if( streamLength < packetLength )
+			{
+				long pos = static_cast<long>( readStream.tellg() );
+				readStream.seekg( pos - sizeof( unsigned short ) );
+				SetRead();
+				return;
+			}
+
+			// We got all the data for the package!
+			readStream.read( buffer, packetLength-2 );
+			stringstream packetStream(
 				stringstream::in |
 				stringstream::out |
 				stringstream::binary
 			);
+			packetStream.write( buffer, packetLength-2 );
 
-			stream.write( m_data, length );
-			memset( m_data, 0, length );
-
-			std::string data = stream.str();
-
-			if( !(data.length() == 2 && data[0] == '\r' && data[1] == '\n') &&
-			    !(data.length() == 1 && data[0] == '\n' ) &&
-				  data.length() > 0 )
-			{
-				auto dataInEvent      = new DataInEvent();
-				dataInEvent->type     = NETWORK_EVENT;
-				dataInEvent->subType  = NETWORK_DATA_IN;
-				dataInEvent->clientId = 0;
-				dataInEvent->data     = data;
-				eventQueue->AddEvent( dataInEvent );
-			}
+			// Create the event
+			auto dataInEvent      = new DataInEvent();
+			dataInEvent->type     = NETWORK_EVENT;
+			dataInEvent->subType  = NETWORK_DATA_IN;
+			dataInEvent->clientId = 0;
+			dataInEvent->data     = packetStream.str();
+			eventQueue->AddEvent( dataInEvent );
 
 			// Set this as a callback again
 			SetRead();
@@ -100,11 +129,16 @@ void ServerConnection::Write( std::string msg )
 	if( !m_socket )
 		return;
 
-	std::lock_guard<std::mutex> writeLock( writeMutex );
+	lock_guard<mutex> writeLock( writeMutex );
 
 	boost::asio::streambuf request;
-    std::ostream requestStream( &request );
+	ostream requestStream( &request );
+
+	unsigned short msgLength = msg.length() + 2;
+	requestStream.write( reinterpret_cast<char*>( &msgLength ), 2 );
+
     requestStream << msg;
+
 	boost::asio::write( *m_socket, request );
 }
 

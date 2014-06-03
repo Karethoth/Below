@@ -174,6 +174,7 @@ struct NetworkListener : public EventListener
 				dataIn = static_cast<DataInEvent*>( e );
 				LOG( "Data in: '" << dataIn->data << "'" );
 				HandleDataInEvent( dataIn );
+				connection->Write( dataIn->data );
 				break;
 
 			default:
