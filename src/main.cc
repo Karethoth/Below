@@ -140,8 +140,6 @@ struct NetworkListener : public EventListener
 {
 	void HandleEvent( Event *e )
 	{
-		JoinEvent   *join;
-		PartEvent   *part;
 		DataInEvent *dataIn;
 
 		switch( e->subType )

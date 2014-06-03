@@ -187,6 +187,9 @@
     <ClInclude Include="..\src\events\eventListener.hh">
       <Filter>Header Files\events</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\world\objectEvents.hh">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\client_resource.rc">

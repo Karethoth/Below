@@ -145,6 +145,9 @@
     <ClInclude Include="..\src\world\worldObjectTypes.hh">
       <Filter>Header Files\world</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\world\objectEvents.hh">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\server_resource.rc">

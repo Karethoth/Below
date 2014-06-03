@@ -57,6 +57,7 @@
     <ClInclude Include="..\src\statistics\executionTimer.hh" />
     <ClInclude Include="..\src\taskQueue.hh" />
     <ClInclude Include="..\src\world\entity.hh" />
+    <ClInclude Include="..\src\world\objectEvents.hh" />
     <ClInclude Include="..\src\world\worldNode.hh" />
     <ClInclude Include="..\src\world\worldObjectTypes.hh" />
   </ItemGroup>
