@@ -103,7 +103,7 @@ void Client::Write( string msg )
 	unsigned short msgLength = msg.length() + 2;
 	requestStream.write( reinterpret_cast<char*>( &msgLength ), 2 );
 
-    requestStream << msg;
+	requestStream << msg;
 
 	boost::asio::write( m_socket, request );
 }
@@ -168,7 +168,8 @@ void Server::Accept()
 			}
 
 			Accept();
-		});
+		}
+	);
 }
 
 std::shared_ptr<Client> Server::GetClient( unsigned int id )

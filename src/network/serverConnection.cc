@@ -38,9 +38,9 @@ ServerConnection::~ServerConnection()
 
 void ServerConnection::Init( asio::io_service& ioService, std::string host, short port )
 {
-	m_host      = host;
-	m_port      = port;
-	m_socket    = new asio::ip::tcp::socket( ioService );
+	m_host   = host;
+	m_port   = port;
+	m_socket = new asio::ip::tcp::socket( ioService );
 }
 
 
@@ -119,7 +119,8 @@ void ServerConnection::SetRead()
 
 			// Set this as a callback again
 			SetRead();
-		});
+		}
+	);
 }
 
 
@@ -137,7 +138,7 @@ void ServerConnection::Write( std::string msg )
 	unsigned short msgLength = msg.length() + 2;
 	requestStream.write( reinterpret_cast<char*>( &msgLength ), 2 );
 
-    requestStream << msg;
+	requestStream << msg;
 
 	boost::asio::write( *m_socket, request );
 }
@@ -157,17 +158,17 @@ void ServerConnection::Connect( asio::io_service& ioService )
 	sstream >> port;
 
 	tcp::resolver resolver( ioService );
-    tcp::resolver::query query( m_host, port );
-    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-    tcp::resolver::iterator end;
+	tcp::resolver::query query( m_host, port );
+	tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+	tcp::resolver::iterator end;
 
 
-    boost::system::error_code error = boost::asio::error::host_not_found;
-    while( error && endpoint_iterator != end )
-    {
-      m_socket->close();
-      m_socket->connect( *endpoint_iterator++, error );
-    }
+	boost::system::error_code error = boost::asio::error::host_not_found;
+	while( error && endpoint_iterator != end )
+	{
+		m_socket->close();
+		m_socket->connect( *endpoint_iterator++, error );
+	}
 	if( error )
 	{
 		connected = false;
