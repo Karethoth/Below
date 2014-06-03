@@ -39,9 +39,14 @@ WorldNode::~WorldNode()
 
 string WorldNode::Serialize( vector<string> vars )
 {
-	// TODO: Serialize just the given fields, if we got any.
-	//       Otherwise serialize every field.
-
+	// If we didn't receive any vars, serialize everything:
+	if( (vars.end() - vars.begin()) <= 0 )
+	{
+		vars.push_back( "id" );
+		vars.push_back( "position" );
+		vars.push_back( "rotation" );
+		vars.push_back( "scale" );
+	}
 
 	// Stream for the serialized data
 	stringstream dataStream( SS_RW_BIN );
@@ -51,69 +56,14 @@ string WorldNode::Serialize( vector<string> vars )
 	unsigned char fieldCount = 0;
 
 
-	// Per field variables:
-	string        fieldData;
-	unsigned char fieldDataLength;
-	stringstream  fieldStream;
-
-
-	// Id:
-	fieldStream = stringstream( SS_RW_BIN );
-	fieldStream << "id:";
-	SerializeUint32( fieldStream, id );
-
-	fieldData       = fieldStream.str();
-	fieldDataLength = fieldData.length();
-
-	SerializeUint8( dataStream, fieldDataLength );
-	dataStream << fieldData;
-	fieldCount++;
-
-
-	// Position:
-	fieldStream = stringstream( SS_RW_BIN );
-	fieldStream << "position:";
-	SerializeFloat( fieldStream, position.x );
-	SerializeFloat( fieldStream, position.y );
-	SerializeFloat( fieldStream, position.z );
-
-	fieldData       = fieldStream.str();
-	fieldDataLength = fieldData.length();
-
-	SerializeUint8( dataStream, fieldDataLength );
-	dataStream << fieldData;
-	fieldCount++;
-
-
-	// Rotation:
-	fieldStream = stringstream( SS_RW_BIN );
-	fieldStream << "rotation:";
-	SerializeFloat( fieldStream, rotation.x );
-	SerializeFloat( fieldStream, rotation.y );
-	SerializeFloat( fieldStream, rotation.z );
-	SerializeFloat( fieldStream, rotation.w );
-
-	fieldData       = fieldStream.str();
-	fieldDataLength = fieldData.length();
-
-	SerializeUint8( dataStream, fieldDataLength );
-	dataStream << fieldData;
-	fieldCount++;
-
-
-	// Scale:
-	fieldStream = stringstream( SS_RW_BIN );
-	fieldStream << "scale:";
-	SerializeFloat( fieldStream, scale.x );
-	SerializeFloat( fieldStream, scale.y );
-	SerializeFloat( fieldStream, scale.z );
-
-	fieldData       = fieldStream.str();
-	fieldDataLength = fieldData.length();
-
-	SerializeUint8( dataStream, fieldDataLength );
-	dataStream << fieldData;
-	fieldCount++;
+	// For every var
+	for( auto e = vars.begin(); e != vars.end(); e++ )
+	{
+		if( SerializeField( *e, dataStream ) )
+		{
+			fieldCount++;
+		}
+	}
 
 
 	// Create the header; it's just the count of fields
@@ -179,7 +129,77 @@ bool WorldNode::Unserialize( string data )
 
 bool WorldNode::SerializeField( std::string &fieldName, std::stringstream &stream )
 {
-	return false;
+	stringstream  fieldStream     = stringstream( SS_RW_BIN );
+	unsigned char fieldDataLength = 0;
+	string        fieldDataString;
+
+
+	// ID
+	if( !fieldName.compare( "id" ) )
+	{
+		fieldStream << "id:";
+		SerializeUint32( fieldStream, id );
+	}
+
+
+	// POSITION
+	else if( !fieldName.compare( "position" ) )
+	{
+		fieldStream << "position:";
+		SerializeFloat( fieldStream, position.x );
+		SerializeFloat( fieldStream, position.y );
+		SerializeFloat( fieldStream, position.z );
+	}
+
+
+	// ROTATION
+	else if( !fieldName.compare( "rotation" ) )
+	{
+		fieldStream << "rotation:";
+		SerializeFloat( fieldStream, rotation.x );
+		SerializeFloat( fieldStream, rotation.y );
+		SerializeFloat( fieldStream, rotation.z );
+		SerializeFloat( fieldStream, rotation.w );
+	}
+
+
+	// SCALE
+	else if( !fieldName.compare( "scale" ) )
+	{
+		fieldStream << "scale:";
+		SerializeFloat( fieldStream, scale.x );
+		SerializeFloat( fieldStream, scale.y );
+		SerializeFloat( fieldStream, scale.z );
+	}
+
+
+	// No fitting field found?
+	else
+	{
+		LOG_ERROR( ToString(
+			"SerializeField failed because '" << fieldName <<
+			"' is not a field that it knows how to handle!"
+		) );
+
+		return false;
+	}
+
+
+	// Handle the fieldStream to get the
+	// data as a string and the length of it.
+	fieldDataString = fieldStream.str();
+	fieldDataLength = fieldDataString.length();
+
+	// Do we have anything to serialize?
+	assert( fieldDataLength > 0 );
+
+	// Write the header / amount of data:
+	SerializeUint8( stream, fieldDataLength );
+
+	// Write the data:
+	stream << fieldDataString;
+
+	return true;
 }
 
 

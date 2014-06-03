@@ -472,8 +472,12 @@ void Quit( int returnCode )
 
 int main( int argc, char *argv[] )
 {
+	vector<string> varsToSerialize;
+	varsToSerialize.push_back( "id" );
+	varsToSerialize.push_back( "position" );
+
 	WorldNode rootNode;
-	string serialized = rootNode.Serialize( vector<string>() );
+	string serialized = rootNode.Serialize( varsToSerialize );
 
 	WorldNode copyNode;
 	copyNode.Unserialize( serialized );
