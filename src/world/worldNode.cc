@@ -208,7 +208,7 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 {
 	// Calculate the length
 	stream.seekp( 0, ios::end );
-	size_t streamLength = stream.tellp();
+	size_t streamLength = static_cast<size_t>( stream.tellp() );
 	stream.seekp( 0, ios::beg );
 	assert( streamLength > 0 );
 
