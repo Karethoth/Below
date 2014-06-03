@@ -3,11 +3,13 @@
 #include "../logger.hh"
 #include <atomic>
 #include <memory>
+#include <sstream>
 
 using namespace std;
 
 
 static atomic<unsigned int> clientIdCounter( 0 ); // Should be good enough.
+
 
 Client::Client( tcp::socket socket ) : m_socket( move( socket ) )
 {
@@ -34,9 +36,17 @@ void Client::SetRead()
 				eventQueue->AddEvent( partEvent );
 				return;
 			}
-			m_data[length] = 0x00;
-			string data = string( m_data );
-			memset( m_data, 0, maxLength );
+
+			stringstream stream(
+				stringstream::in |
+				stringstream::out |
+				stringstream::binary
+			);
+
+			stream.write( m_data, length );
+			memset( m_data, 0, length );
+
+			std::string data = stream.str();
 
 			if( !(data.length() == 2 && data[0] == '\r' && data[1] == '\n') &&
 			    !(data.length() == 1 && data[0] == '\n' ) )

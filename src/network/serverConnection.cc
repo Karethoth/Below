@@ -5,6 +5,7 @@
 #include <atomic>
 #include <memory>
 #include <ostream>
+#include <sstream>
 
 using namespace std;
 
@@ -64,9 +65,16 @@ void ServerConnection::SetRead()
 				return;
 			}
 
-			m_data[length] = 0x00;
-			std::string data = std::string( m_data );
-			memset( m_data, 0, maxLength );
+			stringstream stream(
+				stringstream::in |
+				stringstream::out |
+				stringstream::binary
+			);
+
+			stream.write( m_data, length );
+			memset( m_data, 0, length );
+
+			std::string data = stream.str();
 
 			if( !(data.length() == 2 && data[0] == '\r' && data[1] == '\n') &&
 			    !(data.length() == 1 && data[0] == '\n' ) &&

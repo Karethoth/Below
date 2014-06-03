@@ -159,8 +159,8 @@ struct NetworkListener : public EventListener
 
 				// For now, construct an event here
 				// manually and send it to the server:
-				stream << (uint8_t)OBJECT_EVENT;
-				stream << (uint16_t)OBJECT_CREATE;
+				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );
+				SerializeUint16( stream, (uint16_t)OBJECT_CREATE );
 
 				connection->Write( stream.str() );
 				break;
@@ -225,6 +225,8 @@ struct NetworkListener : public EventListener
 				{
 					case( OBJECT_CREATE ):
 						ObjectCreateEvent *e = new ObjectCreateEvent();
+						e->type = OBJECT_EVENT;
+						e->subType = OBJECT_CREATE;
 						e->data = dataStream.str();
 						eventQueue.AddEvent( e );
 						break;
