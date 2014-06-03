@@ -152,15 +152,49 @@ struct NetworkListener : public EventListener
 			stringstream::binary
 		);
 
+		// Temporary node, which we serialize and send over network
+		WorldNode tmpNode;
+
+		// Vars to serialize
+		vector<string> vars;
+
 		switch( e->subType )
 		{
 			case NETWORK_JOIN:
 				LOG( "We connected!" );
 
-				// For now, construct an event here
-				// manually and send it to the server:
-				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );
-				SerializeUint16( stream, (uint16_t)OBJECT_CREATE );
+				// For now, construct few events here
+				// manually and send them to the server:
+
+
+				// Create an object of type 1 with id 10
+				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
+				SerializeUint16( stream, (uint16_t)OBJECT_CREATE ); // Event sub type
+				SerializeUint8( stream, (uint8_t)1 );               // Object type
+				SerializeUint32( stream, (uint32_t)10 );            // Object id
+
+				connection->Write( stream.str() );
+
+
+				// Update the object with id 10
+
+				// Serialize the position
+				vars.push_back( "position" );
+
+				stream.str( "" );
+				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
+				SerializeUint16( stream, (uint16_t)OBJECT_UPDATE ); // Event sub type
+				SerializeUint32( stream, (uint32_t)10 );            // Object id
+				stream << tmpNode.Serialize( vars );
+
+				connection->Write( stream.str() );
+
+
+				// Destroy the object with id 10
+				stream.str( "" );
+				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	 // Event type
+				SerializeUint16( stream, (uint16_t)OBJECT_DESTROY ); // Event sub type
+				SerializeUint32( stream, (uint32_t)10 );             // Object id
 
 				connection->Write( stream.str() );
 				break;
@@ -174,7 +208,6 @@ struct NetworkListener : public EventListener
 				dataIn = static_cast<DataInEvent*>( e );
 				LOG( "Data in: '" << dataIn->data << "'" );
 				HandleDataInEvent( dataIn );
-				connection->Write( dataIn->data );
 				break;
 
 			default:
@@ -216,6 +249,9 @@ struct NetworkListener : public EventListener
 			return;
 		}
 
+		ObjectCreateEvent *create;
+		ObjectDestroyEvent *destroy;
+		ObjectUpdateEvent *update;
 
 		// Construct the event
 		// - It's a mess.
@@ -225,11 +261,28 @@ struct NetworkListener : public EventListener
 				switch( subType )
 				{
 					case( OBJECT_CREATE ):
-						ObjectCreateEvent *e = new ObjectCreateEvent();
-						e->type = OBJECT_EVENT;
-						e->subType = OBJECT_CREATE;
-						e->data = dataStream.str();
-						eventQueue.AddEvent( e );
+						create = new ObjectCreateEvent();
+						create->type = OBJECT_EVENT;
+						create->subType = OBJECT_CREATE;
+						create->data = dataStream.str();
+						eventQueue.AddEvent( create );
+						break;
+
+					case( OBJECT_DESTROY ):
+						destroy = new ObjectDestroyEvent();
+						destroy->type = OBJECT_EVENT;
+						destroy->subType = OBJECT_DESTROY;
+						destroy->objectId = UnserializeUint32( dataStream );
+						eventQueue.AddEvent( destroy );
+						break;
+
+					case( OBJECT_UPDATE ):
+						update = new ObjectUpdateEvent();
+						update->type = OBJECT_EVENT;
+						update->subType = OBJECT_UPDATE;
+						update->objectId = UnserializeUint32( dataStream );
+						update->data = dataStream.str();
+						eventQueue.AddEvent( update );
 						break;
 				}
 				break;
