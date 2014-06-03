@@ -155,17 +155,18 @@ bool WorldNode::Unserialize( string data )
 		// Calculate the amount of data and allocate the buffer:
 		uint8_t fieldDataLength = fieldLength - fieldName.length() - 1;
 		assert( fieldDataLength > 0 );
-		char   *buffer          = new char[fieldLength];
+		char *buffer = new char[fieldLength];
 
 		// Copy the field data to other stream
 		stringstream fieldDataStream( SS_RW_BIN );
 		dataStream.read( buffer, fieldDataLength );
 		fieldDataStream.write( buffer, fieldDataLength );
+
+		// Free the memory for buffer
 		delete[] buffer;
-		fieldData = fieldDataStream.str();
 
 		// Unserialize and handle the field:
-		if( !UnserializeField( fieldName, fieldData ) )
+		if( !UnserializeField( fieldName, fieldDataStream ) )
 		{
 			return false;
 		}
@@ -176,30 +177,40 @@ bool WorldNode::Unserialize( string data )
 
 
 
-bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
+bool WorldNode::SerializeField( std::string &fieldName, std::stringstream &stream )
 {
-	LOG( ToString( "Got field " << fieldName << "(" << (int)data.length() << ") with value '" \
-		                        << data << "'" ) );
+	return false;
+}
 
-	size_t dataLength = data.length();
-	stringstream dataStream( SS_RW_BIN );
-	dataStream << data;
+
+
+bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &stream )
+{
+	// Calculate the length
+	stream.seekp( 0, ios::end );
+	size_t streamLength = stream.tellp();
+	stream.seekp( 0, ios::beg );
+	assert( streamLength > 0 );
+
+
+	LOG( ToString( "Got field " << fieldName << "(" << (int)streamLength << ") with value '" \
+		                        << stream.str() << "'" ) );
 
 	// ID
 	if( !fieldName.compare( "id" ) )
 	{
-		if( dataLength != (size_t)(sizeof( unsigned int ) ) )
+		if( streamLength != (size_t)(sizeof( unsigned int ) ) )
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
 				", expected data to have length " << sizeof( unsigned int ) <<
-				" instead of " << dataLength << "!"
+				" instead of " << streamLength << "!"
 			) );
 
 			return false;
 		}
 
-		id = UnserializeUint32( dataStream );
+		id = UnserializeUint32( stream );
 
 		LOG( ToString( "Result: id = " << id << endl ) );
 	}
@@ -208,20 +219,20 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
 	// POSITION
 	else if( !fieldName.compare( "position" ) )
 	{
-		if( dataLength != (size_t)(sizeof( position.x ) * 3) )
+		if( streamLength != (size_t)(sizeof( position.x ) * 3) )
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
 				", expected data to have length " << sizeof( position.x ) * 3 <<
-				" instead of " << dataLength << "!"
+				" instead of " << streamLength << "!"
 			) );
 
 			return false;
 		}
 
-		position.x = UnserializeFloat( dataStream );
-		position.y = UnserializeFloat( dataStream );
-		position.z = UnserializeFloat( dataStream );
+		position.x = UnserializeFloat( stream );
+		position.y = UnserializeFloat( stream );
+		position.z = UnserializeFloat( stream );
 
 		LOG( ToString(
 			"Result: position = <" <<
@@ -236,21 +247,21 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
 	// ROTATION
 	else if( !fieldName.compare( "rotation" ) )
 	{
-		if( dataLength != sizeof( rotation.x ) * 4 )
+		if( streamLength != sizeof( rotation.x ) * 4 )
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
 				", expected data to have length " << sizeof( position.x ) * 4 <<
-				" instead of " << dataLength << "!"
+				" instead of " << streamLength << "!"
 			) );
 
 			return false;
 		}
 
-		rotation.x = UnserializeFloat( dataStream );
-		rotation.y = UnserializeFloat( dataStream );
-		rotation.z = UnserializeFloat( dataStream );
-		rotation.w = UnserializeFloat( dataStream );
+		rotation.x = UnserializeFloat( stream );
+		rotation.y = UnserializeFloat( stream );
+		rotation.z = UnserializeFloat( stream );
+		rotation.w = UnserializeFloat( stream );
 
 		LOG( ToString(
 			"Result: rotation = <" <<
@@ -266,20 +277,20 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::string &data )
 	// SCALE
 	else if( !fieldName.compare( "scale" ) )
 	{
-		if( dataLength != sizeof( scale.x ) * 3 )
+		if( streamLength != sizeof( scale.x ) * 3 )
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
 				", expected data to have length " << sizeof( position.x ) * 3 <<
-				" instead of " << dataLength << "!"
+				" instead of " << streamLength << "!"
 			) );
 
 			return false;
 		}
 
-		scale.x = UnserializeFloat( dataStream );
-		scale.y = UnserializeFloat( dataStream );
-		scale.z = UnserializeFloat( dataStream );
+		scale.x = UnserializeFloat( stream );
+		scale.y = UnserializeFloat( stream );
+		scale.z = UnserializeFloat( stream );
 
 		LOG( ToString(
 			"Result: scale = <" <<

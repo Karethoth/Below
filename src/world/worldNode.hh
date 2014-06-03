@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <sstream>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -18,7 +19,9 @@ class WorldNode: public Serializable
 	// For serialization and unserialization:
 	virtual std::string Serialize( std::vector<std::string> vars );
 	virtual bool Unserialize( std::string data );
-	virtual bool UnserializeField( std::string &fieldName, std::string &data );
+
+	virtual bool SerializeField( std::string &fieldName, std::stringstream &stream );
+	virtual bool UnserializeField( std::string &fieldName, std::stringstream &stream  );
 
 	// For node and entity identification:
 	unsigned int id;
