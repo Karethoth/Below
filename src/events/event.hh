@@ -36,6 +36,7 @@ enum EventSubType : unsigned short
 	OBJECT_PARENT_REMOVE,
 	OBJECT_CHILD_ADD,
 	OBJECT_CHILD_REMOVE,
+	EVENT_SUB_TYPE_COUNT
 };
 
 

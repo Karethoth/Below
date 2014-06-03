@@ -15,6 +15,8 @@
 #include "events/eventQueue.hh"
 #include "events/eventDispatcher.hh"
 #include "network/networkEvents.hh"
+#include "world/objectEvents.hh"
+
 #include "network/serverConnection.hh"
 
 #include "world/entity.hh"
@@ -136,17 +138,31 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 }
 
 
+
 struct NetworkListener : public EventListener
 {
 	void HandleEvent( Event *e )
 	{
 		DataInEvent *dataIn;
 
+		// Stream for manual package creation
+		std::stringstream stream(
+			stringstream::in |
+			stringstream::out |
+			stringstream::binary
+		);
+
 		switch( e->subType )
 		{
 			case NETWORK_JOIN:
 				LOG( "We connected!" );
-				connection->Write( "Hello!" );
+
+				// For now, construct an event here
+				// manually and send it to the server:
+				stream << (uint8_t)OBJECT_EVENT;
+				stream << (uint16_t)OBJECT_CREATE;
+
+				connection->Write( stream.str() );
 				break;
 
 			case NETWORK_PART:
@@ -157,11 +173,67 @@ struct NetworkListener : public EventListener
 			case NETWORK_DATA_IN:
 				dataIn = static_cast<DataInEvent*>( e );
 				LOG( "Data in: '" << dataIn->data << "'" );
-				connection->Write( dataIn->data );
+				HandleDataInEvent( dataIn );
 				break;
 
 			default:
 				LOG( "Undefined event sub type: '" << e->subType );
+		}
+	}
+
+
+	void HandleDataInEvent( DataInEvent *e )
+	{
+		stringstream dataStream(
+			stringstream::in |
+			stringstream::out |
+			stringstream::binary
+		);
+		dataStream << e->data;
+
+
+		EventType type = static_cast<EventType>(
+			UnserializeUint8( dataStream )
+		);
+
+		// Check the type
+		if( type >= EVENT_TYPE_COUNT )
+		{
+			LOG_ERROR( "Received invalid type!" );
+			return;
+		}
+
+
+		EventSubType subType = static_cast<EventSubType>(
+			UnserializeUint16( dataStream )
+		);
+
+		// Check the the sub type
+		if( subType >= EVENT_SUB_TYPE_COUNT )
+		{
+			LOG_ERROR( "Received invalid sub type!" );
+			return;
+		}
+
+
+		// Construct the event
+		// - It's a mess.
+		switch( type )
+		{
+			case OBJECT_EVENT:
+				switch( subType )
+				{
+					case( OBJECT_CREATE ):
+						ObjectCreateEvent *e = new ObjectCreateEvent();
+						e->data = dataStream.str();
+						eventQueue.AddEvent( e );
+						break;
+				}
+				break;
+
+			default:
+				LOG_ERROR( ToString( "Constructing event of type " <<
+				                     (int)type << " not handled!"  ));
 		}
 	}
 };
@@ -470,19 +542,6 @@ void Quit( int returnCode )
 
 int main( int argc, char *argv[] )
 {
-	vector<string> varsToSerialize;
-	varsToSerialize.push_back( "id" );
-	varsToSerialize.push_back( "position" );
-
-	WorldNode rootNode;
-	string serialized = rootNode.Serialize( varsToSerialize );
-
-	WorldNode copyNode;
-	copyNode.Unserialize( serialized );
-
-	getc( stdin );
-	return 0;
-
 	// Get count of hardware threads
 	unsigned int hardwareThreads = std::thread::hardware_concurrency();
 	if( hardwareThreads <= 1 )

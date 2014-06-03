@@ -5,9 +5,9 @@
 
 void ClientObjectManager::HandleEvent( Event *e )
 {
-	CreateEvent *createEvent;
-	DestroyEvent *destroyEvent;
-	UpdateEvent *updateEvent;
+	ObjectCreateEvent *createEvent;
+	ObjectDestroyEvent *destroyEvent;
+	ObjectUpdateEvent *updateEvent;
 
 	if( e->type != OBJECT_EVENT )
 	{
@@ -18,19 +18,19 @@ void ClientObjectManager::HandleEvent( Event *e )
 	switch( e->subType )
 	{
 		case OBJECT_CREATE:
-			createEvent = static_cast<CreateEvent*>( e );
+			createEvent = static_cast<ObjectCreateEvent*>( e );
 			LOG( "Object created!" );
 			break;
 
 
 		case OBJECT_DESTROY:
-			destroyEvent = static_cast<DestroyEvent*>( e );
+			destroyEvent = static_cast<ObjectDestroyEvent*>( e );
 			LOG( "Object destroyed!" );
 			break;
 
 
 		case OBJECT_UPDATE:
-			updateEvent = static_cast<UpdateEvent*>( e );
+			updateEvent = static_cast<ObjectUpdateEvent*>( e );
 			LOG( "Object updated!" );
 			break;
 

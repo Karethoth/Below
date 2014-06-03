@@ -5,19 +5,19 @@
 #include <string>
 
 
-struct CreateEvent : public Event
+struct ObjectCreateEvent : public Event
 {
 	std::string data;
 };
 
 
-struct DestroyEvent : public Event
+struct ObjectDestroyEvent : public Event
 {
 	unsigned int objectId;
 };
 
 
-struct UpdateEvent : public Event
+struct ObjectUpdateEvent : public Event
 {
 	unsigned int objectId;
 	std::string  data;
