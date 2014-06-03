@@ -7,6 +7,7 @@
 
 struct ObjectCreateEvent : public Event
 {
+	unsigned char objectType;
 	std::string data;
 };
 

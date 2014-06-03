@@ -105,7 +105,8 @@ bool WorldNode::Unserialize( string data )
 		// Calculate the amount of data and allocate the buffer:
 		uint8_t fieldDataLength = fieldLength - fieldName.length() - 1;
 		assert( fieldDataLength > 0 );
-		char *buffer = new char[fieldLength];
+
+		char *buffer = new char[fieldDataLength];
 
 		// Copy the field data to other stream
 		stringstream fieldDataStream( SS_RW_BIN );

@@ -154,6 +154,7 @@ struct NetworkListener : public EventListener
 
 		// Temporary node, which we serialize and send over network
 		WorldNode tmpNode;
+		tmpNode.id = 10;
 
 		// Vars to serialize
 		vector<string> vars;
@@ -167,14 +168,13 @@ struct NetworkListener : public EventListener
 				// manually and send them to the server:
 
 
-				// Create an object of type 1 with id 10
+				// Create an object of type 1
 				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
 				SerializeUint16( stream, (uint16_t)OBJECT_CREATE ); // Event sub type
 				SerializeUint8( stream, (uint8_t)1 );               // Object type
-				SerializeUint32( stream, (uint32_t)10 );            // Object id
+				stream << tmpNode.Serialize( vector<string>() );    // Serialize all
 
 				connection->Write( stream.str() );
-
 
 				// Update the object with id 10
 
@@ -218,16 +218,18 @@ struct NetworkListener : public EventListener
 
 	void HandleDataInEvent( DataInEvent *e )
 	{
-		stringstream dataStream(
+		char buffer[USHRT_MAX];
+
+		stringstream stream(
 			stringstream::in |
 			stringstream::out |
 			stringstream::binary
 		);
-		dataStream << e->data;
+		stream << e->data;
 
 
 		EventType type = static_cast<EventType>(
-			UnserializeUint8( dataStream )
+			UnserializeUint8( stream )
 		);
 
 		// Check the type
@@ -239,7 +241,7 @@ struct NetworkListener : public EventListener
 
 
 		EventSubType subType = static_cast<EventSubType>(
-			UnserializeUint16( dataStream )
+			UnserializeUint16( stream )
 		);
 
 		// Check the the sub type
@@ -249,9 +251,18 @@ struct NetworkListener : public EventListener
 			return;
 		}
 
-		ObjectCreateEvent *create;
+		// Copy the data to the dataStream
+		stringstream dataStream(
+			stringstream::in |
+			stringstream::out |
+			stringstream::binary
+		);
+
+		ObjectCreateEvent  *create;
 		ObjectDestroyEvent *destroy;
-		ObjectUpdateEvent *update;
+		ObjectUpdateEvent  *update;
+
+		size_t dataCount;
 
 		// Construct the event
 		// - It's a mess.
@@ -264,23 +275,36 @@ struct NetworkListener : public EventListener
 						create = new ObjectCreateEvent();
 						create->type = OBJECT_EVENT;
 						create->subType = OBJECT_CREATE;
+						create->objectType = UnserializeUint8( stream );
+
+						dataCount = stream.str().length() - 4;
+						stream.read( buffer, dataCount );
+						dataStream.write( buffer, dataCount );
+
 						create->data = dataStream.str();
 						eventQueue.AddEvent( create );
 						break;
+
 
 					case( OBJECT_DESTROY ):
 						destroy = new ObjectDestroyEvent();
 						destroy->type = OBJECT_EVENT;
 						destroy->subType = OBJECT_DESTROY;
-						destroy->objectId = UnserializeUint32( dataStream );
+						destroy->objectId = UnserializeUint32( stream );
 						eventQueue.AddEvent( destroy );
 						break;
+
 
 					case( OBJECT_UPDATE ):
 						update = new ObjectUpdateEvent();
 						update->type = OBJECT_EVENT;
 						update->subType = OBJECT_UPDATE;
-						update->objectId = UnserializeUint32( dataStream );
+						update->objectId = UnserializeUint32( stream );
+
+						dataCount = stream.str().length() - 7;
+						stream.read( buffer, dataCount );
+						dataStream.write( buffer, dataCount );
+
 						update->data = dataStream.str();
 						eventQueue.AddEvent( update );
 						break;

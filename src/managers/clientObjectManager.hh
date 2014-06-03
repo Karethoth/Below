@@ -14,5 +14,8 @@ class ClientObjectManager : public EventListener
 	void HandleEvent( Event *e );
 
 	std::map<unsigned int, std::shared_ptr<WorldNode>> worldObjects;
+
+ private:
+	std::mutex managerMutex;
 };
 
