@@ -418,6 +418,19 @@ void HandleSdlEvents()
 					case SDL_WINDOWEVENT_FOCUS_LOST:
 						windowFocus = false;
 						break;
+
+					case SDL_WINDOWEVENT_RESIZED:
+						LOG( ToString(
+							"New window size: " <<
+							event.window.data1  <<
+							"x" << event.window.data2
+						) );
+						windowStats
+						Render();
+						break;
+
+					default:
+						break;
 				}
 				break;
 		}
@@ -430,6 +443,7 @@ void Render()
 {
 	glClearColor( 0.5, 0.0, 0.0, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT );
+	//SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
 
 	SDL_GL_SwapWindow( sdlWindow );
 }
@@ -448,8 +462,8 @@ bool InitSDL()
 	// Create the SDL2 window
 	sdlWindow = SDL_CreateWindow(
 		"Below Client", SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED, 512, 512,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
+		SDL_WINDOWPOS_CENTERED, 680, 400,
+		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
 	);
 
 	if( !sdlWindow )
@@ -458,6 +472,9 @@ bool InitSDL()
 		return false;
 	}
 
+	// Set maximum and minimum sizes:
+	SDL_SetWindowMaximumSize( sdlWindow, 2800, 2000 );
+	SDL_SetWindowMinimumSize( sdlWindow, 460, 380 );
 
 	// Create the icon for the window
 	SDL_Surface *icon = SDL_LoadBMP( "data/icons/windowIcon.bmp" );
