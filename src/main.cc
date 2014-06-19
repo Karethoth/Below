@@ -107,7 +107,7 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 			task->f();
 		}
 
-		// Mark task as ended
+		// Mark task as finished
 		task->timer.End();
 
 
