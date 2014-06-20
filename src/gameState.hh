@@ -12,6 +12,6 @@ class GameState
 	virtual void Create()  = 0;
 	virtual void Destroy() = 0;
 
-	virtual void Tick( std::chrono::duration<std::chrono::milliseconds> ) = 0;
+	virtual void Tick( std::chrono::milliseconds ) = 0;
 };
 

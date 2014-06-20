@@ -23,6 +23,8 @@
 #include "managers/shaderProgramManager.hh"
 #include "managers/clientObjectManager.hh"
 
+#include "clientGameState.hh"
+
 
 #if _DEBUG || DEBUG
 	#define DEBUG_MODE 1
@@ -60,8 +62,6 @@ TaskQueue       taskQueue;
 EventQueue      eventQueue;
 EventDispatcher eventDispatcher;
 io_service      ioService;
-
-std::shared_ptr<ServerConnection> connection;
 
 std::atomic<unsigned int> eventHandlerTasks;
 
@@ -139,191 +139,6 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 
 
 
-struct NetworkListener : public EventListener
-{
-	void HandleEvent( Event *e )
-	{
-		DataInEvent *dataIn;
-
-		// Stream for manual package creation
-		std::stringstream stream(
-			stringstream::in |
-			stringstream::out |
-			stringstream::binary
-		);
-
-		// Temporary node, which we serialize and send over network
-		WorldNode tmpNode;
-		tmpNode.id = 10;
-
-		// Vars to serialize
-		vector<string> vars;
-
-		switch( e->subType )
-		{
-			case NETWORK_JOIN:
-				LOG( "We connected!" );
-
-				// For now, construct few events here
-				// manually and send them to the server:
-
-
-				// Create an object of type 1
-				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
-				SerializeUint16( stream, (uint16_t)OBJECT_CREATE ); // Event sub type
-				SerializeUint8( stream, (uint8_t)1 );               // Object type
-				stream << tmpNode.Serialize( vector<string>() );    // Serialize all
-
-				connection->Write( stream.str() );
-
-				// Update the object with id 10
-
-				// Serialize the position
-				vars.push_back( "position" );
-
-				stream.str( "" );
-				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
-				SerializeUint16( stream, (uint16_t)OBJECT_UPDATE ); // Event sub type
-				SerializeUint32( stream, (uint32_t)10 );            // Object id
-				stream << tmpNode.Serialize( vars );
-
-				connection->Write( stream.str() );
-
-
-				// Destroy the object with id 10
-				stream.str( "" );
-				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	 // Event type
-				SerializeUint16( stream, (uint16_t)OBJECT_DESTROY ); // Event sub type
-				SerializeUint32( stream, (uint32_t)10 );             // Object id
-
-				connection->Write( stream.str() );
-				break;
-
-			case NETWORK_PART:
-				LOG( "We disconnected!" );
-				stopClient = true;
-				break;
-
-			case NETWORK_DATA_IN:
-				dataIn = static_cast<DataInEvent*>( e );
-				LOG( "Data in: '" << dataIn->data << "'" );
-				HandleDataInEvent( dataIn );
-				break;
-
-			default:
-				LOG( "Undefined event sub type: '" << e->subType );
-		}
-	}
-
-
-	void HandleDataInEvent( DataInEvent *e )
-	{
-		char buffer[USHRT_MAX];
-
-		stringstream stream(
-			stringstream::in |
-			stringstream::out |
-			stringstream::binary
-		);
-		stream << e->data;
-
-
-		EventType type = static_cast<EventType>(
-			UnserializeUint8( stream )
-		);
-
-		// Check the type
-		if( type >= EVENT_TYPE_COUNT )
-		{
-			LOG_ERROR( "Received invalid type!" );
-			return;
-		}
-
-
-		EventSubType subType = static_cast<EventSubType>(
-			UnserializeUint16( stream )
-		);
-
-		// Check the the sub type
-		if( subType >= EVENT_SUB_TYPE_COUNT )
-		{
-			LOG_ERROR( "Received invalid sub type!" );
-			return;
-		}
-
-		// Copy the data to the dataStream
-		stringstream dataStream(
-			stringstream::in |
-			stringstream::out |
-			stringstream::binary
-		);
-
-		ObjectCreateEvent  *create;
-		ObjectDestroyEvent *destroy;
-		ObjectUpdateEvent  *update;
-
-		size_t dataCount;
-
-		// Construct the event
-		// - It's a mess.
-		switch( type )
-		{
-			case OBJECT_EVENT:
-				switch( subType )
-				{
-					case( OBJECT_CREATE ):
-						create = new ObjectCreateEvent();
-						create->type = OBJECT_EVENT;
-						create->subType = OBJECT_CREATE;
-						create->objectType = UnserializeUint8( stream );
-
-						dataCount = stream.str().length() - 4;
-						stream.read( buffer, dataCount );
-						dataStream.write( buffer, dataCount );
-
-						create->data = dataStream.str();
-						eventQueue.AddEvent( create );
-						break;
-
-
-					case( OBJECT_DESTROY ):
-						destroy = new ObjectDestroyEvent();
-						destroy->type = OBJECT_EVENT;
-						destroy->subType = OBJECT_DESTROY;
-						destroy->objectId = UnserializeUint32( stream );
-						eventQueue.AddEvent( destroy );
-						break;
-
-
-					case( OBJECT_UPDATE ):
-						update = new ObjectUpdateEvent();
-						update->type = OBJECT_EVENT;
-						update->subType = OBJECT_UPDATE;
-						update->objectId = UnserializeUint32( stream );
-
-						dataCount = stream.str().length() - 7;
-						stream.read( buffer, dataCount );
-						dataStream.write( buffer, dataCount );
-
-						update->data = dataStream.str();
-						eventQueue.AddEvent( update );
-						break;
-
-
-					default:
-						break;
-				}
-				break;
-
-			default:
-				LOG_ERROR( ToString( "Constructing event of type " <<
-				                     (int)type << " not handled!"  ));
-		}
-	}
-};
-
-
-
 // Task for handling an event
 void EventHandlerTask()
 {
@@ -383,17 +198,6 @@ void IoStepTask()
 	);
 
 	taskQueue.AddTask( nextStep );
-}
-
-
-
-void Render()
-{
-	glClearColor( 0.5, 0.0, 0.0, 1.0 );
-	glClear( GL_COLOR_BUFFER_BIT );
-	//SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
-
-	SDL_GL_SwapWindow( sdlWindow );
 }
 
 
@@ -480,6 +284,7 @@ bool InitGL()
 
 
 // Acknowledge SDL events, user input, etc.
+// Should generate a new event, so that game state can handle it as it wishes
 void HandleSdlEvents()
 {
 	SDL_Event event;
@@ -517,7 +322,6 @@ void HandleSdlEvents()
 							event.window.data1  <<
 							"x" << event.window.data2
 						) );
-						Render();
 						break;
 
 					default:
@@ -584,12 +388,6 @@ void GenerateVitalTasks()
 
 void Quit( int returnCode )
 {
-	// If we're connected, disconnect
-	if( connection && connection->IsConnected() )
-	{
-		connection->Disconnect();
-	}
-
 	// Command worker threads to stop
 	LOG( "Stopping the worker threads!" );
 
@@ -653,10 +451,6 @@ int main( int argc, char *argv[] )
 	// Create the clock
 	std::chrono::steady_clock clock;
 
-	// Instantiate a network event listener
-	auto networkListener = make_shared<NetworkListener>();
-	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
-
 	// Instantiate an object manager and add it as an object event listener
 	objectManager = make_shared<ClientObjectManager>();
 	eventDispatcher.AddEventListener( OBJECT_EVENT, objectManager );
@@ -691,63 +485,31 @@ int main( int argc, char *argv[] )
 	glInitialized = true;
 
 
-	//  Create task for connecting to the server:
-	Task *connectTask = new Task();
-	connectTask->name = "TryConnectingTask";
-	connectTask->dependencies = 0;
-	connectTask->f = []()
-	{
-		// Try to connect to the server
-		LOG( "Connecting to the server..." );
-
-		try
-		{
-			connection = make_shared<ServerConnection>( ioService, "localhost", 22001 );
-			connection->SetEventQueue( &eventQueue );
-			connection->Connect( ioService );
-		}
-		catch( std::exception &e )
-		{
-			LOG_ERROR( "Failed to connect: " << e.what() );
-			stopClient = true;
-		}
-
-		if( connection->IsConnected() )
-		{
-			LOG( "Connected!" );
-		}
-	};
-	taskQueue.AddTask( connectTask );
-
-
 	// For timing in the main loop
-	auto nextInfo = clock.now() + std::chrono::milliseconds( 500 );
+	auto now        = clock.now();
+	auto lastUpdate = clock.now();
+
+
+	// Create the game state
+	ClientGameState gameState;
+	gameState.Create();
+
 
 	// Main loop
 	LOG( "Starting the main loop" );
 
 	do
 	{
+		// Calculate the delta time
+		now = clock.now();
+		chrono::milliseconds deltaTime = chrono::duration_cast<chrono::milliseconds>( (now - lastUpdate) );
+		lastUpdate = now;
+
 		// Do the main stuff
 		HandleSdlEvents();
-		Render();
 
-		std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
-
-		// And right away again, if it isn't the time for the info update
-		if( clock.now() < nextInfo )
-			continue;
-
-		size_t taskCount  = taskQueue.GetTaskCount();
-		size_t eventCount = eventQueue.GetEventCount();
-
-		// Print out at least some stats
-		LOG( "------------------------" <<  endl <<
-		     "Task  queue size: " << taskCount << endl <<
-		     "Event queue size: " << eventCount );
-
-		std::this_thread::yield();
-		nextInfo = clock.now( ) + std::chrono::milliseconds( 500 );
+		// Update the current game state
+		gameState.Tick( deltaTime );
 	}
 	while( !stopClient );
 
