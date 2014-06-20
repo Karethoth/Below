@@ -16,6 +16,7 @@
 #include "events/eventDispatcher.hh"
 #include "network/networkEvents.hh"
 #include "world/objectEvents.hh"
+#include "sdlEvents.hh"
 
 #include "network/serverConnection.hh"
 
@@ -289,32 +290,60 @@ void HandleSdlEvents()
 {
 	SDL_Event event;
 
+	SdlTextInputEvent   *sdlTextInput;
+	SdlTextEditingEvent *sdlTextEditing;
+	SdlWindowResizeEvent      *sdlWindowResize;
+	SdlWindowFocusChangeEvent *sdlWindowFocusChange;
+
 	while( SDL_PollEvent( &event ) )
 	{
 		switch( event.type )
 		{
+			case SDL_TEXTINPUT:
+				sdlTextInput = new SdlTextInputEvent();
+				sdlTextInput->text = std::string( event.text.text );
+				eventQueue.AddEvent( sdlTextInput );
+
+
+			case SDL_TEXTEDITING:
+				sdlTextEditing = new SdlTextEditingEvent();
+				sdlTextEditing->composition     = std::string( event.edit.text );
+				sdlTextEditing->cursor          = event.edit.start;
+				sdlTextEditing->selectionLength = event.edit.length;
+				eventQueue.AddEvent( static_cast<Event*>( sdlTextEditing ) );
+
+
 			case SDL_KEYDOWN:
 				break;
+
 
 			case SDL_KEYUP:
 				if( event.key.keysym.sym == SDLK_ESCAPE )
 					stopClient = true;
 				break;
 
+
 			case SDL_QUIT:
 				stopClient = true;
 				break;
+
 
 			case SDL_WINDOWEVENT:
 				switch( event.window.event )
 				{
 					case SDL_WINDOWEVENT_FOCUS_GAINED:
-						windowFocus = true;
+						sdlWindowFocusChange = new SdlWindowFocusChangeEvent();
+						sdlWindowFocusChange->focusGained = true;
+						eventQueue.AddEvent( sdlWindowFocusChange );
 						break;
 
+
 					case SDL_WINDOWEVENT_FOCUS_LOST:
-						windowFocus = false;
+						sdlWindowFocusChange = new SdlWindowFocusChangeEvent();
+						sdlWindowFocusChange->focusGained = false;
+						eventQueue.AddEvent( sdlWindowFocusChange );
 						break;
+
 
 					case SDL_WINDOWEVENT_RESIZED:
 						LOG( ToString(
@@ -322,7 +351,13 @@ void HandleSdlEvents()
 							event.window.data1  <<
 							"x" << event.window.data2
 						) );
+
+						sdlWindowResize = new SdlWindowResizeEvent();
+						sdlWindowResize->width  = event.window.data1;
+						sdlWindowResize->height = event.window.data2;
+						eventQueue.AddEvent( sdlWindowResize );
 						break;
+
 
 					default:
 						break;

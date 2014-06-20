@@ -62,11 +62,21 @@ void ClientGameState::Create()
 	eventDispatcher.eventListeners[NETWORK_EVENT]->collection.clear();
 	eventDispatcher.eventListeners[NETWORK_EVENT]->collectionMutex.unlock();
 
+	eventDispatcher.eventListeners[SDL_INPUT_EVENT]->collectionMutex.lock();
+	eventDispatcher.eventListeners[SDL_INPUT_EVENT]->collection.clear();
+	eventDispatcher.eventListeners[SDL_INPUT_EVENT]->collectionMutex.unlock();
 
-	// Set this as the new event listener
+	eventDispatcher.eventListeners[SDL_WINDOW_EVENT]->collectionMutex.lock();
+	eventDispatcher.eventListeners[SDL_WINDOW_EVENT]->collection.clear();
+	eventDispatcher.eventListeners[SDL_WINDOW_EVENT]->collectionMutex.unlock();
+
+
+	// Set this as the new event listener for these event categories
 	eventDispatcher.AddEventListener( STATE_EVENT,   static_cast<EventListenerPtr>( this ) );
 	eventDispatcher.AddEventListener( OBJECT_EVENT,  static_cast<EventListenerPtr>( this ) );
 	eventDispatcher.AddEventListener( NETWORK_EVENT, static_cast<EventListenerPtr>( this ) );
+	eventDispatcher.AddEventListener( SDL_INPUT_EVENT,  static_cast<EventListenerPtr>( this ) );
+	eventDispatcher.AddEventListener( SDL_WINDOW_EVENT, static_cast<EventListenerPtr>( this ) );
 }
 
 
