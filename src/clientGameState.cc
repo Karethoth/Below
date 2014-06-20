@@ -1,29 +1,34 @@
 #include "clientGameState.hh"
 
 
-ClientStartScene::ClientStartScene()
+ClientGameState::ClientGameState()
 {
 }
 
 
-ClientStartScene::~ClientStartScene()
-{
-}
-
-
-
-void ClientStartScene::Create()
-{
-}
-
-
-void ClientStartScene::Destroy()
+ClientGameState::~ClientGameState()
 {
 }
 
 
 
-void ClientStartScene::Tick( std::chrono::duration<std::chrono::milliseconds> )
+void ClientGameState::Create()
+{
+}
+
+
+void ClientGameState::Destroy()
+{
+}
+
+
+
+void ClientGameState::Tick( std::chrono::duration<std::chrono::milliseconds> )
+{
+}
+
+
+void ClientGameState::Render()
 {
 }
 

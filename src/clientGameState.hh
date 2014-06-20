@@ -1,15 +1,18 @@
 #include "gameState.hh"
 
 
-class ClientStartScene : public GameState
+class ClientGameState : public GameState
 {
  public:
-	ClientStartScene();
-	virtual ~ClientStartScene();
+	ClientGameState();
+	virtual ~ClientGameState();
 
 	virtual void Create()  override;
 	virtual void Destroy() override;
 
 	virtual void Tick( std::chrono::duration<std::chrono::milliseconds> ) override;
+
+ protected:
+	void Render();
 };
 
