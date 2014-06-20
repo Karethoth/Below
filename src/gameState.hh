@@ -4,10 +4,10 @@
 
 
 
-class Scene
+class GameState
 {
  public:
-	virtual ~Scene();
+	virtual ~GameState();
 
 	virtual void Create()  = 0;
 	virtual void Destroy() = 0;

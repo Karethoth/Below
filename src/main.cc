@@ -387,58 +387,6 @@ void IoStepTask()
 
 
 
-// Acknowledge SDL events, user input, etc.
-void HandleSdlEvents()
-{
-	SDL_Event event;
-
-	while( SDL_PollEvent( &event ) )
-	{
-		switch( event.type )
-		{
-			case SDL_KEYDOWN:
-				break;
-
-			case SDL_KEYUP:
-				if( event.key.keysym.sym == SDLK_ESCAPE )
-					stopClient = true;
-				break;
-
-			case SDL_QUIT:
-				stopClient = true;
-				break;
-
-			case SDL_WINDOWEVENT:
-				switch( event.window.event )
-				{
-					case SDL_WINDOWEVENT_FOCUS_GAINED:
-						windowFocus = true;
-						break;
-
-					case SDL_WINDOWEVENT_FOCUS_LOST:
-						windowFocus = false;
-						break;
-
-					case SDL_WINDOWEVENT_RESIZED:
-						LOG( ToString(
-							"New window size: " <<
-							event.window.data1  <<
-							"x" << event.window.data2
-						) );
-						windowStats
-						Render();
-						break;
-
-					default:
-						break;
-				}
-				break;
-		}
-	}
-}
-
-
-
 void Render()
 {
 	glClearColor( 0.5, 0.0, 0.0, 1.0 );
@@ -527,6 +475,57 @@ bool InitGL()
 	SDL_GL_SetSwapInterval( 1 );
 
 	return true;
+}
+
+
+
+// Acknowledge SDL events, user input, etc.
+void HandleSdlEvents()
+{
+	SDL_Event event;
+
+	while( SDL_PollEvent( &event ) )
+	{
+		switch( event.type )
+		{
+			case SDL_KEYDOWN:
+				break;
+
+			case SDL_KEYUP:
+				if( event.key.keysym.sym == SDLK_ESCAPE )
+					stopClient = true;
+				break;
+
+			case SDL_QUIT:
+				stopClient = true;
+				break;
+
+			case SDL_WINDOWEVENT:
+				switch( event.window.event )
+				{
+					case SDL_WINDOWEVENT_FOCUS_GAINED:
+						windowFocus = true;
+						break;
+
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						windowFocus = false;
+						break;
+
+					case SDL_WINDOWEVENT_RESIZED:
+						LOG( ToString(
+							"New window size: " <<
+							event.window.data1  <<
+							"x" << event.window.data2
+						) );
+						Render();
+						break;
+
+					default:
+						break;
+				}
+				break;
+		}
+	}
 }
 
 
