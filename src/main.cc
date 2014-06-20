@@ -285,32 +285,68 @@ bool InitGL()
 
 
 // Acknowledge SDL events, user input, etc.
-// Should generate a new event, so that game state can handle it as it wishes
+// Transforms the event to a custom struct
 void HandleSdlEvents()
 {
 	SDL_Event event;
-
-	SdlTextInputEvent   *sdlTextInput;
-	SdlTextEditingEvent *sdlTextEditing;
-	SdlWindowResizeEvent      *sdlWindowResize;
-	SdlWindowFocusChangeEvent *sdlWindowFocusChange;
+	SdlMouseButtonEvent *mouseButton;
+	SdlMouseMoveEvent   *mouseMove;
+	SdlMouseWheelEvent  *mouseWheel;
+	SdlTextInputEvent   *textInput;
+	SdlTextEditingEvent *textEditing;
+	SdlWindowResizeEvent      *windowResize;
+	SdlWindowFocusChangeEvent *windowFocusChange;
 
 	while( SDL_PollEvent( &event ) )
 	{
 		switch( event.type )
 		{
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+				mouseButton = new SdlMouseButtonEvent();
+
+				if( event.button.state == SDL_PRESSED )
+				{
+					mouseButton->subType = SDL_MOUSE_DOWN;
+				}
+				else
+				{
+					mouseButton->subType = SDL_MOUSE_UP;
+				}
+
+				mouseButton->button = event.button;
+				eventQueue.AddEvent( mouseButton );
+				break;
+
+
+			case SDL_MOUSEMOTION:
+				mouseMove = new SdlMouseMoveEvent();
+				mouseMove->motion = event.motion;
+				eventQueue.AddEvent( mouseMove );
+				break;
+
+
+			case SDL_MOUSEWHEEL:
+				mouseWheel = new SdlMouseWheelEvent();
+				mouseWheel->wheel = event.wheel;
+				eventQueue.AddEvent( mouseWheel );
+
+
+
 			case SDL_TEXTINPUT:
-				sdlTextInput = new SdlTextInputEvent();
-				sdlTextInput->text = std::string( event.text.text );
-				eventQueue.AddEvent( sdlTextInput );
+				textInput = new SdlTextInputEvent();
+				textInput->text = std::string( event.text.text );
+				eventQueue.AddEvent( textInput );
+				break;
 
 
 			case SDL_TEXTEDITING:
-				sdlTextEditing = new SdlTextEditingEvent();
-				sdlTextEditing->composition     = std::string( event.edit.text );
-				sdlTextEditing->cursor          = event.edit.start;
-				sdlTextEditing->selectionLength = event.edit.length;
-				eventQueue.AddEvent( static_cast<Event*>( sdlTextEditing ) );
+				textEditing = new SdlTextEditingEvent();
+				textEditing->composition     = std::string( event.edit.text );
+				textEditing->cursor          = event.edit.start;
+				textEditing->selectionLength = event.edit.length;
+				eventQueue.AddEvent( static_cast<Event*>( textEditing ) );
+				break;
 
 
 			case SDL_KEYDOWN:
@@ -332,16 +368,16 @@ void HandleSdlEvents()
 				switch( event.window.event )
 				{
 					case SDL_WINDOWEVENT_FOCUS_GAINED:
-						sdlWindowFocusChange = new SdlWindowFocusChangeEvent();
-						sdlWindowFocusChange->focusGained = true;
-						eventQueue.AddEvent( sdlWindowFocusChange );
+						windowFocusChange = new SdlWindowFocusChangeEvent();
+						windowFocusChange->focusGained = true;
+						eventQueue.AddEvent( windowFocusChange );
 						break;
 
 
 					case SDL_WINDOWEVENT_FOCUS_LOST:
-						sdlWindowFocusChange = new SdlWindowFocusChangeEvent();
-						sdlWindowFocusChange->focusGained = false;
-						eventQueue.AddEvent( sdlWindowFocusChange );
+						windowFocusChange = new SdlWindowFocusChangeEvent();
+						windowFocusChange->focusGained = false;
+						eventQueue.AddEvent( windowFocusChange );
 						break;
 
 
@@ -352,10 +388,10 @@ void HandleSdlEvents()
 							"x" << event.window.data2
 						) );
 
-						sdlWindowResize = new SdlWindowResizeEvent();
-						sdlWindowResize->width  = event.window.data1;
-						sdlWindowResize->height = event.window.data2;
-						eventQueue.AddEvent( sdlWindowResize );
+						windowResize = new SdlWindowResizeEvent();
+						windowResize->width  = event.window.data1;
+						windowResize->height = event.window.data2;
+						eventQueue.AddEvent( windowResize );
 						break;
 
 
