@@ -30,7 +30,6 @@ ServerConnection::~ServerConnection()
 	if( m_socket )
 	{
 		m_socket->close();
-		delete m_socket;
 	}
 }
 

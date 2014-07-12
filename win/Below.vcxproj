@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\clientGameState.cc" />
     <ClCompile Include="..\src\events\event.cc" />
     <ClCompile Include="..\src\events\eventDispatcher.cc" />
     <ClCompile Include="..\src\events\eventFactory.cc" />
@@ -24,6 +25,7 @@
     <ClCompile Include="..\src\network\serializable.cc" />
     <ClCompile Include="..\src\network\server.cc" />
     <ClCompile Include="..\src\network\serverConnection.cc" />
+    <ClCompile Include="..\src\gameState.cc" />
     <ClCompile Include="..\src\statistics\executionTimer.cc" />
     <ClCompile Include="..\src\task.cc" />
     <ClCompile Include="..\src\taskQueue.cc" />
@@ -37,6 +39,7 @@
     <None Include="..\src\workerContext.hh" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\clientGameState.hh" />
     <ClInclude Include="..\src\events\event.hh" />
     <ClInclude Include="..\src\events\eventDispatcher.hh" />
     <ClInclude Include="..\src\events\eventFactory.hh" />
@@ -54,6 +57,8 @@
     <ClInclude Include="..\src\network\server.hh" />
     <ClInclude Include="..\src\network\serverConnection.hh" />
     <ClInclude Include="..\src\ringBuffer.hh" />
+    <ClInclude Include="..\src\gameState.hh" />
+    <ClInclude Include="..\src\sdlEvents.hh" />
     <ClInclude Include="..\src\statistics\executionTimer.hh" />
     <ClInclude Include="..\src\taskQueue.hh" />
     <ClInclude Include="..\src\world\entity.hh" />

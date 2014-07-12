@@ -16,12 +16,15 @@
 #include "events/eventDispatcher.hh"
 #include "network/networkEvents.hh"
 #include "world/objectEvents.hh"
+#include "sdlEvents.hh"
 
 #include "network/serverConnection.hh"
 
 #include "world/entity.hh"
 #include "managers/shaderProgramManager.hh"
 #include "managers/clientObjectManager.hh"
+
+#include "clientGameState.hh"
 
 
 #if _DEBUG || DEBUG
@@ -60,8 +63,6 @@ TaskQueue       taskQueue;
 EventQueue      eventQueue;
 EventDispatcher eventDispatcher;
 io_service      ioService;
-
-std::shared_ptr<ServerConnection> connection;
 
 std::atomic<unsigned int> eventHandlerTasks;
 
@@ -107,7 +108,7 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 			task->f();
 		}
 
-		// Mark task as ended
+		// Mark task as finished
 		task->timer.End();
 
 
@@ -136,191 +137,6 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 		}
 	}
 }
-
-
-
-struct NetworkListener : public EventListener
-{
-	void HandleEvent( Event *e )
-	{
-		DataInEvent *dataIn;
-
-		// Stream for manual package creation
-		std::stringstream stream(
-			stringstream::in |
-			stringstream::out |
-			stringstream::binary
-		);
-
-		// Temporary node, which we serialize and send over network
-		WorldNode tmpNode;
-		tmpNode.id = 10;
-
-		// Vars to serialize
-		vector<string> vars;
-
-		switch( e->subType )
-		{
-			case NETWORK_JOIN:
-				LOG( "We connected!" );
-
-				// For now, construct few events here
-				// manually and send them to the server:
-
-
-				// Create an object of type 1
-				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
-				SerializeUint16( stream, (uint16_t)OBJECT_CREATE ); // Event sub type
-				SerializeUint8( stream, (uint8_t)1 );               // Object type
-				stream << tmpNode.Serialize( vector<string>() );    // Serialize all
-
-				connection->Write( stream.str() );
-
-				// Update the object with id 10
-
-				// Serialize the position
-				vars.push_back( "position" );
-
-				stream.str( "" );
-				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
-				SerializeUint16( stream, (uint16_t)OBJECT_UPDATE ); // Event sub type
-				SerializeUint32( stream, (uint32_t)10 );            // Object id
-				stream << tmpNode.Serialize( vars );
-
-				connection->Write( stream.str() );
-
-
-				// Destroy the object with id 10
-				stream.str( "" );
-				SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	 // Event type
-				SerializeUint16( stream, (uint16_t)OBJECT_DESTROY ); // Event sub type
-				SerializeUint32( stream, (uint32_t)10 );             // Object id
-
-				connection->Write( stream.str() );
-				break;
-
-			case NETWORK_PART:
-				LOG( "We disconnected!" );
-				stopClient = true;
-				break;
-
-			case NETWORK_DATA_IN:
-				dataIn = static_cast<DataInEvent*>( e );
-				LOG( "Data in: '" << dataIn->data << "'" );
-				HandleDataInEvent( dataIn );
-				break;
-
-			default:
-				LOG( "Undefined event sub type: '" << static_cast<EVENT_SUB_TYPE>( e->subType ) );
-		}
-	}
-
-
-	void HandleDataInEvent( DataInEvent *e )
-	{
-		char buffer[USHRT_MAX];
-
-		stringstream stream(
-			stringstream::in |
-			stringstream::out |
-			stringstream::binary
-		);
-		stream << e->data;
-
-
-		EventType type = static_cast<EventType>(
-			UnserializeUint8( stream )
-		);
-
-		// Check the type
-		if( type >= EVENT_TYPE_COUNT )
-		{
-			LOG_ERROR( "Received invalid type!" );
-			return;
-		}
-
-
-		EventSubType subType = static_cast<EventSubType>(
-			UnserializeUint16( stream )
-		);
-
-		// Check the the sub type
-		if( subType >= EVENT_SUB_TYPE_COUNT )
-		{
-			LOG_ERROR( "Received invalid sub type!" );
-			return;
-		}
-
-		// Copy the data to the dataStream
-		stringstream dataStream(
-			stringstream::in |
-			stringstream::out |
-			stringstream::binary
-		);
-
-		ObjectCreateEvent  *create;
-		ObjectDestroyEvent *destroy;
-		ObjectUpdateEvent  *update;
-
-		size_t dataCount;
-
-		// Construct the event
-		// - It's a mess.
-		switch( type )
-		{
-			case OBJECT_EVENT:
-				switch( subType )
-				{
-					case( OBJECT_CREATE ):
-						create = new ObjectCreateEvent();
-						create->type = OBJECT_EVENT;
-						create->subType = OBJECT_CREATE;
-						create->objectType = UnserializeUint8( stream );
-
-						dataCount = stream.str().length() - 4;
-						stream.read( buffer, dataCount );
-						dataStream.write( buffer, dataCount );
-
-						create->data = dataStream.str();
-						eventQueue.AddEvent( create );
-						break;
-
-
-					case( OBJECT_DESTROY ):
-						destroy = new ObjectDestroyEvent();
-						destroy->type = OBJECT_EVENT;
-						destroy->subType = OBJECT_DESTROY;
-						destroy->objectId = UnserializeUint32( stream );
-						eventQueue.AddEvent( destroy );
-						break;
-
-
-					case( OBJECT_UPDATE ):
-						update = new ObjectUpdateEvent();
-						update->type = OBJECT_EVENT;
-						update->subType = OBJECT_UPDATE;
-						update->objectId = UnserializeUint32( stream );
-
-						dataCount = stream.str().length() - 7;
-						stream.read( buffer, dataCount );
-						dataStream.write( buffer, dataCount );
-
-						update->data = dataStream.str();
-						eventQueue.AddEvent( update );
-						break;
-
-
-					default:
-						break;
-				}
-				break;
-
-			default:
-				LOG_ERROR( ToString( "Constructing event of type " <<
-				                     (int)type << " not handled!"  ));
-		}
-	}
-};
 
 
 
@@ -387,55 +203,6 @@ void IoStepTask()
 
 
 
-// Acknowledge SDL events, user input, etc.
-void HandleSdlEvents()
-{
-	SDL_Event event;
-
-	while( SDL_PollEvent( &event ) )
-	{
-		switch( event.type )
-		{
-			case SDL_KEYDOWN:
-				break;
-
-			case SDL_KEYUP:
-				if( event.key.keysym.sym == SDLK_ESCAPE )
-					stopClient = true;
-				break;
-
-			case SDL_QUIT:
-				stopClient = true;
-				break;
-
-			case SDL_WINDOWEVENT:
-				switch( event.window.event )
-				{
-					case SDL_WINDOWEVENT_FOCUS_GAINED:
-						windowFocus = true;
-						break;
-
-					case SDL_WINDOWEVENT_FOCUS_LOST:
-						windowFocus = false;
-						break;
-				}
-				break;
-		}
-	}
-}
-
-
-
-void Render()
-{
-	glClearColor( 0.5, 0.0, 0.0, 1.0 );
-	glClear( GL_COLOR_BUFFER_BIT );
-
-	SDL_GL_SwapWindow( sdlWindow );
-}
-
-
-
 bool InitSDL()
 {
 	// Handle the SDL stuff
@@ -448,8 +215,8 @@ bool InitSDL()
 	// Create the SDL2 window
 	sdlWindow = SDL_CreateWindow(
 		"Below Client", SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED, 512, 512,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
+		SDL_WINDOWPOS_CENTERED, 680, 400,
+		SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
 	);
 
 	if( !sdlWindow )
@@ -458,6 +225,9 @@ bool InitSDL()
 		return false;
 	}
 
+	// Set maximum and minimum sizes:
+	SDL_SetWindowMaximumSize( sdlWindow, 2800, 2000 );
+	SDL_SetWindowMinimumSize( sdlWindow, 460, 380 );
 
 	// Create the icon for the window
 	SDL_Surface *icon = SDL_LoadBMP( "data/icons/windowIcon.bmp" );
@@ -510,6 +280,127 @@ bool InitGL()
 	SDL_GL_SetSwapInterval( 1 );
 
 	return true;
+}
+
+
+
+// Acknowledge SDL events, user input, etc.
+// Transforms the event to a custom struct
+void HandleSdlEvents()
+{
+	SDL_Event event;
+	SdlMouseButtonEvent *mouseButton;
+	SdlMouseMoveEvent   *mouseMove;
+	SdlMouseWheelEvent  *mouseWheel;
+	SdlTextInputEvent   *textInput;
+	SdlTextEditingEvent *textEditing;
+	SdlWindowResizeEvent      *windowResize;
+	SdlWindowFocusChangeEvent *windowFocusChange;
+
+	while( SDL_PollEvent( &event ) )
+	{
+		switch( event.type )
+		{
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+				mouseButton = new SdlMouseButtonEvent();
+
+				if( event.button.state == SDL_PRESSED )
+				{
+					mouseButton->subType = SDL_MOUSE_DOWN;
+				}
+				else
+				{
+					mouseButton->subType = SDL_MOUSE_UP;
+				}
+
+				mouseButton->button = event.button;
+				eventQueue.AddEvent( mouseButton );
+				break;
+
+
+			case SDL_MOUSEMOTION:
+				mouseMove = new SdlMouseMoveEvent();
+				mouseMove->motion = event.motion;
+				eventQueue.AddEvent( mouseMove );
+				break;
+
+
+			case SDL_MOUSEWHEEL:
+				mouseWheel = new SdlMouseWheelEvent();
+				mouseWheel->wheel = event.wheel;
+				eventQueue.AddEvent( mouseWheel );
+
+
+
+			case SDL_TEXTINPUT:
+				textInput = new SdlTextInputEvent();
+				textInput->text = std::string( event.text.text );
+				eventQueue.AddEvent( textInput );
+				break;
+
+
+			case SDL_TEXTEDITING:
+				textEditing = new SdlTextEditingEvent();
+				textEditing->composition     = std::string( event.edit.text );
+				textEditing->cursor          = event.edit.start;
+				textEditing->selectionLength = event.edit.length;
+				eventQueue.AddEvent( static_cast<Event*>( textEditing ) );
+				break;
+
+
+			case SDL_KEYDOWN:
+				break;
+
+
+			case SDL_KEYUP:
+				if( event.key.keysym.sym == SDLK_ESCAPE )
+					stopClient = true;
+				break;
+
+
+			case SDL_QUIT:
+				stopClient = true;
+				break;
+
+
+			case SDL_WINDOWEVENT:
+				switch( event.window.event )
+				{
+					case SDL_WINDOWEVENT_FOCUS_GAINED:
+						windowFocusChange = new SdlWindowFocusChangeEvent();
+						windowFocusChange->focusGained = true;
+						eventQueue.AddEvent( windowFocusChange );
+						break;
+
+
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						windowFocusChange = new SdlWindowFocusChangeEvent();
+						windowFocusChange->focusGained = false;
+						eventQueue.AddEvent( windowFocusChange );
+						break;
+
+
+					case SDL_WINDOWEVENT_RESIZED:
+						LOG( ToString(
+							"New window size: " <<
+							event.window.data1  <<
+							"x" << event.window.data2
+						) );
+
+						windowResize = new SdlWindowResizeEvent();
+						windowResize->width  = event.window.data1;
+						windowResize->height = event.window.data2;
+						eventQueue.AddEvent( windowResize );
+						break;
+
+
+					default:
+						break;
+				}
+				break;
+		}
+	}
 }
 
 
@@ -568,12 +459,6 @@ void GenerateVitalTasks()
 
 void Quit( int returnCode )
 {
-	// If we're connected, disconnect
-	if( connection && connection->IsConnected() )
-	{
-		connection->Disconnect();
-	}
-
 	// Command worker threads to stop
 	LOG( "Stopping the worker threads!" );
 
@@ -637,10 +522,6 @@ int main( int argc, char *argv[] )
 	// Create the clock
 	std::chrono::steady_clock clock;
 
-	// Instantiate a network event listener
-	auto networkListener = make_shared<NetworkListener>();
-	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
-
 	// Instantiate an object manager and add it as an object event listener
 	objectManager = make_shared<ClientObjectManager>();
 	eventDispatcher.AddEventListener( OBJECT_EVENT, objectManager );
@@ -675,63 +556,31 @@ int main( int argc, char *argv[] )
 	glInitialized = true;
 
 
-	//  Create task for connecting to the server:
-	Task *connectTask = new Task();
-	connectTask->name = "TryConnectingTask";
-	connectTask->dependencies = 0;
-	connectTask->f = []()
-	{
-		// Try to connect to the server
-		LOG( "Connecting to the server..." );
-
-		try
-		{
-			connection = make_shared<ServerConnection>( ioService, "localhost", 22001 );
-			connection->SetEventQueue( &eventQueue );
-			connection->Connect( ioService );
-		}
-		catch( std::exception &e )
-		{
-			LOG_ERROR( "Failed to connect: " << e.what() );
-			stopClient = true;
-		}
-
-		if( connection->IsConnected() )
-		{
-			LOG( "Connected!" );
-		}
-	};
-	taskQueue.AddTask( connectTask );
-
-
 	// For timing in the main loop
-	auto nextInfo = clock.now() + std::chrono::milliseconds( 500 );
+	auto now        = clock.now();
+	auto lastUpdate = clock.now();
+
+
+	// Create the game state
+	ClientGameState gameState;
+	gameState.Create();
+
 
 	// Main loop
 	LOG( "Starting the main loop" );
 
 	do
 	{
+		// Calculate the delta time
+		now = clock.now();
+		chrono::milliseconds deltaTime = chrono::duration_cast<chrono::milliseconds>( (now - lastUpdate) );
+		lastUpdate = now;
+
 		// Do the main stuff
 		HandleSdlEvents();
-		Render();
 
-		std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
-
-		// And right away again, if it isn't the time for the info update
-		if( clock.now() < nextInfo )
-			continue;
-
-		size_t taskCount  = taskQueue.GetTaskCount();
-		size_t eventCount = eventQueue.GetEventCount();
-
-		// Print out at least some stats
-		LOG( "------------------------" <<  endl <<
-		     "Task  queue size: " << taskCount << endl <<
-		     "Event queue size: " << eventCount );
-
-		std::this_thread::yield();
-		nextInfo = clock.now( ) + std::chrono::milliseconds( 500 );
+		// Update the current game state
+		gameState.Tick( deltaTime );
 	}
 	while( !stopClient );
 

@@ -17,12 +17,6 @@ EventDispatcher::EventDispatcher()
 
 EventDispatcher::~EventDispatcher()
 {
-	for( auto it  = eventListeners.begin();
-	          it != eventListeners.end();
-	          it++ )
-	{
-		delete it->second;
-	}
 	eventListeners.clear();
 }
 
