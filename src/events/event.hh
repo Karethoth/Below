@@ -1,8 +1,10 @@
 #pragma once
 #include "../statistics/executionTimer.hh"
 
-#define EVENT_TYPE_LENGTH sizeof( unsigned char );
-#define EVENT_SUB_TYPE_LENGTH sizeof( unsigned short );
+#define EVENT_TYPE unsigned char
+#define EVENT_SUB_TYPE unsigned short
+#define EVENT_TYPE_LENGTH sizeof( EVENT_TYPE );
+#define EVENT_SUB_TYPE_LENGTH sizeof( EVENT_SUB_TYPE );
 
 
 enum EventType : unsigned char
