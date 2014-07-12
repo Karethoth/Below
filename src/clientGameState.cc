@@ -202,7 +202,7 @@ void ClientGameState::HandleEvent( Event *e )
 
 
 		default:
-			LOG( "Undefined event sub type: '" << e->subType );
+			LOG( "Undefined event sub type: '" << static_cast<EVENT_SUB_TYPE>( e->subType ) );
 	}
 }
 

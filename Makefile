@@ -37,6 +37,7 @@ COMMON_OBJS=\
       $(OBJDIR)/world/entity.o \
       $(OBJDIR)/world/worldNode.o \
       $(OBJDIR)/statistics/executionTimer.o \
+      $(OBJDIR)/gameState.o \
       $(OBJDIR)/logger.o \
       $(OBJDIR)/task.o \
       $(OBJDIR)/taskQueue.o \
@@ -47,6 +48,7 @@ CLIENT_OBJS=\
 	$(OBJDIR)/graphics/shader.o \
 	$(OBJDIR)/graphics/shaderProgram.o \
 	$(OBJDIR)/managers/clientObjectManager.o \
+	$(OBJDIR)/clientGameState.o \
 	$(OBJDIR)/main.o
 
 SERVER_OBJS=\
