@@ -254,8 +254,8 @@ bool InitSDL()
 bool InitGL()
 {
 	// Set the opengl context version
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
 
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
@@ -554,6 +554,20 @@ int main( int argc, char *argv[] )
 		Quit( 1 );
 	}
 	glInitialized = true;
+
+	// Load shaders
+	shaderProgramManager = make_shared<ShaderProgramManager>();
+
+	// GUI Shader
+	map<string, GLuint> guiProgramAttributes;
+	guiProgramAttributes["vertexPosition"] = 0;
+	guiProgramAttributes["vertexUV"]       = 1;
+
+	if( !shaderProgramManager->Load( "data/shaders/guiShader", "guiShader", guiProgramAttributes ) )
+	{
+		LOG_ERROR( __FILE__ << ":" << __LINE__-2 << ": Generating GUI shader failed, exiting." );
+		Quit( 1 );
+	}
 
 
 	// For timing in the main loop

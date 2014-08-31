@@ -34,6 +34,8 @@
     <ClCompile Include="..\src\world\worldNode.cc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\data\shaders\guiShader.fragment" />
+    <None Include="..\data\shaders\guiShader.vertex" />
     <None Include="..\src\task.hh" />
     <None Include="..\src\threadPool.hh" />
     <None Include="..\src\workerContext.hh" />

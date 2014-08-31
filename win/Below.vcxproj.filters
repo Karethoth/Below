@@ -49,6 +49,9 @@
     <Filter Include="Source Files\statistics">
       <UniqueIdentifier>{91adec4a-06dc-4f7c-ba50-af0e51568abd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{2b59d868-cadb-4c3b-8bd4-0d53d0eaa519}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\task.cc">
@@ -124,6 +127,12 @@
     </None>
     <None Include="..\src\workerContext.hh">
       <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\data\shaders\guiShader.vertex">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\data\shaders\guiShader.fragment">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

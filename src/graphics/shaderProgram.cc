@@ -17,7 +17,6 @@ ShaderProgram::~ShaderProgram()
 	if( program )
 	{
 		glDeleteProgram( program );
-
 	}
 }
 
