@@ -9,7 +9,8 @@ Event::Event( ) : type( UNDEF_EVENT ),
 }
 
 
-string EventTypeToStr( EVENT_TYPE_VAR type )
+
+string EventTypeToStr( EventType type )
 {
 	string ret;
 
@@ -28,7 +29,8 @@ string EventTypeToStr( EVENT_TYPE_VAR type )
 }
 
 
-string EventSubTypeToStr( EVENT_SUB_TYPE_VAR type )
+
+string EventSubTypeToStr( EventSubType type )
 {
 	string ret;
 

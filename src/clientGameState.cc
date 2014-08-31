@@ -212,7 +212,10 @@ void ClientGameState::HandleEvent( Event *e )
 
 
 		default:
-			LOG( "Unhandled event : '" << EventTypeToStr( e->type ) << " - " << EventSubTypeToStr( e->subType ) );
+			LOG( "Unhandled event : '"
+			     << EventTypeToStr( e->type )
+			     << " - "
+			     << EventSubTypeToStr( e->subType ) );
 	}
 }
 
@@ -237,7 +240,7 @@ void ClientGameState::HandleDataInEvent( DataInEvent *e )
 	// Check the type
 	if( type >= EVENT_TYPE_COUNT )
 	{
-		LOG_ERROR( "Received invalid type!" );
+		LOG_ERROR( "Received invalid type(" << static_cast<unsigned int>( type ) << ")!" );
 		return;
 	}
 
@@ -249,7 +252,7 @@ void ClientGameState::HandleDataInEvent( DataInEvent *e )
 	// Check the the sub type
 	if( subType >= EVENT_SUB_TYPE_COUNT )
 	{
-		LOG_ERROR( "Received invalid sub type!" );
+		LOG_ERROR( "Received invalid sub type(" << static_cast<unsigned int>( subType ) << ")!" );
 		return;
 	}
 
@@ -267,7 +270,6 @@ void ClientGameState::HandleDataInEvent( DataInEvent *e )
 	size_t dataCount;
 
 	// Construct the event
-	// - It's a mess.
 	switch( type )
 	{
 		case OBJECT_EVENT:
@@ -317,9 +319,11 @@ void ClientGameState::HandleDataInEvent( DataInEvent *e )
 			}
 			break;
 
+
 		default:
-			LOG_ERROR( ToString( "Constructing event of type " <<
-				                    (int)type << " not handled!"  ));
+			LOG_ERROR( ToString( "Constructing event of type "
+			                     << EventTypeToStr( type )
+			                     << " not yet handled!" ) );
 	}
 }
 

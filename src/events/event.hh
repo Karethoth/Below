@@ -2,13 +2,13 @@
 #include "../statistics/executionTimer.hh"
 #include <string>
 
-#define EVENT_TYPE_VAR unsigned char
-#define EVENT_SUB_TYPE_VAR unsigned short
-#define EVENT_TYPE_LENGTH sizeof( EVENT_TYPE_VAR )
-#define EVENT_SUB_TYPE_LENGTH sizeof( EVENT_SUB_TYPE_VAR )
+#define EVENT_TYPE unsigned char
+#define EVENT_SUB_TYPE unsigned short
+#define EVENT_TYPE_LENGTH sizeof( EVENT_TYPE )
+#define EVENT_SUB_TYPE_LENGTH sizeof( EVENT_SUB_TYPE )
 
 
-enum EventType : EVENT_TYPE_VAR
+enum EventType : EVENT_TYPE
 {
 	UNDEF_EVENT = 0,
 	NETWORK_EVENT,
@@ -21,7 +21,7 @@ enum EventType : EVENT_TYPE_VAR
 };
 
 
-enum EventSubType : EVENT_SUB_TYPE_VAR
+enum EventSubType : EVENT_SUB_TYPE
 {
 	UNDEF_SUB_EVENT = 0,
 
@@ -75,6 +75,6 @@ struct Event
 };
 
 
-std::string EventTypeToStr( EVENT_TYPE_VAR );
-std::string EventSubTypeToStr( EVENT_SUB_TYPE_VAR );
+std::string EventTypeToStr( EventType );
+std::string EventSubTypeToStr( EventSubType );
 
