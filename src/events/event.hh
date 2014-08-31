@@ -1,11 +1,14 @@
 #pragma once
 #include "../statistics/executionTimer.hh"
+#include <string>
 
-#define EVENT_TYPE_LENGTH sizeof( unsigned char );
-#define EVENT_SUB_TYPE_LENGTH sizeof( unsigned short );
+#define EVENT_TYPE_VAR unsigned char
+#define EVENT_SUB_TYPE_VAR unsigned short
+#define EVENT_TYPE_LENGTH sizeof( EVENT_TYPE_VAR )
+#define EVENT_SUB_TYPE_LENGTH sizeof( EVENT_SUB_TYPE_VAR )
 
 
-enum EventType : unsigned char
+enum EventType : EVENT_TYPE_VAR
 {
 	UNDEF_EVENT = 0,
 	NETWORK_EVENT,
@@ -18,7 +21,7 @@ enum EventType : unsigned char
 };
 
 
-enum EventSubType : unsigned short
+enum EventSubType : EVENT_SUB_TYPE_VAR
 {
 	UNDEF_SUB_EVENT = 0,
 
@@ -26,10 +29,12 @@ enum EventSubType : unsigned short
 	NETWORK_JOIN,
 	NETWORK_PART,
 	NETWORK_DATA_IN,
+	NETWORK_PING,
+	NETWORK_PONG,
 
 	// State events
 	STATE_RUN_START,
-	STATE_RUN_PAUSE,
+	STATE_RUN_PAUSE	,
 
 	// Object events
 	OBJECT_CREATE,
@@ -68,4 +73,8 @@ struct Event
 	EventSubType   subType;
 	ExecutionTimer timer;
 };
+
+
+std::string EventTypeToStr( EVENT_TYPE_VAR );
+std::string EventSubTypeToStr( EVENT_SUB_TYPE_VAR );
 

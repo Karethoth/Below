@@ -201,8 +201,18 @@ void ClientGameState::HandleEvent( Event *e )
 			break;
 
 
+		case NETWORK_PING:
+			LOG( "Ping" );
+			break;
+
+
+		case NETWORK_PONG:
+			LOG( "Pong" );
+			break;
+
+
 		default:
-			LOG( "Undefined event sub type: '" << e->subType );
+			LOG( "Unhandled event : '" << EventTypeToStr( e->type ) << " - " << EventSubTypeToStr( e->subType ) );
 	}
 }
 

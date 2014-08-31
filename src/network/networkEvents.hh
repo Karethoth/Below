@@ -23,3 +23,17 @@ struct DataInEvent : public Event
 	std::string  data;
 };
 
+
+struct PingEvent : public Event
+{
+	unsigned int clientId;
+	std::string  msg;
+};
+
+
+struct PongEvent : public Event
+{
+	unsigned int clientId;
+	std::string  msg;
+};
+
