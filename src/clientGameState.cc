@@ -183,26 +183,49 @@ void ClientGameState::Connect()
 	taskQueue.AddTask( connectTask );
 }
 
-
+auto startTime = std::chrono::high_resolution_clock::now();
 
 void ClientGameState::Render()
 {
-	glClearColor( 0.5, 0.0, 0.0, 1.0 );
+	glEnable( GL_BLEND );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+	if( std::chrono::high_resolution_clock::now() < startTime )
+	{
+		startTime = std::chrono::high_resolution_clock::now();
+	}
+
+	auto offset = (std::chrono::high_resolution_clock::now()-startTime).count()/10000.0;
+	float color[3];
+	color[0] = sin( offset/1000.0 );
+	color[1] = sin( offset/2000.0 );
+	color[2] = sin( offset/500.0 );
+	if( color[0] < 0 ) color[0] *= -1.0;
+	if( color[1] < 0 ) color[1] *= -1.0;
+	if( color[2] < 0 ) color[2] *= -1.0;
+
+	glClearColor( color[0], color[1], color[2], 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT );
 
 	GLuint guiShader = 0;
-
 	if( shaderProgramManager.get() )
 	{
 		guiShader = shaderProgramManager->Get( "guiShader" )->Get();
 		glUseProgram( guiShader );
 
-		glUniform4f( colorUniform, 1.0, 0.0, 1.0, 1.0 );
-		glUniform2f( positionUniform, 0.0, 0.0 );
-		glUniform2f( scaleUniform, 0.5, 0.5 );
-
 		glEnableVertexAttribArray( 0 );
-		glDrawArrays( GL_TRIANGLES, 0, 6 );
+
+		for( int y=0; y < 4; y++ )
+		{
+			for( int x=0; x < 4; x++ )
+			{
+				glUniform4f( colorUniform, 0.25*(y), 0.0, 0.25*(y), 0.25*(x+1) );
+				glUniform2f( positionUniform, 0.25*x, 0.25*(y) );
+				glUniform2f( scaleUniform, 0.5, 0.5 );
+				glDrawArrays( GL_TRIANGLES, 0, 6 );
+			}
+		}
+
 		glDisableVertexAttribArray( 0 );
 	}
 
