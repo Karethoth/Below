@@ -269,6 +269,7 @@ bool InitGL()
 		return false;
 	}
 
+	glewExperimental = GL_TRUE;
 	GLenum status = glewInit();
 	if( status != GLEW_OK )
 	{

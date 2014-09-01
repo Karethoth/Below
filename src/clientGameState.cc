@@ -6,6 +6,7 @@
 #include "task.hh"
 #include "logger.hh"
 #include "threadPool.hh"
+#include "managers/shaderProgramManager.hh"
 
 #include <thread>
 #include <chrono>
@@ -26,6 +27,7 @@ extern io_service      ioService;
 
 extern SDL_Window *sdlWindow;
 
+extern std::shared_ptr<ShaderProgramManager> shaderProgramManager;
 
 std::shared_ptr<ServerConnection> connection;
 
@@ -50,6 +52,19 @@ ClientGameState::~ClientGameState()
 }
 
 
+static GLuint VertexArrayID;
+static GLuint vertexbuffer;
+static GLint colorUniform;
+static GLint scaleUniform;
+static GLint positionUniform;
+static const GLfloat g_vertex_buffer_data[] = {
+	0.0f, 0.0f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+	1.0f, 1.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 0.0f,
+	1.0f, 1.0f, 0.0f
+};
 
 void ClientGameState::Create()
 {
@@ -72,11 +87,38 @@ void ClientGameState::Create()
 
 
 	// Set this as the new event listener for these event categories
-	eventDispatcher.AddEventListener( STATE_EVENT,   static_cast<EventListenerPtr>( this ) );
-	eventDispatcher.AddEventListener( OBJECT_EVENT,  static_cast<EventListenerPtr>( this ) );
-	eventDispatcher.AddEventListener( NETWORK_EVENT, static_cast<EventListenerPtr>( this ) );
+	eventDispatcher.AddEventListener( STATE_EVENT,      static_cast<EventListenerPtr>( this ) );
+	eventDispatcher.AddEventListener( OBJECT_EVENT,     static_cast<EventListenerPtr>( this ) );
+	eventDispatcher.AddEventListener( NETWORK_EVENT,    static_cast<EventListenerPtr>( this ) );
 	eventDispatcher.AddEventListener( SDL_INPUT_EVENT,  static_cast<EventListenerPtr>( this ) );
 	eventDispatcher.AddEventListener( SDL_WINDOW_EVENT, static_cast<EventListenerPtr>( this ) );
+
+	//SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
+
+	// Create test VAO
+	glGenVertexArrays( 1, &VertexArrayID );
+	glBindVertexArray( VertexArrayID );
+	glGenBuffers( 1, &vertexbuffer );
+	glBindBuffer( GL_ARRAY_BUFFER, vertexbuffer );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW );
+
+	glEnableVertexAttribArray( 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, vertexbuffer );
+	glVertexAttribPointer(
+		shaderProgramManager->Get( "guiShader" )->GetAttribute( "vertexPosition" ), // Index
+		3,        // Size
+		GL_FLOAT, // Type
+		GL_FALSE, // Normalized?
+		0,        // Stride
+		(void*)0  // Offset
+	);
+
+	glDisableVertexAttribArray( 0 );
+
+	// Fetch uniform indices
+	colorUniform    = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_color" );
+	scaleUniform    = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_scale" );
+	positionUniform = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_position" );
 }
 
 
@@ -101,7 +143,6 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 		Connect();
 		state.tryingToConnect = true;
 	}
-
 
 	// Render
 	Render();
@@ -148,7 +189,22 @@ void ClientGameState::Render()
 {
 	glClearColor( 0.5, 0.0, 0.0, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT );
-	//SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
+
+	GLuint guiShader = 0;
+
+	if( shaderProgramManager.get() )
+	{
+		guiShader = shaderProgramManager->Get( "guiShader" )->Get();
+		glUseProgram( guiShader );
+
+		glUniform4f( colorUniform, 1.0, 0.0, 1.0, 1.0 );
+		glUniform2f( positionUniform, 0.0, 0.0 );
+		glUniform2f( scaleUniform, 0.5, 0.5 );
+
+		glEnableVertexAttribArray( 0 );
+		glDrawArrays( GL_TRIANGLES, 0, 6 );
+		glDisableVertexAttribArray( 0 );
+	}
 
 	SDL_GL_SwapWindow( sdlWindow );
 }

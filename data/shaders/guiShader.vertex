@@ -1,14 +1,22 @@
 #version 330 core
 
 layout(location = 0) in vec3 vertexPosition;
-layout(location = 1) in vec2 vertexUV;
 
-out vec2 UV;
-uniform mat4 MVP;
+out vec2 f_uv;
+out vec4 f_color;
+
+uniform vec2 u_uv;
+uniform vec4 u_color;
+uniform vec2 u_scale;
+uniform vec2 u_position;
 
 void main()
 {
-    gl_Position =  vec4( vertexPosition, 1 );
-    UV = vertexUV;
+    f_uv    = u_uv;
+	f_color = u_color;
+
+	vec2 position = vec2( -1.0, -1.0 ) + u_position*2;
+	position     += u_scale * vertexPosition.xy;
+    gl_Position   =  vec4( position, 0, 1 );
 }
 
