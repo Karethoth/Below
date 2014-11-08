@@ -10,7 +10,7 @@
 #include "../network/serializable.hh"
 
 
-class WorldNode: public Serializable
+struct WorldNode: public Serializable
 {
  public:
 	 WorldNode();
@@ -26,14 +26,11 @@ class WorldNode: public Serializable
 	// For node and entity identification:
 	unsigned int id;
 
-	glm::mat4 GetModelMatrix();
-
 	// Update the model matrix:
 	// - Updates childrens recursively.
 	virtual void UpdateModelMatrix( WorldNode *parent );
 
 
- private:
 	glm::vec3 position;
 	glm::quat rotation;
 	glm::vec3 scale;

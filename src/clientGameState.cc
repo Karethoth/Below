@@ -7,10 +7,15 @@
 #include "logger.hh"
 #include "threadPool.hh"
 #include "managers/shaderProgramManager.hh"
+#include "sdlEvents.hh"
+
+#include "graphics/obj.hh"
 
 #include <thread>
 #include <chrono>
 #include <boost/asio.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 using namespace std;
 using boost::asio::ip::tcp;
@@ -52,19 +57,6 @@ ClientGameState::~ClientGameState()
 }
 
 
-static GLuint VertexArrayID;
-static GLuint vertexbuffer;
-static GLint colorUniform;
-static GLint scaleUniform;
-static GLint positionUniform;
-static const GLfloat g_vertex_buffer_data[] = {
-	0.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 0.0f,
-	1.0f, 1.0f, 0.0f,
-	0.0f, 1.0f, 0.0f,
-	0.0f, 0.0f, 0.0f,
-	1.0f, 1.0f, 0.0f
-};
 
 void ClientGameState::Create()
 {
@@ -93,32 +85,36 @@ void ClientGameState::Create()
 	eventDispatcher.AddEventListener( SDL_INPUT_EVENT,  static_cast<EventListenerPtr>( this ) );
 	eventDispatcher.AddEventListener( SDL_WINDOW_EVENT, static_cast<EventListenerPtr>( this ) );
 
-	//SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
+	SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
 
-	// Create test VAO
-	glGenVertexArrays( 1, &VertexArrayID );
-	glBindVertexArray( VertexArrayID );
-	glGenBuffers( 1, &vertexbuffer );
-	glBindBuffer( GL_ARRAY_BUFFER, vertexbuffer );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW );
-
-	glEnableVertexAttribArray( 0 );
-	glBindBuffer( GL_ARRAY_BUFFER, vertexbuffer );
-	glVertexAttribPointer(
-		shaderProgramManager->Get( "guiShader" )->GetAttribute( "vertexPosition" ), // Index
-		3,        // Size
-		GL_FLOAT, // Type
-		GL_FALSE, // Normalized?
-		0,        // Stride
-		(void*)0  // Offset
+	// Create camera
+	cam.viewMatrix = glm::lookAt(
+		glm::vec3( 4, 3, 3 ),
+		glm::vec3( 0, 0, 0 ),
+		glm::vec3( 0, 1, 0 )
 	);
 
-	glDisableVertexAttribArray( 0 );
+	cam.position         = glm::vec3( 4, 3, 3 );
+	cam.projectionMatrix = glm::perspective( 45.0f, 680.f/400.f, 0.1f, 100.0f );
+
+	// Create test mesh
+	OBJ obj;
+	string path( "data/objs/cube.obj" );
+	obj.Load( path );
+
+	auto cube = make_shared<Mesh>();
+	cube->vertices  = obj.vertices;
+	cube->normals   = obj.normals;
+	cube->texCoords = obj.uvs;
+	cube->GenerateBuffers();
+
+	meshes.push_back( cube );
+
 
 	// Fetch uniform indices
-	colorUniform    = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_color" );
-	scaleUniform    = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_scale" );
-	positionUniform = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_position" );
+	colorUniform       = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_color" );
+	vpMatrixUniform    = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_vpMatrix" );
+	modelMatrixUniform = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_modelMatrix" );
 }
 
 
@@ -131,18 +127,38 @@ void ClientGameState::Destroy()
 		connection->Disconnect();
 		state.connected = false;
 	}
+
+	// Free meshes
+	for( auto& mesh : meshes )
+	{
+		mesh->FreeVbo();
+	}
 }
 
 
 
 void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 {
+	static double cumulativeTime = 0.0;
+	cumulativeTime += deltaTime.count() / 1000.0;
+
 	// If we're not connected try to
 	if( !state.connected && !state.tryingToConnect )
 	{
 		Connect();
 		state.tryingToConnect = true;
 	}
+
+	// Update camera position
+	cam.position = glm::vec3( sinf( cumulativeTime )*5,
+	                          cam.position.y,
+	                          cosf( cumulativeTime )*5 );
+
+	cam.viewMatrix = glm::lookAt(
+		cam.position,
+		glm::vec3( 0, 0, 0 ),
+		glm::vec3( 0, 1, 0 )
+	);
 
 	// Render
 	Render();
@@ -172,7 +188,7 @@ void ClientGameState::Connect()
 		catch( std::exception &e )
 		{
 			LOG_ERROR( "Failed to connect: " << e.what() );
-			stopClient = true;
+			//stopClient = true;
 		}
 
 		if( connection->IsConnected() )
@@ -183,7 +199,9 @@ void ClientGameState::Connect()
 	taskQueue.AddTask( connectTask );
 }
 
-auto startTime = std::chrono::high_resolution_clock::now();
+
+
+static auto startTime = std::chrono::high_resolution_clock::now();
 
 void ClientGameState::Render()
 {
@@ -207,6 +225,10 @@ void ClientGameState::Render()
 	glClearColor( color[0], color[1], color[2], 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT );
 
+	auto vpMatrix = cam.CalculateVPMatrix();
+
+	glUniformMatrix4fv( vpMatrixUniform, 1, GL_FALSE, &vpMatrix[0][0] );
+
 	GLuint guiShader = 0;
 	if( shaderProgramManager.get() )
 	{
@@ -214,18 +236,28 @@ void ClientGameState::Render()
 		glUseProgram( guiShader );
 
 		glEnableVertexAttribArray( 0 );
+		glEnableVertexAttribArray( 1 );
+		glEnableVertexAttribArray( 2 );
 
 		for( int y=0; y < 4; y++ )
 		{
 			for( int x=0; x < 4; x++ )
 			{
+				auto modelMatrix = glm::mat4( 1.0f );
+				modelMatrix = glm::translate( modelMatrix, glm::vec3( 0.5f*x, 0.5f*y, 0.5f*(x+y) ) ) *
+				              glm::scale( glm::vec3( 0.25f, 0.25f, 0.25f ) ) *
+				              glm::rotate( 0.f, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+
+				glUniformMatrix4fv( modelMatrixUniform, 1, GL_FALSE, &modelMatrix[0][0] );
+
 				glUniform4f( colorUniform, 0.25*(y), 0.0, 0.25*(y), 0.25*(x+1) );
-				glUniform2f( positionUniform, 0.25*x, 0.25*(y) );
-				glUniform2f( scaleUniform, 0.5, 0.5 );
-				glDrawArrays( GL_TRIANGLES, 0, 6 );
+
+				glDrawArrays( GL_TRIANGLES, 0, meshes[0]->vertices.size() );
 			}
 		}
 
+		glDisableVertexAttribArray( 2 );
+		glDisableVertexAttribArray( 1 );
 		glDisableVertexAttribArray( 0 );
 	}
 
@@ -245,56 +277,72 @@ void ClientGameState::HandleEvent( Event *e )
 		stringstream::binary
 	);
 
-
-	switch( e->subType )
+	if( e->type == NETWORK_EVENT )
 	{
-		case NETWORK_JOIN:
-			LOG( "We connected!" );
+		switch( e->subType )
+		{
+			case NETWORK_JOIN:
+				LOG( "We connected!" );
 
-			// Update state
-			state.connected       = true;
-			state.tryingToConnect = false;
+				// Update state
+				state.connected       = true;
+				state.tryingToConnect = false;
 
-			// For now, construct few events here
-			// manually and send them to the server:
+				// For now, construct few events here
+				// manually and send them to the server:
 
-			// Create an object of type 1
-			//SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
-			//SerializeUint16( stream, (uint16_t)OBJECT_CREATE ); // Event sub type
-			//SerializeUint8( stream, (uint8_t)1 );               // Object type
-			//stream << tmpNode.Serialize( vector<string>() );    // Serialize all
-			break;
-
-
-		case NETWORK_PART:
-			LOG( "We disconnected!" );
-			state.connected = false;
-			stopClient      = true;
-			break;
+				// Create an object of type 1
+				//SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
+				//SerializeUint16( stream, (uint16_t)OBJECT_CREATE ); // Event sub type
+				//SerializeUint8( stream, (uint8_t)1 );               // Object type
+				//stream << tmpNode.Serialize( vector<string>() );    // Serialize all
+				break;
 
 
-		case NETWORK_DATA_IN:
-			dataIn = static_cast<DataInEvent*>( e );
-			LOG( "Data in: '" << dataIn->data << "'" );
-			HandleDataInEvent( dataIn );
-			break;
+			case NETWORK_PART:
+				LOG( "We disconnected!" );
+				state.connected = false;
+				stopClient      = true;
+				break;
 
 
-		case NETWORK_PING:
-			LOG( "Ping" );
-			break;
+			case NETWORK_DATA_IN:
+				dataIn = static_cast<DataInEvent*>( e );
+				LOG( "Data in: '" << dataIn->data << "'" );
+				HandleDataInEvent( dataIn );
+				break;
 
 
-		case NETWORK_PONG:
-			LOG( "Pong" );
-			break;
+			case NETWORK_PING:
+				LOG( "Ping" );
+				break;
 
 
-		default:
-			LOG( "Unhandled event : '"
-			     << EventTypeToStr( e->type )
-			     << " - "
-			     << EventSubTypeToStr( e->subType ) );
+			case NETWORK_PONG:
+				LOG( "Pong" );
+				break;
+
+			default:
+				LOG( "Unhandled event : '"
+					 << EventTypeToStr( e->type )
+					 << " - "
+					 << EventSubTypeToStr( e->subType ) );
+		}
+	}
+
+	else if( e->type == SDL_WINDOW_EVENT )
+	{
+		switch( e->subType )
+		{
+			case SDL_WINDOW_RESIZE:
+				LOG( "Resize Event" );
+				SdlWindowResizeEvent *resizeEvent = static_cast<SdlWindowResizeEvent*>( e );
+				auto ratio = static_cast<float>( resizeEvent->width ) /
+							 static_cast<float>( resizeEvent->height );
+
+				cam.projectionMatrix = glm::perspective( 45.0f, ratio, 0.1f, 100.0f );
+				break;
+		}
 	}
 }
 

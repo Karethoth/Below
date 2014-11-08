@@ -338,13 +338,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 
 
 
-glm::mat4 WorldNode::GetModelMatrix()
-{
-	return modelMatrix;
-}
-
-
-
 void WorldNode::UpdateModelMatrix( WorldNode *parentPtr=nullptr )
 {
 	// Generate the local matrix
@@ -355,7 +348,7 @@ void WorldNode::UpdateModelMatrix( WorldNode *parentPtr=nullptr )
 	// If we have parent, take it into account
 	if( parentPtr )
 	{
-		modelMatrix = modelMatrix * parentPtr->GetModelMatrix();
+		modelMatrix = modelMatrix * parentPtr->modelMatrix;
 	}
 
 	// If a pointer wasn't provided, but we have an ID for the parent

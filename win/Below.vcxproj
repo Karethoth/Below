@@ -16,6 +16,8 @@
     <ClCompile Include="..\src\events\eventDispatcher.cc" />
     <ClCompile Include="..\src\events\eventFactory.cc" />
     <ClCompile Include="..\src\events\eventQueue.cc" />
+    <ClCompile Include="..\src\graphics\mesh.cc" />
+    <ClCompile Include="..\src\graphics\obj.cc" />
     <ClCompile Include="..\src\graphics\shader.cc" />
     <ClCompile Include="..\src\graphics\shaderProgram.cc" />
     <ClCompile Include="..\src\logger.cc" />
@@ -48,6 +50,8 @@
     <ClInclude Include="..\src\events\eventListener.hh" />
     <ClInclude Include="..\src\events\eventListenerCollection.hh" />
     <ClInclude Include="..\src\events\eventQueue.hh" />
+    <ClInclude Include="..\src\graphics\mesh.hh" />
+    <ClInclude Include="..\src\graphics\obj.hh" />
     <ClInclude Include="..\src\graphics\shader.hh" />
     <ClInclude Include="..\src\graphics\shaderProgram.hh" />
     <ClInclude Include="..\src\logger.hh" />
@@ -63,6 +67,7 @@
     <ClInclude Include="..\src\sdlEvents.hh" />
     <ClInclude Include="..\src\statistics\executionTimer.hh" />
     <ClInclude Include="..\src\taskQueue.hh" />
+    <ClInclude Include="..\src\world\camera.hh" />
     <ClInclude Include="..\src\world\entity.hh" />
     <ClInclude Include="..\src\world\objectEvents.hh" />
     <ClInclude Include="..\src\world\worldNode.hh" />
@@ -70,6 +75,12 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\client_resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\data\objs\cube.obj">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </Resource>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3FD105CF-3502-41A3-AE3F-9AF37A04632F}</ProjectGuid>

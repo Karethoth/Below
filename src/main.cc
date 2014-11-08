@@ -25,6 +25,7 @@
 #include "managers/clientObjectManager.hh"
 
 #include "clientGameState.hh"
+#include "graphics/obj.hh"
 
 
 #if _DEBUG || DEBUG

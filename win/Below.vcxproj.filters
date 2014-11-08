@@ -52,6 +52,11 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{2b59d868-cadb-4c3b-8bd4-0d53d0eaa519}</UniqueIdentifier>
     </Filter>
+    <Filter Include="objs">
+      <UniqueIdentifier>{918dbbca-7dca-43c2-b03d-205d19027fb7}</UniqueIdentifier>
+      <SourceControlFiles>False</SourceControlFiles>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\task.cc">
@@ -116,6 +121,12 @@
     </ClCompile>
     <ClCompile Include="..\src\clientGameState.cc">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\mesh.cc">
+      <Filter>Source Files\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\obj.cc">
+      <Filter>Source Files\graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -214,10 +225,24 @@
     <ClInclude Include="..\src\sdlEvents.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\graphics\mesh.hh">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\graphics\obj.hh">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\world\camera.hh">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\data\client_resource.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\data\objs\cube.obj">
+      <Filter>objs</Filter>
+    </Resource>
   </ItemGroup>
 </Project>

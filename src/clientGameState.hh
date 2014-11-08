@@ -3,6 +3,10 @@
 #include "events/eventListener.hh"
 #include "network/networkEvents.hh"
 
+#include "graphics/mesh.hh"
+#include "world/camera.hh"
+
+#include <vector>
 #include <memory>
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
@@ -23,6 +27,8 @@ class ClientGameState : public GameState, public EventListener
 
 	void HandleEvent( Event* );
 
+	std::vector<std::shared_ptr<Mesh>> meshes;
+
 
  protected:
 	void Connect();
@@ -31,12 +37,20 @@ class ClientGameState : public GameState, public EventListener
 	// Event handling
 	void HandleDataInEvent( DataInEvent* );
 
-
 	// State info and flags
 	struct
 	{
 		bool connected;
 		bool tryingToConnect;
 	} state;
+
+	// Uniforms for rendering
+	GLint colorUniform;
+	GLint scaleUniform;
+	GLint positionUniform;
+	GLint vpMatrixUniform;
+	GLint modelMatrixUniform;
+
+	Camera cam;
 };
 
