@@ -99,7 +99,7 @@ void ClientGameState::Create()
 
 	// Create test mesh
 	OBJ obj;
-	string path( "data/objs/cube.obj" );
+	string path( "data/objects/cube.obj" );
 	obj.Load( path );
 
 	auto cube = make_shared<Mesh>();
@@ -213,7 +213,7 @@ void ClientGameState::Render()
 		startTime = std::chrono::high_resolution_clock::now();
 	}
 
-	auto offset = (std::chrono::high_resolution_clock::now()-startTime).count()/10000.0;
+	auto offset = (std::chrono::high_resolution_clock::now()-startTime).count()/1000000.0;
 	float color[3];
 	color[0] = sin( offset/1000.0 );
 	color[1] = sin( offset/2000.0 );

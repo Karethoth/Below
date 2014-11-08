@@ -45,6 +45,8 @@ COMMON_OBJS=\
 CLIENT_OBJS=\
 	$(COMMON_OBJS) \
 	$(OBJDIR)/graphics/shader.o \
+	$(OBJDIR)/graphics/mesh.o \
+	$(OBJDIR)/graphics/obj.o \
 	$(OBJDIR)/graphics/shaderProgram.o \
 	$(OBJDIR)/managers/shaderProgramManager.o \
 	$(OBJDIR)/managers/clientObjectManager.o \
