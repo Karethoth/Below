@@ -213,11 +213,12 @@ void ClientGameState::Render()
 		startTime = std::chrono::high_resolution_clock::now();
 	}
 
-	auto offset = (std::chrono::high_resolution_clock::now()-startTime).count()/1000000.0;
+	auto totalMillis = chrono::duration_cast<chrono::milliseconds>( (std::chrono::high_resolution_clock::now()-startTime) );
+	auto offset = totalMillis.count()/1000.0;
 	float color[3];
-	color[0] = sin( offset/1000.0 );
-	color[1] = sin( offset/2000.0 );
-	color[2] = sin( offset/500.0 );
+	color[0] = sin( offset );
+	color[1] = sin( offset*1.5 );
+	color[2] = sin( offset*1.7 );
 	if( color[0] < 0 ) color[0] *= -1.0;
 	if( color[1] < 0 ) color[1] *= -1.0;
 	if( color[2] < 0 ) color[2] *= -1.0;
