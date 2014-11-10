@@ -560,10 +560,23 @@ int main( int argc, char *argv[] )
 	// Load shaders
 	shaderProgramManager = make_shared<ShaderProgramManager>();
 
+	// Default Shader
+	map<string, GLuint> defaultProgramAttributes;
+	defaultProgramAttributes["vertexPosition"] = 0;
+	defaultProgramAttributes["vertexNormal"]   = 1;
+	defaultProgramAttributes["vertexUV"]       = 2;
+
+	if( !shaderProgramManager->Load( "data/shaders/defaultShader", "defaultShader", defaultProgramAttributes ) )
+	{
+		LOG_ERROR( __FILE__ << ":" << __LINE__-2 << ": Generating default shader failed, exiting." );
+		Quit( 1 );
+	}
+
 	// GUI Shader
 	map<string, GLuint> guiProgramAttributes;
 	guiProgramAttributes["vertexPosition"] = 0;
-	guiProgramAttributes["vertexUV"]       = 1;
+	guiProgramAttributes["vertexNormal"]   = 1;
+	guiProgramAttributes["vertexUV"]       = 2;
 
 	if( !shaderProgramManager->Load( "data/shaders/guiShader", "guiShader", guiProgramAttributes ) )
 	{

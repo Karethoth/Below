@@ -5,6 +5,7 @@
 
 #include "graphics/mesh.hh"
 #include "world/camera.hh"
+#include "world/entity.hh"
 
 #include <vector>
 #include <memory>
@@ -27,7 +28,9 @@ class ClientGameState : public GameState, public EventListener
 
 	void HandleEvent( Event* );
 
-	std::vector<std::shared_ptr<Mesh>> meshes;
+	std::vector<std::shared_ptr<Mesh>>      meshes;
+	std::vector<std::shared_ptr<Entity>>    entities;
+	std::vector<std::shared_ptr<WorldNode>> worldNodes;
 
 
  protected:
@@ -47,8 +50,8 @@ class ClientGameState : public GameState, public EventListener
 	// Uniforms for rendering
 	GLint colorUniform;
 	GLint scaleUniform;
-	GLint positionUniform;
-	GLint vpMatrixUniform;
+	GLint viewMatrixUniform;
+	GLint projectionMatrixUniform;
 	GLint modelMatrixUniform;
 
 	Camera cam;

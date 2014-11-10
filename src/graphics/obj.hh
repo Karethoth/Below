@@ -9,7 +9,6 @@ class OBJ
 {
  public:
 	OBJ();
-	~OBJ();
 
 	bool Load( const std::string &filepath );
 

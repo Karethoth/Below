@@ -13,15 +13,6 @@ OBJ::OBJ()
 }
 
 
-
-OBJ::~OBJ()
-{
-	vertices.clear();
-	uvs.clear();
-	normals.clear();
-}
-
-
 /*
  * OBJ::Load() - Copied with slight modifications from
  * http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/

@@ -52,7 +52,7 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{2b59d868-cadb-4c3b-8bd4-0d53d0eaa519}</UniqueIdentifier>
     </Filter>
-    <Filter Include="objs">
+    <Filter Include="objects">
       <UniqueIdentifier>{918dbbca-7dca-43c2-b03d-205d19027fb7}</UniqueIdentifier>
       <SourceControlFiles>False</SourceControlFiles>
       <ParseFiles>false</ParseFiles>
@@ -143,6 +143,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\data\shaders\guiShader.fragment">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\data\shaders\defaultShader.vertex">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\data\shaders\defaultShader.fragment">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -241,8 +247,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="..\data\objs\cube.obj">
-      <Filter>objs</Filter>
+    <Resource Include="..\data\objects\cube.obj">
+      <Filter>objects</Filter>
     </Resource>
   </ItemGroup>
 </Project>

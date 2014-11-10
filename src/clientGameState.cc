@@ -16,6 +16,7 @@
 #include <boost/asio.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 using namespace std;
 using boost::asio::ip::tcp;
@@ -87,7 +88,11 @@ void ClientGameState::Create()
 
 	SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
 
-	// Create camera
+	// Create the root node
+	auto rootNode = std::make_shared<WorldNode>();
+	worldNodes.push_back( rootNode );
+
+	// Create a camera
 	cam.viewMatrix = glm::lookAt(
 		glm::vec3( 4, 3, 3 ),
 		glm::vec3( 0, 0, 0 ),
@@ -97,7 +102,7 @@ void ClientGameState::Create()
 	cam.position         = glm::vec3( 4, 3, 3 );
 	cam.projectionMatrix = glm::perspective( 45.0f, 680.f/400.f, 0.1f, 100.0f );
 
-	// Create test mesh
+	// Create a test mesh
 	OBJ obj;
 	string path( "data/objects/cube.obj" );
 	obj.Load( path );
@@ -110,11 +115,24 @@ void ClientGameState::Create()
 
 	meshes.push_back( cube );
 
+	// Create a test entity
+	auto cubeEntity = make_shared<Entity>();
+	cubeEntity->parent = rootNode->id;
+	cubeEntity->meshId = 1;
+	cubeEntity->textureId = 0;
+	cubeEntity->material.color = { 1.0, 0.0, 0.0, 1.0 };
+
+	entities.push_back( cubeEntity );
+	worldNodes.push_back( cubeEntity );
+
+	rootNode->children.push_back( cubeEntity->id );
+
 
 	// Fetch uniform indices
-	colorUniform       = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_color" );
-	vpMatrixUniform    = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_vpMatrix" );
-	modelMatrixUniform = shaderProgramManager->Get( "guiShader" )->GetUniform( "u_modelMatrix" );
+	colorUniform            = shaderProgramManager->Get( "defaultShader" )->GetUniform( "u_color" );
+	viewMatrixUniform       = shaderProgramManager->Get( "defaultShader" )->GetUniform( "u_viewMatrix" );
+	projectionMatrixUniform = shaderProgramManager->Get( "defaultShader" )->GetUniform( "u_projectionMatrix" );
+	modelMatrixUniform      = shaderProgramManager->Get( "defaultShader" )->GetUniform( "u_modelMatrix" );
 }
 
 
@@ -153,12 +171,18 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	cam.position = glm::vec3( sinf( cumulativeTime )*5,
 	                          cam.position.y,
 	                          cosf( cumulativeTime )*5 );
-
+	/*
 	cam.viewMatrix = glm::lookAt(
 		cam.position,
 		glm::vec3( 0, 0, 0 ),
 		glm::vec3( 0, 1, 0 )
 	);
+	*/
+
+	for( auto& entity : entities )
+	{
+		entity->modelMatrix = glm::rotate<float>( entity->modelMatrix, 0.001*deltaTime.count(), glm::vec3( 0.0, 1.0, 0.0 ) );
+	}
 
 	// Render
 	Render();
@@ -201,19 +225,15 @@ void ClientGameState::Connect()
 
 
 
-static auto startTime = std::chrono::high_resolution_clock::now();
-
 void ClientGameState::Render()
 {
 	glEnable( GL_BLEND );
+	glEnable( GL_DEPTH );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
-	if( std::chrono::high_resolution_clock::now() < startTime )
-	{
-		startTime = std::chrono::high_resolution_clock::now();
-	}
+	glEnable( GL_CULL_FACE );
 
-	auto totalMillis = chrono::duration_cast<chrono::milliseconds>( (std::chrono::high_resolution_clock::now()-startTime) );
+	auto totalMillis = chrono::duration_cast<chrono::milliseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() );
 	auto offset = totalMillis.count()/1000.0;
 	float color[3];
 	color[0] = sin( offset );
@@ -226,35 +246,26 @@ void ClientGameState::Render()
 	glClearColor( color[0], color[1], color[2], 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT );
 
-	auto vpMatrix = cam.CalculateVPMatrix();
+	glUniformMatrix4fv( viewMatrixUniform, 1, GL_FALSE, &cam.viewMatrix[0][0] );
+	glUniformMatrix4fv( projectionMatrixUniform, 1, GL_FALSE, &cam.projectionMatrix[0][0] );
 
-	glUniformMatrix4fv( vpMatrixUniform, 1, GL_FALSE, &vpMatrix[0][0] );
-
-	GLuint guiShader = 0;
+	GLuint defaultShader = 0;
 	if( shaderProgramManager.get() )
 	{
-		guiShader = shaderProgramManager->Get( "guiShader" )->Get();
-		glUseProgram( guiShader );
+		defaultShader = shaderProgramManager->Get( "defaultShader" )->Get();
+		glUseProgram( defaultShader );
 
 		glEnableVertexAttribArray( 0 );
 		glEnableVertexAttribArray( 1 );
 		glEnableVertexAttribArray( 2 );
 
-		for( int y=0; y < 4; y++ )
+		for( auto& entity : entities )
 		{
-			for( int x=0; x < 4; x++ )
-			{
-				auto modelMatrix = glm::mat4( 1.0f );
-				modelMatrix = glm::translate( modelMatrix, glm::vec3( 0.5f*x, 0.5f*y, 0.5f*(x+y) ) ) *
-				              glm::scale( glm::vec3( 0.25f, 0.25f, 0.25f ) ) *
-				              glm::rotate( 0.f, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+			glUniformMatrix4fv( modelMatrixUniform, 1, GL_FALSE, &entity->modelMatrix[0][0] );
 
-				glUniformMatrix4fv( modelMatrixUniform, 1, GL_FALSE, &modelMatrix[0][0] );
+			glUniform4fv( colorUniform, 1, &entity->material.color[0] );
 
-				glUniform4f( colorUniform, 0.25*(y), 0.0, 0.25*(y), 0.25*(x+1) );
-
-				glDrawArrays( GL_TRIANGLES, 0, meshes[0]->vertices.size() );
-			}
+			glDrawArrays( GL_TRIANGLES, 0, meshes[0]->vertices.size() );
 		}
 
 		glDisableVertexAttribArray( 2 );

@@ -36,6 +36,8 @@
     <ClCompile Include="..\src\world\worldNode.cc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\data\shaders\defaultShader.fragment" />
+    <None Include="..\data\shaders\defaultShader.vertex" />
     <None Include="..\data\shaders\guiShader.fragment" />
     <None Include="..\data\shaders\guiShader.vertex" />
     <None Include="..\src\task.hh" />
@@ -77,9 +79,9 @@
     <ResourceCompile Include="..\data\client_resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="..\data\objs\cube.obj">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    <Resource Include="..\data\objects\cube.obj">
       <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Resource>
   </ItemGroup>
   <PropertyGroup Label="Globals">
