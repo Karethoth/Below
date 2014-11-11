@@ -7,6 +7,8 @@
 #include "world/camera.hh"
 #include "world/entity.hh"
 
+#include "managers/clientObjectManager.hh"
+
 #include <vector>
 #include <memory>
 #include <GL/glew.h>
@@ -25,8 +27,9 @@ class ClientGameState : public GameState, public EventListener
 
 	virtual void Tick( std::chrono::milliseconds ) override;
 
-
 	void HandleEvent( Event* );
+
+	std::shared_ptr<ClientObjectManager> objectManager;
 
 	std::vector<std::shared_ptr<Mesh>>      meshes;
 	std::vector<std::shared_ptr<Entity>>    entities;

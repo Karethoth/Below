@@ -3,19 +3,17 @@
 #include "../events/event.hh"
 #include "../events/eventDispatcher.hh"
 #include "../world/worldNode.hh"
-#include "../world/entity.hh"
 
-#include <vector>
+#include <map>
 #include <memory>
 
 
-class ClientObjectManager : public EventListener
+class ServerObjectManager : public EventListener
 {
  public:
 	void HandleEvent( Event *e );
 
-	std::vector<std::shared_ptr<WorldNode>> worldObjects;
-	std::vector<std::shared_ptr<Entity>>    entities;
+	std::map<unsigned int, std::shared_ptr<WorldNode>> worldObjects;
 
  private:
 	std::mutex managerMutex;

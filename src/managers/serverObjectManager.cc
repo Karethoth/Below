@@ -1,12 +1,11 @@
-#include "clientObjectManager.hh"
+#include "serverObjectManager.hh"
 #include "../logger.hh"
 #include "../world/objectEvents.hh"
-#include "../world/entity.hh"
 
 using namespace std;
 
 
-void ClientObjectManager::HandleEvent( Event *e )
+void ServerObjectManager::HandleEvent( Event *e )
 {
 	lock_guard<std::mutex> lock( managerMutex );
 
@@ -20,8 +19,7 @@ void ClientObjectManager::HandleEvent( Event *e )
 		return;
 	}
 
-	shared_ptr<WorldNode> newNode;
-	shared_ptr<Entity>    newEntity;
+	static WorldNode *newNode;
 
 	switch( e->subType )
 	{
@@ -29,25 +27,9 @@ void ClientObjectManager::HandleEvent( Event *e )
 			createEvent = static_cast<ObjectCreateEvent*>( e );
 			LOG( "Object creation started.." );
 
-			if( createEvent->objectType == WORLD_NODE_OBJECT_TYPE )
-			{
-				newNode = make_shared<WorldNode>();
-				newNode->Unserialize( createEvent->data );
-			}
-			else if( createEvent->objectType == ENTITY_OBJECT_TYPE )
-			{
-				newEntity = make_shared<Entity>();
-				newEntity->Unserialize( createEvent->data );
-				newNode = static_pointer_cast<WorldNode>( newEntity );
-				entities.push_back( newEntity );
-			}
-			else
-			{
-				break;
-			}
-
+			newNode = new WorldNode();
+			newNode->Unserialize( createEvent->data );
 			LOG( "Object created!" );
-			worldObjects.push_back( newNode );
 			break;
 
 

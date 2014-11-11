@@ -526,9 +526,6 @@ int main( int argc, char *argv[] )
 		hardwareThreads = 2;
 	}
 
-	// Create the clock
-	std::chrono::steady_clock clock;
-
 	// Instantiate an object manager and add it as an object event listener
 	objectManager = make_shared<ClientObjectManager>();
 	eventDispatcher.AddEventListener( OBJECT_EVENT, objectManager );
@@ -591,12 +588,13 @@ int main( int argc, char *argv[] )
 
 
 	// For timing in the main loop
-	auto now        = clock.now();
-	auto lastUpdate = clock.now();
+	auto now        = chrono::steady_clock::now();
+	auto lastUpdate = chrono::steady_clock::now();
 
 
 	// Create the game state
 	ClientGameState gameState;
+	gameState.objectManager = objectManager;
 	gameState.Create();
 
 
@@ -606,7 +604,7 @@ int main( int argc, char *argv[] )
 	do
 	{
 		// Calculate the delta time
-		now = clock.now();
+		now = chrono::steady_clock::now();
 		chrono::milliseconds deltaTime = chrono::duration_cast<chrono::milliseconds>( (now - lastUpdate) );
 		lastUpdate = now;
 

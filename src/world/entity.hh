@@ -10,6 +10,8 @@ struct Material
 
 struct Entity : public WorldNode
 {
+	Entity();
+
 	unsigned int meshId;
 	unsigned int textureId;
 	Material     material;

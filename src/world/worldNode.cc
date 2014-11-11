@@ -23,6 +23,7 @@ WorldNode::WorldNode()
 	static std::atomic<unsigned int> nodeIdCounter;
 
 	id       = ++nodeIdCounter;
+	type     = WORLD_NODE_OBJECT_TYPE;
 	parent   = 0;
 	position = glm::vec3( 0 );
 	rotation = glm::quat();
@@ -47,6 +48,7 @@ string WorldNode::Serialize( vector<string> vars )
 		vars.push_back( "position" );
 		vars.push_back( "rotation" );
 		vars.push_back( "scale" );
+		vars.push_back( "parent" );
 	}
 
 	// Stream for the serialized data
@@ -214,10 +216,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 	stream.seekp( 0, ios::beg );
 	assert( streamLength > 0 );
 
-
-	LOG( ToString( "Got field " << fieldName << "(" << (int)streamLength << ") with value '" \
-		                        << stream.str() << "'" ) );
-
 	// ID
 	if( !fieldName.compare( "id" ) )
 	{
@@ -234,7 +232,7 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 
 		id = UnserializeUint32( stream );
 
-		LOG( ToString( "Result: id = " << id << endl ) );
+		LOG( ToString( "\tid = " << id ) );
 	}
 
 
@@ -257,11 +255,10 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 		position.z = UnserializeFloat( stream );
 
 		LOG( ToString(
-			"Result: position = <" <<
+			"\tposition = <" <<
 			position.x << "," <<
 			position.y << "," <<
-			position.z << ">" <<
-			endl
+			position.z << ">"
 		) );
 	}
 
@@ -286,12 +283,11 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 		rotation.w = UnserializeFloat( stream );
 
 		LOG( ToString(
-			"Result: rotation = <" <<
+			"\trotation = <" <<
 			rotation.x << "," <<
 			rotation.y << "," <<
 			rotation.z << "," <<
-			rotation.w << ">" <<
-			endl
+			rotation.w << ">"
 		) );
 	}
 
@@ -315,11 +311,10 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 		scale.z = UnserializeFloat( stream );
 
 		LOG( ToString(
-			"Result: scale = <" <<
+			"\tscale = <" <<
 			scale.x << "," <<
 			scale.y << "," <<
-			scale.z << ">" <<
-			endl
+			scale.z << ">"
 		) );
 	}
 

@@ -1,3 +1,12 @@
+#include "../logger.hh"
+
+#include "../threadPool.hh"
+#include "../network/server.hh"
+#include "../events/eventQueue.hh"
+#include "../events/eventDispatcher.hh"
+
+#include "serverGameState.hh"
+
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -5,14 +14,6 @@
 #include <csignal>
 
 #include <boost/asio.hpp>
-
-#include "../logger.hh"
-
-#include "../threadPool.hh"
-#include "../network/server.hh"
-
-#include "../events/eventQueue.hh"
-#include "../events/eventDispatcher.hh"
 
 
 using namespace std;
@@ -24,15 +25,16 @@ ThreadPool      threadPool;
 TaskQueue       taskQueue;
 EventQueue      eventQueue;
 EventDispatcher eventDispatcher;
-Server          server;
 boost::asio::io_service ioService;
 
 std::atomic<unsigned int> eventHandlerTasks;
 
+// Managers
+std::shared_ptr<ServerObjectManager>  objectManager;
+
 // Server stopper
 bool stopServer = false;
 bool ignoreLastThread = false;
-
 
 
 void WorkerLoop( WorkerContext *context, ThreadPool &pool )
@@ -114,7 +116,7 @@ struct NetworkListener : public EventListener
 			case NETWORK_DATA_IN:
 				dataIn = static_cast<DataInEvent*>( e );
 				LOG( "Data in from client " << dataIn->clientId << ": '" << dataIn->data << "'" );
-				server.GetClient( dataIn->clientId )->Write( dataIn->data );
+				//server.GetClient( dataIn->clientId )->Write( dataIn->data );
 				break;
 
 			default:
@@ -163,6 +165,7 @@ void EventHandlerGenerator()
 		std::string( "EventHandlerGenerator" ),
 		EventHandlerGenerator
 	);
+
 	taskQueue.AddTask( eventTasker );
 }
 
@@ -246,6 +249,51 @@ void GenerateVitalTasks()
 
 
 
+void Quit( int returnCode, bool noExit=false )
+{
+	// Command worker threads to stop
+	LOG( "Stopping the worker threads!" );
+
+	threadPool.contextListMutex.lock();
+	for( auto context  = threadPool.contexts.begin();
+	          context != threadPool.contexts.end();
+	          context++ )
+	{
+		(*context)->shouldStop = true;
+	}
+	threadPool.contextListMutex.unlock();
+
+
+	// Wait for the thread pool to empty
+	LOG( "Worker threads have been commanded to stop." );
+
+	while( threadPool.threads.size() > 0 )
+	{
+		// Remove unjoinable threads
+		threadPool.CleanThreads();
+
+		std::this_thread::yield();
+	}
+	LOG( "Worker threads stopped!" );
+
+
+	// Finish
+
+#if DEBUG_MODE
+	LOG( "Finished, press enter to quit." );
+	getc( stdin );
+#endif
+
+	if( noExit )
+	{
+		return;
+	}
+
+	exit( returnCode );
+}
+
+
+
 int main( int argc, char **argv )
 {
 	// Get count of hardware threads
@@ -264,11 +312,15 @@ int main( int argc, char **argv )
 
 
 	// Pass the event queue to the server
-	server.SetEventQueue( &eventQueue );
+	auto gameState = std::make_shared<ServerGameState>();
+	gameState->server.SetEventQueue( &eventQueue );
+
+	// Create object manager
+	objectManager = make_shared<ServerObjectManager>();
+	gameState->objectManager = objectManager;
 
 	// Temporary network listener, for testing purposes
-	auto networkListener = make_shared<NetworkListener>();
-	eventDispatcher.AddEventListener( NETWORK_EVENT, networkListener );
+	eventDispatcher.AddEventListener( NETWORK_EVENT, gameState );
 
 
 	// Create the threads
@@ -281,71 +333,36 @@ int main( int argc, char **argv )
 	// Create the core tasks
 	GenerateVitalTasks();
 
+	
 
-	// Try to start the server / open the listening socket
-	LOG( "Starting server..." );
-	try
-	{
-		server.Init( ioService, 22001 );
-		server.Accept();
-	}
-	catch( std::exception &e )
-	{
-		LOG_ERROR( "Failed to start: " << e.what() );
-		LOG( "Press enter to quit." );
-		getc( stdin );
-		return 1;
-	}
-	LOG( "Server started! Port is " << 22001 << "." );
+	// For timing in the main loop
+	auto now        = chrono::steady_clock::now();
+	auto lastUpdate = chrono::steady_clock::now();
 
 
+	// Create the game state
+	gameState->Create();
+	gameState->StartServer();
 
 	// Main loop
 	LOG( "Starting the main loop" );
 
 	do
 	{
-		size_t taskCount  = taskQueue.GetTaskCount();
-		size_t eventCount = eventQueue.GetEventCount();
+		// Calculate the delta time
+		now = chrono::steady_clock::now();
+		chrono::milliseconds deltaTime = chrono::duration_cast<chrono::milliseconds>( (now - lastUpdate) );
+		lastUpdate = now;
 
-		// Print out at least some stats
-		LOG( "------------------------" <<  endl <<
-		     "Task  queue size: " << taskCount << endl <<
-		     "Event queue size: " << eventCount );
-
-		std::this_thread::yield();
-		std::this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
+		// Update the current game state
+		gameState->Tick( deltaTime );
 	}
 	while( !stopServer );
+
 	LOG( "Main loop ended!" );
 
-
-	// Command worker threads to stop
-	LOG( "Commanding the threads to stop." );
-
-	threadPool.contextListMutex.lock();
-	for( auto context  = threadPool.contexts.begin();
-	          context != threadPool.contexts.end();
-	          context++ )
-	{
-		(*context)->shouldStop = true;
-	}
-	threadPool.contextListMutex.unlock();
-
-
-	// Wait for the thread pool to empty
-	LOG( "Waiting for the threads to stop." );
-
-	unsigned int maxThreads = ignoreLastThread ? 1 : 0;
-
-	do
-	{
-		threadPool.CleanThreads();
-		std::this_thread::yield();
-	}
-	while( threadPool.threads.size() > maxThreads );
-
-	LOG( "Threads stopped!" );
+	Quit( 0, true );
+	gameState->Destroy();
 
 
 	// Finish

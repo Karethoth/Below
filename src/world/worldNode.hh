@@ -9,6 +9,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "../network/serializable.hh"
+#include "worldObjectTypes.hh"
 
 
 struct WorldNode: public Serializable
@@ -17,8 +18,10 @@ struct WorldNode: public Serializable
 	 WorldNode();
 	 virtual ~WorldNode();
 
+	 WorldObjectType type;
+
 	// For serialization and unserialization:
-	virtual std::string Serialize( std::vector<std::string> vars );
+	virtual std::string Serialize( std::vector<std::string> vars={} );
 	virtual bool Unserialize( std::string data );
 
 	virtual bool SerializeField( std::string &fieldName, std::stringstream &stream );

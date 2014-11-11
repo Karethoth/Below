@@ -89,8 +89,10 @@ void ClientGameState::Create()
 	SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
 
 	// Create the root node
+	/*
 	auto rootNode = std::make_shared<WorldNode>();
 	worldNodes.push_back( rootNode );
+	*/
 
 	// Create a camera
 	cam.viewMatrix = glm::lookAt(
@@ -116,6 +118,7 @@ void ClientGameState::Create()
 	meshes.push_back( cube );
 
 	// Create a test entity
+	/*
 	auto cubeEntity = make_shared<Entity>();
 	cubeEntity->parent = rootNode->id;
 	cubeEntity->meshId = 0;
@@ -141,6 +144,7 @@ void ClientGameState::Create()
 	entities.push_back( cubeEntity2 );
 	worldNodes.push_back( cubeEntity2 );
 	cubeEntity->children.push_back( cubeEntity2 );
+	*/
 
 
 
@@ -187,7 +191,6 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	}
 
 	// Update camera position
-	/*
 	cam.position = glm::vec3( sinf( cumulativeTime )*5,
 	                          cam.position.y,
 	                          cosf( cumulativeTime )*5 );
@@ -197,24 +200,6 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 		glm::vec3( 0, 0, 0 ),
 		glm::vec3( 0, 1, 0 )
 	);
-	*/
-
-	auto rot = glm::toQuat( glm::rotate<float>(
-		glm::mat4{ 1.0 },
-		0.002*deltaTime.count(),
-		glm::vec3{ 0.5, 0.5, 0.1 }
-	) );
-
-	entities[0]->rotation *= rot;
-	entities[1]->rotation *= glm::inverse( rot*rot );
-
-	for( auto& node : worldNodes )
-	{
-		if( node->parent == 0 )
-		{
-			node->UpdateModelMatrix();
-		}
-	}
 
 	// Render
 	Render();
