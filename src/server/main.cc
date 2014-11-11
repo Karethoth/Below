@@ -341,7 +341,11 @@ int main( int argc, char **argv )
 
 	// Create the game state
 	gameState->Create();
-	gameState->StartServer();
+
+	if( !gameState->StartServer() )
+	{
+		stopServer = true;
+	}
 
 	// Main loop
 	LOG( "Starting the main loop" );

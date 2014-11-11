@@ -371,5 +371,6 @@ bool ServerGameState::StartServer()
 		return false;
 	}
 	LOG( "Server started! Port is " << 22001 << "." );
+
 	return true;
 }
