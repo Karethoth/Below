@@ -94,12 +94,12 @@ void ClientGameState::Create()
 
 	// Create a camera
 	cam.viewMatrix = glm::lookAt(
-		glm::vec3( 4, 3, 3 ),
+		glm::vec3( 1, 3, -5 ),
 		glm::vec3( 0, 0, 0 ),
 		glm::vec3( 0, 1, 0 )
 	);
 
-	cam.position         = glm::vec3( 4, 3, 3 );
+	cam.position         = glm::vec3( 0, 5, 0 );
 	cam.projectionMatrix = glm::perspective( 45.0f, 680.f/400.f, 0.1f, 100.0f );
 
 	// Create a test mesh
@@ -118,14 +118,30 @@ void ClientGameState::Create()
 	// Create a test entity
 	auto cubeEntity = make_shared<Entity>();
 	cubeEntity->parent = rootNode->id;
-	cubeEntity->meshId = 1;
+	cubeEntity->meshId = 0;
 	cubeEntity->textureId = 0;
 	cubeEntity->material.color = { 1.0, 0.0, 0.0, 1.0 };
+	cubeEntity->position = { 1.0, 0.0, 0.0 };
+	cubeEntity->scale = { 0.5, 0.5, 0.5 };
+	cubeEntity->UpdateModelMatrix();
 
 	entities.push_back( cubeEntity );
 	worldNodes.push_back( cubeEntity );
+	rootNode->children.push_back( cubeEntity );
 
-	rootNode->children.push_back( cubeEntity->id );
+	auto cubeEntity2 = make_shared<Entity>();
+	cubeEntity2->parent = rootNode->id;
+	cubeEntity2->meshId = 0;
+	cubeEntity2->textureId = 0;
+	cubeEntity2->material.color = { 0.0, 0.0, 1.0, 1.0 };
+	cubeEntity2->position = { 2.0, 0.0, 0.0 };
+	cubeEntity2->scale = { 1.0, 1.0, 1.0 };
+	cubeEntity2->UpdateModelMatrix();
+
+	entities.push_back( cubeEntity2 );
+	worldNodes.push_back( cubeEntity2 );
+	cubeEntity->children.push_back( cubeEntity2 );
+
 
 
 	// Fetch uniform indices
@@ -151,6 +167,9 @@ void ClientGameState::Destroy()
 	{
 		mesh->FreeVbo();
 	}
+
+	entities.clear();
+	worldNodes.clear();
 }
 
 
@@ -168,10 +187,11 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	}
 
 	// Update camera position
+	/*
 	cam.position = glm::vec3( sinf( cumulativeTime )*5,
 	                          cam.position.y,
 	                          cosf( cumulativeTime )*5 );
-	/*
+
 	cam.viewMatrix = glm::lookAt(
 		cam.position,
 		glm::vec3( 0, 0, 0 ),
@@ -179,9 +199,21 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	);
 	*/
 
-	for( auto& entity : entities )
+	auto rot = glm::toQuat( glm::rotate<float>(
+		glm::mat4{ 1.0 },
+		0.002*deltaTime.count(),
+		glm::vec3{ 0.5, 0.5, 0.1 }
+	) );
+
+	entities[0]->rotation *= rot;
+	entities[1]->rotation *= glm::inverse( rot*rot );
+
+	for( auto& node : worldNodes )
 	{
-		entity->modelMatrix = glm::rotate<float>( entity->modelMatrix, 0.001*deltaTime.count(), glm::vec3( 0.0, 1.0, 0.0 ) );
+		if( node->parent == 0 )
+		{
+			node->UpdateModelMatrix();
+		}
 	}
 
 	// Render
@@ -228,7 +260,7 @@ void ClientGameState::Connect()
 void ClientGameState::Render()
 {
 	glEnable( GL_BLEND );
-	glEnable( GL_DEPTH );
+	glEnable( GL_DEPTH_TEST );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
 	glEnable( GL_CULL_FACE );
@@ -244,7 +276,7 @@ void ClientGameState::Render()
 	if( color[2] < 0 ) color[2] *= -1.0;
 
 	glClearColor( color[0], color[1], color[2], 1.0 );
-	glClear( GL_COLOR_BUFFER_BIT );
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	glUniformMatrix4fv( viewMatrixUniform, 1, GL_FALSE, &cam.viewMatrix[0][0] );
 	glUniformMatrix4fv( projectionMatrixUniform, 1, GL_FALSE, &cam.projectionMatrix[0][0] );
@@ -265,7 +297,7 @@ void ClientGameState::Render()
 
 			glUniform4fv( colorUniform, 1, &entity->material.color[0] );
 
-			glDrawArrays( GL_TRIANGLES, 0, meshes[0]->vertices.size() );
+			glDrawArrays( GL_TRIANGLES, 0, meshes[entity->meshId]->vertices.size() );
 		}
 
 		glDisableVertexAttribArray( 2 );
@@ -334,11 +366,9 @@ void ClientGameState::HandleEvent( Event *e )
 				LOG( "Pong" );
 				break;
 
+
 			default:
-				LOG( "Unhandled event : '"
-					 << EventTypeToStr( e->type )
-					 << " - "
-					 << EventSubTypeToStr( e->subType ) );
+				goto _unhandled;
 		}
 	}
 
@@ -356,6 +386,19 @@ void ClientGameState::HandleEvent( Event *e )
 				break;
 		}
 	}
+	else
+	{
+		goto _unhandled;
+	}
+
+	return;
+
+
+_unhandled:
+	LOG( "Unhandled event : '"
+		<< EventTypeToStr( e->type )
+		<< " - "
+		<< EventSubTypeToStr( e->subType ) );
 }
 
 

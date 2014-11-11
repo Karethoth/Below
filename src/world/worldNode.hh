@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <sstream>
 
 #define GLM_FORCE_RADIANS
@@ -28,8 +29,7 @@ struct WorldNode: public Serializable
 
 	// Update the model matrix:
 	// - Updates childrens recursively.
-	virtual void UpdateModelMatrix( WorldNode *parent );
-
+	virtual void UpdateModelMatrix( WorldNode *parent=nullptr );
 
 	glm::vec3 position;
 	glm::quat rotation;
@@ -37,6 +37,6 @@ struct WorldNode: public Serializable
 	glm::mat4 modelMatrix;
 
 	unsigned int parent;
-	std::vector<unsigned int> children;
+	std::vector<std::shared_ptr<WorldNode>> children;
 };
 

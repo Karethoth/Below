@@ -6,12 +6,11 @@
 #include <algorithm>
 #include <sstream>
 #include <atomic>
+#include <iostream>
 
 using namespace std;
 
 
-// Static counter for the id, matters only on server
-static std::atomic<unsigned int> nodeIdCounter;
 
 
 // Bundling few flags to clean a bit the creation of stringstreams:
@@ -20,11 +19,12 @@ static std::atomic<unsigned int> nodeIdCounter;
 
 WorldNode::WorldNode()
 {
+	// Static counter for the id, matters only on server
+	static std::atomic<unsigned int> nodeIdCounter;
+
 	id       = ++nodeIdCounter;
 	parent   = 0;
 	position = glm::vec3( 0 );
-	position.y = 5;
-	position.z = -5;
 	rotation = glm::quat();
 	scale    = glm::vec3( 1.f );
 }
@@ -33,6 +33,7 @@ WorldNode::WorldNode()
 
 WorldNode::~WorldNode()
 {
+	children.clear();
 }
 
 
@@ -338,33 +339,23 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 
 
 
-void WorldNode::UpdateModelMatrix( WorldNode *parentPtr=nullptr )
+void WorldNode::UpdateModelMatrix( WorldNode *parentPtr )
 {
-	// Generate the local matrix
 	modelMatrix = glm::translate( position ) *
 	              glm::toMat4( rotation ) *
 	              glm::scale( scale );
 
-	// If we have parent, take it into account
+	// If we have been given a parent, base calculations on it
 	if( parentPtr )
 	{
-		modelMatrix = modelMatrix * parentPtr->modelMatrix;
-	}
-
-	// If a pointer wasn't provided, but we have an ID for the parent
-	else if( parent )
-	{
-		// TODO: Find the parent and apply the model matrix to it's.
+		auto pModel = parentPtr->modelMatrix;
+		modelMatrix =  pModel * modelMatrix;
 	}
 
 
-	// Update the children
-	std::for_each( children.begin(),
-	               children.end(),
-	               [this]( unsigned int &childId )
+	for( auto &child : children )
 	{
-		// Find the child
-		// child->UpdateModelMatrix( this );
-	} );
+		child->UpdateModelMatrix( this );
+	}
 }
 

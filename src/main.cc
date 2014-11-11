@@ -459,7 +459,7 @@ void GenerateVitalTasks()
 
 
 
-void Quit( int returnCode )
+void Quit( int returnCode, bool noExit=false )
 {
 	// Command worker threads to stop
 	LOG( "Stopping the worker threads!" );
@@ -505,6 +505,11 @@ void Quit( int returnCode )
 	LOG( "Finished, press enter to quit." );
 	getc( stdin );
 #endif
+
+	if( noExit )
+	{
+		return;
+	}
 
 	exit( returnCode );
 }
@@ -615,7 +620,8 @@ int main( int argc, char *argv[] )
 
 	LOG( "Main loop ended!" );
 
-	Quit( 0 );
+	Quit( 0, true );
+	gameState.Destroy();
 
 	return 0;
 }
