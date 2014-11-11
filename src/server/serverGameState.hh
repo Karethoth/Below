@@ -40,6 +40,6 @@ class ServerGameState : public GameState, public EventListener
  protected:
 	// Event handling
 	void HandleDataInEvent( DataInEvent* );
-	void ServerGameState::SendScene( unsigned int clientId );
+	void SendScene( unsigned int clientId );
 };
 

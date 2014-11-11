@@ -55,6 +55,8 @@ CLIENT_OBJS=\
 
 SERVER_OBJS=\
 	$(COMMON_OBJS) \
+	$(OBJDIR)/managers/serverObjectManager.o \
+	$(OBJDIR)/server/serverGameState.o \
 	$(OBJDIR)/server/main.o
 
 

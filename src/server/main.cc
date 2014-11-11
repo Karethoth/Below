@@ -43,7 +43,6 @@ void WorkerLoop( WorkerContext *context, ThreadPool &pool )
 
 	// Run until thread should stop
 	while( !context->shouldStop )
-	while( !context->shouldStop )
 	{
 		Task *task = context->taskQueue->GetTask();
 		if( !task )

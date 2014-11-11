@@ -22,6 +22,7 @@ ServerConnection::ServerConnection()
 ServerConnection::ServerConnection( asio::io_service& ioService, std::string host, short port )
 {
 	Init( ioService, host, port );
+	m_socket = nullptr;
 }
 
 
@@ -30,6 +31,8 @@ ServerConnection::~ServerConnection()
 	if( m_socket )
 	{
 		m_socket->close();
+		delete m_socket;
+		m_socket = nullptr;
 	}
 }
 

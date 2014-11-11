@@ -111,14 +111,19 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 	static double cumulativeTime = 0.0;
 	cumulativeTime += deltaTime.count() / 1000.0;
 
-	auto rot = glm::toQuat( glm::rotate<float>(
-		glm::mat4{ 1.0 },
+	auto rotation = glm::rotate<float>(
+		glm::mat4{},
 		0.002*deltaTime.count(),
-		glm::vec3{ 0.5, 0.5, 0.1 }
-	) );
+		glm::normalize( glm::vec3{ 0.5, 0.5, 0.1 } )
+	);
 
-	entities[0]->rotation *= rot;
-	entities[1]->rotation *= glm::inverse( rot*rot );
+	auto rot = glm::toQuat( rotation );
+
+	if( entities.size() >= 2 )
+	{
+		entities[0]->rotation *= rot;
+		entities[1]->rotation *= glm::inverse( rot*rot );
+	}
 
 	for( auto& node : worldNodes )
 	{
@@ -363,9 +368,8 @@ bool ServerGameState::StartServer()
 	catch( std::exception &e )
 	{
 		LOG_ERROR( "Failed to start: " << e.what() );
-		LOG( "Press enter to quit." );
-		getc( stdin );
-		return 1;
+		return false;
 	}
 	LOG( "Server started! Port is " << 22001 << "." );
+	return true;
 }
