@@ -123,8 +123,8 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 	if( entities.size() >= 2 )
 	{
 		entities[0]->position.Update( glm::vec3( sin( cumulativeTime )*2, 0, 0 ) );
-		//entities[0]->rotation.Update( entities[0]->rotation.Get() * rot );
-		entities[1]->rotation.Update( entities[1]->rotation.Get() * glm::inverse( rot ) );
+		entities[0]->rotation.Update( entities[0]->rotation.Get() * rot );
+		entities[1]->rotation.Update( entities[1]->rotation.Get() * glm::inverse( rot*rot ) );
 	}
 
 	for( auto& node : worldNodes )
@@ -156,7 +156,7 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 		}
 	}
 
-	std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+	std::this_thread::sleep_for( std::chrono::milliseconds( 35 ) );
 }
 
 

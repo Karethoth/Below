@@ -63,6 +63,7 @@ using boost::asio::io_service;
 
 
 // Some global queues, pools, etc.
+ClientGameState gameState;
 ThreadPool      threadPool;
 TaskQueue       taskQueue;
 EventQueue      eventQueue;
@@ -204,6 +205,30 @@ void IoStepTask()
 	);
 
 	taskQueue.AddTask( nextStep );
+}
+
+
+
+static auto lastSceneUpdate = chrono::steady_clock::now();
+void SceneUpdateTask()
+{
+
+	// Calculate the delta time
+	auto now = chrono::steady_clock::now();
+	chrono::milliseconds deltaTime = chrono::duration_cast<chrono::milliseconds>( (now - lastSceneUpdate) );
+	lastSceneUpdate = now;
+
+	// Tick
+	gameState.Tick( deltaTime );
+	this_thread::sleep_until( now + chrono::milliseconds( 10 ) );
+
+	// Generate the next task
+	Task *nextTick = new Task(
+		std::string( "SceneUpdateTask" ),
+		SceneUpdateTask
+	);
+
+	taskQueue.AddTask( nextTick );
 }
 
 
@@ -459,6 +484,14 @@ void GenerateVitalTasks()
 		IoStepTask
 	);
 	taskQueue.AddTask( ioTasker );
+
+	// Create scene/physics update task
+	Task *nextTick = new Task(
+		std::string( "SceneUpdateTask" ),
+		SceneUpdateTask
+	);
+
+	taskQueue.AddTask( nextTick );
 }
 
 
@@ -597,7 +630,6 @@ int main( int argc, char *argv[] )
 
 
 	// Create the game state
-	ClientGameState gameState;
 	gameState.objectManager = objectManager;
 	gameState.Create();
 
@@ -616,7 +648,9 @@ int main( int argc, char *argv[] )
 		HandleSdlEvents();
 
 		// Update the current game state
-		gameState.Tick( deltaTime );
+		gameState.Render();
+
+		this_thread::sleep_until( now + chrono::milliseconds( 20 ) );
 	}
 	while( !stopClient );
 

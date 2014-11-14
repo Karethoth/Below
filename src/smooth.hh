@@ -17,25 +17,25 @@ inline T _minus( const T& lhs={}, const T& rhs={} )
 }
 
 
-template <>
-inline glm::quat _minus( const glm::quat& lhs, const glm::quat& rhs )
+inline glm::vec3 _minus( const glm::quat& lhs, const glm::quat& rhs )
 {
-	return rhs * glm::inverse( lhs );
+	return glm::eulerAngles( lhs ) - glm::eulerAngles( rhs );
 }
 
 
 
-template <typename T>
-inline T _plus( const T& lhs={}, const T& rhs={} )
+template <typename T, typename RHT=T>
+inline T _plus( const T& lhs={}, const RHT& rhs={} )
 {
 	return lhs + rhs;
 }
 
 
 template <>
-inline glm::quat _plus( const glm::quat& lhs, const glm::quat& rhs )
+inline glm::quat _plus( const glm::quat& lhs, const glm::vec3& rhs )
 {
-	return rhs * lhs;
+	auto rot = glm::quat{ rhs };
+	return lhs * rot;
 }
 
 
@@ -48,14 +48,6 @@ inline T _scalarDivide( const T& lhs={}, S rhs={1.f} )
 }
 
 
-template <typename S=float>
-inline glm::quat _scalarDivide( const glm::quat& lhs, S rhs )
-{
-	if( rhs == 0.0 ) rhs = S{ 1.f };
-	return lhs;
-}
-
-
 
 template <typename T, typename S=float>
 inline T _scalarMultiply( const T& lhs={}, S rhs={1.f} )
@@ -64,20 +56,13 @@ inline T _scalarMultiply( const T& lhs={}, S rhs={1.f} )
 }
 
 
-template <typename S=float>
-inline glm::quat _scalarMultiply( const glm::quat& lhs, S rhs )
-{
-	return lhs;
-}
 
 
-
-
-template <typename T, typename SpeedType=decltype( _minus( T{}, T{} ) )>
+template <typename T, typename DeltaType=decltype( _minus( T{}, T{} ) )>
 struct Smooth
 {
 	typedef std::chrono::high_resolution_clock::time_point HiResTimePoint;
-	typedef T valueType;
+	typedef T ValueType;
 
 	Smooth( T startValue={} )
 	{
@@ -103,12 +88,12 @@ struct Smooth
 
 	void Update( const T& newValue )
 	{
+		std::lock_guard<mutex> valueLock( mut );
 		auto currentTime = HiResTimePoint::clock::now();
 		auto deltaTime   = DeltaTime( currentTime );
-		SpeedType deltaValue = _minus( newValue, value );
+		DeltaType deltaValue = _minus( newValue, value );
 
 		lastUpdate = currentTime;
-		std::cout << deltaTime << std::endl;
 		speed = _scalarDivide( deltaValue, deltaTime );
 
 		value = newValue;
@@ -118,18 +103,21 @@ struct Smooth
 
 	void Calculate()
 	{
+		std::lock_guard<mutex> valueLock( mut );
 		auto deltaTime = DeltaTime( HiResTimePoint::clock::now() );
 		if( deltaTime < 0.002 )
 		{
 			return;
 		}
 
-		guess = _plus( value, _scalarMultiply( speed, deltaTime ) );
+		auto sum = _scalarMultiply( speed, deltaTime );
+		guess    = _plus<ValueType>( value, sum );
 	}
 
 
 	inline T Get()
 	{
+		std::lock_guard<mutex> valueLock( mut );
 		return guess;
 	}
 
@@ -145,7 +133,7 @@ struct Smooth
 
 	T value;
 	T guess;
-	SpeedType speed;
+	DeltaType speed;
 	std::mutex mut;
 };
 

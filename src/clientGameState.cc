@@ -117,36 +117,6 @@ void ClientGameState::Create()
 
 	meshes.push_back( cube );
 
-	// Create a test entity
-	/*
-	auto cubeEntity = make_shared<Entity>();
-	cubeEntity->parent = rootNode->id;
-	cubeEntity->meshId = 0;
-	cubeEntity->textureId = 0;
-	cubeEntity->material.color = { 1.0, 0.0, 0.0, 1.0 };
-	cubeEntity->position = { 1.0, 0.0, 0.0 };
-	cubeEntity->scale = { 0.5, 0.5, 0.5 };
-	cubeEntity->UpdateModelMatrix();
-
-	entities.push_back( cubeEntity );
-	worldNodes.push_back( cubeEntity );
-	rootNode->children.push_back( cubeEntity );
-
-	auto cubeEntity2 = make_shared<Entity>();
-	cubeEntity2->parent = rootNode->id;
-	cubeEntity2->meshId = 0;
-	cubeEntity2->textureId = 0;
-	cubeEntity2->material.color = { 0.0, 0.0, 1.0, 1.0 };
-	cubeEntity2->position = { 2.0, 0.0, 0.0 };
-	cubeEntity2->scale = { 1.0, 1.0, 1.0 };
-	cubeEntity2->UpdateModelMatrix();
-
-	entities.push_back( cubeEntity2 );
-	worldNodes.push_back( cubeEntity2 );
-	cubeEntity->children.push_back( cubeEntity2 );
-	*/
-
-
 
 	// Fetch uniform indices
 	colorUniform            = shaderProgramManager->Get( "defaultShader" )->GetUniform( "u_color" );
@@ -201,6 +171,11 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	*/
 
 	// Update transform matrices
+	if( !objectManager.get() )
+	{
+		return;
+	}
+
 	objectManager->managerMutex.lock();
 	for( auto& node : objectManager->worldNodes )
 	{
@@ -216,11 +191,6 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 		}
 	}
 	objectManager->managerMutex.unlock();
-
-	// Render
-	Render();
-
-	std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
 }
 
 

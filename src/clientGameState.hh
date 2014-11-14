@@ -26,6 +26,7 @@ class ClientGameState : public GameState, public EventListener
 	virtual void Destroy() override;
 
 	virtual void Tick( std::chrono::milliseconds ) override;
+	void Render();
 
 	void HandleEvent( Event* );
 
@@ -36,7 +37,6 @@ class ClientGameState : public GameState, public EventListener
 
  protected:
 	void Connect();
-	void Render();
 
 	// Event handling
 	void HandleDataInEvent( DataInEvent* );
