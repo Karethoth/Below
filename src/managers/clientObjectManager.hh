@@ -14,10 +14,17 @@ class ClientObjectManager : public EventListener
  public:
 	void HandleEvent( Event *e );
 
-	std::vector<std::shared_ptr<WorldNode>> worldObjects;
+	std::vector<std::shared_ptr<WorldNode>> worldNodes;
 	std::vector<std::shared_ptr<Entity>>    entities;
 
- private:
 	std::mutex managerMutex;
+
+ private:
+
+	void AddParent( unsigned int childId, unsigned int parentId );
+	void RemoveParent( unsigned int childId, unsigned int parentId );
+
+	void AddChild( unsigned int parentId, unsigned int childId );
+	void RemoveChild( unsigned int parentId, unsigned int childId );
 };
 

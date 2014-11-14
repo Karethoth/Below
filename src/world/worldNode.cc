@@ -48,7 +48,6 @@ string WorldNode::Serialize( vector<string> vars )
 		vars.push_back( "position" );
 		vars.push_back( "rotation" );
 		vars.push_back( "scale" );
-		vars.push_back( "parent" );
 	}
 
 	// Stream for the serialized data
@@ -231,8 +230,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 		}
 
 		id = UnserializeUint32( stream );
-
-		LOG( ToString( "\tid = " << id ) );
 	}
 
 
@@ -253,13 +250,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 		position.x = UnserializeFloat( stream );
 		position.y = UnserializeFloat( stream );
 		position.z = UnserializeFloat( stream );
-
-		LOG( ToString(
-			"\tposition = <" <<
-			position.x << "," <<
-			position.y << "," <<
-			position.z << ">"
-		) );
 	}
 
 
@@ -281,14 +271,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 		rotation.y = UnserializeFloat( stream );
 		rotation.z = UnserializeFloat( stream );
 		rotation.w = UnserializeFloat( stream );
-
-		LOG( ToString(
-			"\trotation = <" <<
-			rotation.x << "," <<
-			rotation.y << "," <<
-			rotation.z << "," <<
-			rotation.w << ">"
-		) );
 	}
 
 
@@ -309,13 +291,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 		scale.x = UnserializeFloat( stream );
 		scale.y = UnserializeFloat( stream );
 		scale.z = UnserializeFloat( stream );
-
-		LOG( ToString(
-			"\tscale = <" <<
-			scale.x << "," <<
-			scale.y << "," <<
-			scale.z << ">"
-		) );
 	}
 
 
@@ -346,7 +321,6 @@ void WorldNode::UpdateModelMatrix( WorldNode *parentPtr )
 		auto pModel = parentPtr->modelMatrix;
 		modelMatrix =  pModel * modelMatrix;
 	}
-
 
 	for( auto &child : children )
 	{

@@ -171,9 +171,6 @@ void ClientGameState::Destroy()
 	{
 		mesh->FreeVbo();
 	}
-
-	entities.clear();
-	worldNodes.clear();
 }
 
 
@@ -191,6 +188,7 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	}
 
 	// Update camera position
+	/*
 	cam.position = glm::vec3( sinf( cumulativeTime )*5,
 	                          cam.position.y,
 	                          cosf( cumulativeTime )*5 );
@@ -200,6 +198,18 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 		glm::vec3( 0, 0, 0 ),
 		glm::vec3( 0, 1, 0 )
 	);
+	*/
+
+	// Update transform matrices
+	objectManager->managerMutex.lock();
+	for( auto& node : objectManager->worldNodes )
+	{
+		if( node->parent == 0 )
+		{
+			node->UpdateModelMatrix();
+		}
+	}
+	objectManager->managerMutex.unlock();
 
 	// Render
 	Render();
@@ -244,6 +254,7 @@ void ClientGameState::Connect()
 
 void ClientGameState::Render()
 {
+	objectManager->managerMutex.lock();
 	glEnable( GL_BLEND );
 	glEnable( GL_DEPTH_TEST );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -259,6 +270,8 @@ void ClientGameState::Render()
 	if( color[0] < 0 ) color[0] *= -1.0;
 	if( color[1] < 0 ) color[1] *= -1.0;
 	if( color[2] < 0 ) color[2] *= -1.0;
+
+	Material mat = { {1.0, 0.0, 1.0, 1.0} };
 
 	glClearColor( color[0], color[1], color[2], 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -276,13 +289,13 @@ void ClientGameState::Render()
 		glEnableVertexAttribArray( 1 );
 		glEnableVertexAttribArray( 2 );
 
-		for( auto& entity : entities )
+		for( auto& entity : objectManager->entities )
 		{
 			glUniformMatrix4fv( modelMatrixUniform, 1, GL_FALSE, &entity->modelMatrix[0][0] );
 
-			glUniform4fv( colorUniform, 1, &entity->material.color[0] );
+			glUniform4fv( colorUniform, 1, &mat.color[0] );
 
-			glDrawArrays( GL_TRIANGLES, 0, meshes[entity->meshId]->vertices.size() );
+			glDrawArrays( GL_TRIANGLES, 0, meshes[0]->vertices.size() );
 		}
 
 		glDisableVertexAttribArray( 2 );
@@ -291,6 +304,7 @@ void ClientGameState::Render()
 	}
 
 	SDL_GL_SwapWindow( sdlWindow );
+	objectManager->managerMutex.unlock();
 }
 
 
@@ -337,7 +351,6 @@ void ClientGameState::HandleEvent( Event *e )
 
 			case NETWORK_DATA_IN:
 				dataIn = static_cast<DataInEvent*>( e );
-				LOG( "Data in: '" << dataIn->data << "'" );
 				HandleDataInEvent( dataIn );
 				break;
 
@@ -359,17 +372,27 @@ void ClientGameState::HandleEvent( Event *e )
 
 	else if( e->type == SDL_WINDOW_EVENT )
 	{
+		SdlWindowResizeEvent *resizeEvent;
+		float ratio;
+
 		switch( e->subType )
 		{
 			case SDL_WINDOW_RESIZE:
 				LOG( "Resize Event" );
-				SdlWindowResizeEvent *resizeEvent = static_cast<SdlWindowResizeEvent*>( e );
-				auto ratio = static_cast<float>( resizeEvent->width ) /
-							 static_cast<float>( resizeEvent->height );
+				resizeEvent = static_cast<SdlWindowResizeEvent*>( e );
+				ratio = static_cast<float>( resizeEvent->width ) /
+				        static_cast<float>( resizeEvent->height );
 
 				cam.projectionMatrix = glm::perspective( 45.0f, ratio, 0.1f, 100.0f );
 				break;
+
+			default:
+				goto _unhandled;
 		}
+	}
+	else if( e->type == OBJECT_EVENT )
+	{
+		return;
 	}
 	else
 	{
@@ -430,9 +453,11 @@ void ClientGameState::HandleDataInEvent( DataInEvent *e )
 		stringstream::binary
 	);
 
-	ObjectCreateEvent  *create;
-	ObjectDestroyEvent *destroy;
-	ObjectUpdateEvent  *update;
+	ObjectCreateEvent    *create;
+	ObjectDestroyEvent   *destroy;
+	ObjectUpdateEvent    *update;
+	ObjectParentAddEvent *parentAdd;
+	ObjectChildAddEvent  *childAdd;
 
 	size_t dataCount;
 
@@ -446,7 +471,7 @@ void ClientGameState::HandleDataInEvent( DataInEvent *e )
 					create = new ObjectCreateEvent();
 					create->type = OBJECT_EVENT;
 					create->subType = OBJECT_CREATE;
-					create->objectType = UnserializeUint8( stream );
+					create->objectType = static_cast<WorldObjectType>( UnserializeUint8( stream ) );
 
 					dataCount = stream.str().length() - 4;
 					stream.read( buffer, dataCount );
@@ -478,6 +503,26 @@ void ClientGameState::HandleDataInEvent( DataInEvent *e )
 
 					update->data = dataStream.str();
 					eventQueue.AddEvent( update );
+					break;
+
+
+				case( OBJECT_PARENT_ADD ):
+					parentAdd = new ObjectParentAddEvent();
+					parentAdd->type = OBJECT_EVENT;
+					parentAdd->subType = OBJECT_PARENT_ADD;
+					parentAdd->objectId = UnserializeUint32( stream );
+					parentAdd->parentId  = UnserializeUint32( stream );
+					eventQueue.AddEvent( parentAdd );
+					break;
+
+
+				case( OBJECT_CHILD_ADD ):
+					childAdd = new ObjectChildAddEvent();
+					childAdd->type = OBJECT_EVENT;
+					childAdd->subType = OBJECT_CHILD_ADD;
+					childAdd->objectId = UnserializeUint32( stream );
+					childAdd->childId  = UnserializeUint32( stream );
+					eventQueue.AddEvent( childAdd );
 					break;
 
 

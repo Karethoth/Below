@@ -32,8 +32,6 @@ class ClientGameState : public GameState, public EventListener
 	std::shared_ptr<ClientObjectManager> objectManager;
 
 	std::vector<std::shared_ptr<Mesh>>      meshes;
-	std::vector<std::shared_ptr<Entity>>    entities;
-	std::vector<std::shared_ptr<WorldNode>> worldNodes;
 
 
  protected:

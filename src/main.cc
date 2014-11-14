@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+	#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif
+
 #include <iostream>
 #include <thread>
 #include <vector>

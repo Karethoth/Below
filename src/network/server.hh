@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef _MSC_VER
+	#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif
+
 #include <cstdlib>
 #include <iostream>
 #include <memory>

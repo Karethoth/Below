@@ -1,13 +1,13 @@
 #pragma once
 
 #include "../events/event.hh"
-
+#include "../world/worldObjectTypes.hh"
 #include <string>
 
 
 struct ObjectCreateEvent : public Event
 {
-	unsigned char objectType;
+	WorldObjectType objectType;
 	std::string data;
 };
 
@@ -22,5 +22,33 @@ struct ObjectUpdateEvent : public Event
 {
 	unsigned int objectId;
 	std::string  data;
+};
+
+
+struct ObjectParentAddEvent : public Event
+{
+	unsigned int objectId;
+	unsigned int parentId;
+};
+
+
+struct ObjectParentRemoveEvent : public Event
+{
+	unsigned int objectId;
+	unsigned int parentId;
+};
+
+
+struct ObjectChildAddEvent : public Event
+{
+	unsigned int objectId;
+	unsigned int childId;
+};
+
+
+struct ObjectChildRemoveEvent : public Event
+{
+	unsigned int objectId;
+	unsigned int childId;
 };
 

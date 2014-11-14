@@ -83,12 +83,12 @@ void ServerGameState::Create()
 	rootNode->children.push_back( cubeEntity );
 
 	auto cubeEntity2 = make_shared<Entity>();
-	cubeEntity2->parent = rootNode->id;
+	cubeEntity2->parent = cubeEntity->id;
 	cubeEntity2->meshId = 0;
 	cubeEntity2->textureId = 0;
 	cubeEntity2->material.color = { 0.0, 0.0, 1.0, 1.0 };
 	cubeEntity2->position = { 2.0, 0.0, 0.0 };
-	cubeEntity2->scale = { 1.0, 1.0, 1.0 };
+	cubeEntity2->scale = { 2.0, 1.0, 1.0 };
 	cubeEntity2->UpdateModelMatrix();
 
 	entities.push_back( cubeEntity2 );
@@ -131,6 +131,25 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 		{
 			node->UpdateModelMatrix();
 		}
+
+		std::stringstream stream(
+			stringstream::in |
+			stringstream::out |
+			stringstream::binary
+		);
+
+		SerializeUint8( stream, (uint8_t)OBJECT_EVENT );
+		SerializeUint16( stream, (uint16_t)OBJECT_UPDATE );
+		SerializeUint32( stream, (uint32_t)node->id );
+		stream << node->Serialize( {"position", "rotation"} );
+
+		auto data = stream.str();
+		stream.clear();
+
+		for( auto &client : server.clientList )
+		{
+			client.second->Write( data );
+		}
 	}
 
 	std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
@@ -156,18 +175,19 @@ void ServerGameState::SendScene( unsigned int clientId )
 
 		SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
 		SerializeUint16( stream, (uint16_t)OBJECT_CREATE ); // Event sub type
-		SerializeUint8( stream, WORLD_NODE_OBJECT_TYPE );   // Object type
 
 		std::shared_ptr<Entity> entity;
 
 		switch( node->type )
 		{
 			case WORLD_NODE_OBJECT_TYPE:
-				stream << node->Serialize( vector<string>() );    // Serialize all
+				SerializeUint8( stream, WORLD_NODE_OBJECT_TYPE );
+				stream << node->Serialize( vector<string>{} );    // Serialize all
 				stream << node->Serialize();
 				break;
 
 			case ENTITY_OBJECT_TYPE:
+				SerializeUint8( stream, ENTITY_OBJECT_TYPE );
 				entity = static_pointer_cast<Entity>( node );
 				stream << entity->Serialize();
 				break;
@@ -177,6 +197,38 @@ void ServerGameState::SendScene( unsigned int clientId )
 		}
 
 		client->Write( stream.str() );
+	}
+
+
+	// Send hierarchy info
+	for( auto& node : worldNodes )
+	{
+		std::stringstream stream(
+			stringstream::in |
+			stringstream::out |
+			stringstream::binary
+		);
+
+		SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	   // Event type
+		SerializeUint16( stream, (uint16_t)OBJECT_PARENT_ADD ); // Event sub type
+		SerializeUint32( stream, node->id );
+		SerializeUint32( stream, node->parent );
+
+		auto str = stream.str();
+		client->Write( str );
+
+		/*
+		for( auto &child : node->children )
+		{
+			SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	   // Event type
+			SerializeUint16( stream, (uint16_t)OBJECT_CHILD_ADD ); // Event sub type
+			SerializeUint32( stream, node->id );
+			SerializeUint32( stream, child->id );
+
+			client->Write( stream.str() );
+
+			stream.clear();
+		}*/
 	}
 }
 
@@ -306,7 +358,7 @@ void ServerGameState::HandleDataInEvent( DataInEvent *e )
 					create = new ObjectCreateEvent();
 					create->type = OBJECT_EVENT;
 					create->subType = OBJECT_CREATE;
-					create->objectType = UnserializeUint8( stream );
+					create->objectType = static_cast<WorldObjectType>( UnserializeUint8( stream ) );
 
 					dataCount = stream.str().length() - 4;
 					stream.read( buffer, dataCount );
@@ -374,3 +426,4 @@ bool ServerGameState::StartServer()
 
 	return true;
 }
+
