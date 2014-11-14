@@ -204,6 +204,12 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	objectManager->managerMutex.lock();
 	for( auto& node : objectManager->worldNodes )
 	{
+		node->position.Calculate();
+		//node->rotation.Calculate();
+	}
+
+	for( auto& node : objectManager->worldNodes )
+	{
 		if( node->parent == 0 )
 		{
 			node->UpdateModelMatrix();

@@ -148,21 +148,23 @@ bool WorldNode::SerializeField( std::string &fieldName, std::stringstream &strea
 	// POSITION
 	else if( !fieldName.compare( "position" ) )
 	{
+		auto pos = position.Get();
 		fieldStream << "position:";
-		SerializeFloat( fieldStream, position.x );
-		SerializeFloat( fieldStream, position.y );
-		SerializeFloat( fieldStream, position.z );
+		SerializeFloat( fieldStream, pos.x );
+		SerializeFloat( fieldStream, pos.y );
+		SerializeFloat( fieldStream, pos.z );
 	}
 
 
 	// ROTATION
 	else if( !fieldName.compare( "rotation" ) )
 	{
+		auto rot = rotation.Get();
 		fieldStream << "rotation:";
-		SerializeFloat( fieldStream, rotation.x );
-		SerializeFloat( fieldStream, rotation.y );
-		SerializeFloat( fieldStream, rotation.z );
-		SerializeFloat( fieldStream, rotation.w );
+		SerializeFloat( fieldStream, rot.x );
+		SerializeFloat( fieldStream, rot.y );
+		SerializeFloat( fieldStream, rot.z );
+		SerializeFloat( fieldStream, rot.w );
 	}
 
 
@@ -236,41 +238,45 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 	// POSITION
 	else if( !fieldName.compare( "position" ) )
 	{
-		if( streamLength != sizeof( position.x ) * 3 )
+		if( streamLength != sizeof( position.Get().x ) * 3 )
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
-				", expected data to have length " << sizeof( position.x ) * 3 <<
+				", expected data to have length " << sizeof( position.Get().x ) * 3 <<
 				" instead of " << streamLength << "!"
 			) );
 
 			return false;
 		}
 
-		position.x = UnserializeFloat( stream );
-		position.y = UnserializeFloat( stream );
-		position.z = UnserializeFloat( stream );
+		decltype(position.Get()) pos;
+		pos.x = UnserializeFloat( stream );
+		pos.y = UnserializeFloat( stream );
+		pos.z = UnserializeFloat( stream );
+		position.Update( pos );
 	}
 
 
 	// ROTATION
 	else if( !fieldName.compare( "rotation" ) )
 	{
-		if( streamLength != sizeof( rotation.x ) * 4 )
+		if( streamLength != sizeof( rotation.Get().x ) * 4 )
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
-				", expected data to have length " << sizeof( position.x ) * 4 <<
+				", expected data to have length " << sizeof( rotation.Get().x ) * 4 <<
 				" instead of " << streamLength << "!"
 			) );
 
 			return false;
 		}
 
-		rotation.x = UnserializeFloat( stream );
-		rotation.y = UnserializeFloat( stream );
-		rotation.z = UnserializeFloat( stream );
-		rotation.w = UnserializeFloat( stream );
+		decltype(rotation.Get()) rot{};
+		rot.x = UnserializeFloat( stream );
+		rot.y = UnserializeFloat( stream );
+		rot.z = UnserializeFloat( stream );
+		rot.w = UnserializeFloat( stream );
+		rotation.Update( rot );
 	}
 
 
@@ -281,7 +287,7 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 		{
 			LOG_ERROR( ToString(
 				"UnserializeField failed for " << fieldName <<
-				", expected data to have length " << sizeof( position.x ) * 3 <<
+				", expected data to have length " << sizeof( scale.x ) * 3 <<
 				" instead of " << streamLength << "!"
 			) );
 
@@ -311,8 +317,8 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 
 void WorldNode::UpdateModelMatrix( WorldNode *parentPtr )
 {
-	modelMatrix = glm::translate( position ) *
-	              glm::toMat4( rotation ) *
+	modelMatrix = glm::translate( position.Get() ) *
+	              glm::toMat4( rotation.Get() ) *
 	              glm::scale( scale );
 
 	// If we have been given a parent, base calculations on it

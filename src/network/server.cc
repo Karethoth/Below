@@ -97,6 +97,11 @@ void Client::Write( string msg )
 {
 	lock_guard<mutex> writeLock( writeMutex );
 
+	if( !m_socket.is_open() )
+	{
+		return;
+	}
+
 	boost::asio::streambuf request;
 	ostream requestStream( &request );
 
@@ -105,7 +110,14 @@ void Client::Write( string msg )
 
 	requestStream << msg;
 
-	boost::asio::write( m_socket, request );
+	try
+	{
+		boost::asio::write( m_socket, request );
+	}
+	catch( ... )
+	{
+		LOG_ERROR( "Writing to client failed." );
+	}
 }
 
 
@@ -171,6 +183,25 @@ void Server::Accept()
 		}
 	);
 }
+
+
+
+void Server::CleanBadConnections()
+{
+	lock_guard<mutex> clientListLock( clientListMutex );
+	for( auto it = clientList.begin(); it != clientList.end(); )
+	{
+		if( (*it).second )
+		{
+			it++;
+			continue;
+		}
+
+		clientList.erase( it );
+	}
+}
+
+
 
 std::shared_ptr<Client> Server::GetClient( unsigned int id )
 {

@@ -10,6 +10,7 @@
 
 #include "../network/serializable.hh"
 #include "worldObjectTypes.hh"
+#include "../smooth.hh"
 
 
 struct WorldNode: public Serializable
@@ -34,8 +35,8 @@ struct WorldNode: public Serializable
 	// - Updates childrens recursively.
 	virtual void UpdateModelMatrix( WorldNode *parent=nullptr );
 
-	glm::vec3 position;
-	glm::quat rotation;
+	Smooth<glm::vec3> position;
+	Smooth<glm::quat> rotation;
 	glm::vec3 scale;
 	glm::mat4 modelMatrix;
 

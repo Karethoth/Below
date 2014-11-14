@@ -165,9 +165,6 @@
     <ClInclude Include="..\src\network\networkEvents.hh">
       <Filter>Header Files\network</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\network\server.hh">
-      <Filter>Header Files\network</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\graphics\shader.hh">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
@@ -239,6 +236,9 @@
     </ClInclude>
     <ClInclude Include="..\src\world\camera.hh">
       <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\smooth.hh">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -62,11 +62,11 @@
     <ClInclude Include="..\src\managers\templateManager.hh" />
     <ClInclude Include="..\src\network\networkEvents.hh" />
     <ClInclude Include="..\src\network\serializable.hh" />
-    <ClInclude Include="..\src\network\server.hh" />
     <ClInclude Include="..\src\network\serverConnection.hh" />
     <ClInclude Include="..\src\ringBuffer.hh" />
     <ClInclude Include="..\src\gameState.hh" />
     <ClInclude Include="..\src\sdlEvents.hh" />
+    <ClInclude Include="..\src\smooth.hh" />
     <ClInclude Include="..\src\statistics\executionTimer.hh" />
     <ClInclude Include="..\src\taskQueue.hh" />
     <ClInclude Include="..\src\world\camera.hh" />
@@ -82,6 +82,7 @@
     <Resource Include="..\data\objects\cube.obj">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </Resource>
   </ItemGroup>
   <PropertyGroup Label="Globals">

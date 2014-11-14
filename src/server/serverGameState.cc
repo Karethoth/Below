@@ -87,8 +87,8 @@ void ServerGameState::Create()
 	cubeEntity2->meshId = 0;
 	cubeEntity2->textureId = 0;
 	cubeEntity2->material.color = { 0.0, 0.0, 1.0, 1.0 };
-	cubeEntity2->position = { 2.0, 0.0, 0.0 };
-	cubeEntity2->scale = { 2.0, 1.0, 1.0 };
+	cubeEntity2->position = { 2.2, 0.0, 0.0 };
+	cubeEntity2->scale = { 1.0, 1.0, 1.0 };
 	cubeEntity2->UpdateModelMatrix();
 
 	entities.push_back( cubeEntity2 );
@@ -111,6 +111,7 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 	static double cumulativeTime = 0.0;
 	cumulativeTime += deltaTime.count() / 1000.0;
 
+	// Update scene
 	auto rotation = glm::rotate<float>(
 		glm::mat4{},
 		0.002*deltaTime.count(),
@@ -121,8 +122,9 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 
 	if( entities.size() >= 2 )
 	{
-		entities[0]->rotation *= rot;
-		entities[1]->rotation *= glm::inverse( rot*rot );
+		entities[0]->position.Update( glm::vec3( sin( cumulativeTime )*2, 0, 0 ) );
+		//entities[0]->rotation.Update( entities[0]->rotation.Get() * rot );
+		entities[1]->rotation.Update( entities[1]->rotation.Get() * glm::inverse( rot ) );
 	}
 
 	for( auto& node : worldNodes )
@@ -132,6 +134,7 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 			node->UpdateModelMatrix();
 		}
 
+		// Broadcast position and rotation of each node to clients
 		std::stringstream stream(
 			stringstream::in |
 			stringstream::out |
@@ -146,13 +149,14 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 		auto data = stream.str();
 		stream.clear();
 
+		lock_guard<mutex> clientListLock( server.clientListMutex );
 		for( auto &client : server.clientList )
 		{
 			client.second->Write( data );
 		}
 	}
 
-	std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
+	std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
 }
 
 
@@ -260,6 +264,7 @@ void ServerGameState::HandleEvent( Event *e )
 			case NETWORK_PART:
 				part = static_cast<PartEvent*>( e );
 				LOG( "Client " << part->clientId << " parted!" );
+				server.CleanBadConnections();
 				break;
 
 			case NETWORK_DATA_IN:

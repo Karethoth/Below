@@ -57,6 +57,7 @@ class Server : public EventFactory
 	void Accept();
 
 	std::shared_ptr<Client> GetClient( unsigned int id );
+	void CleanBadConnections();
 
 
 	std::mutex clientListMutex;
