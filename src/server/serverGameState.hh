@@ -29,9 +29,6 @@ class ServerGameState : public GameState, public EventListener
 
 	std::shared_ptr<ServerObjectManager> objectManager;
 
-	std::vector<std::shared_ptr<Entity>>    entities;
-	std::vector<std::shared_ptr<WorldNode>> worldNodes;
-
 	Server server;
 
 	bool StartServer();

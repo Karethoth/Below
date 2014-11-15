@@ -63,9 +63,16 @@ void ServerGameState::Create()
 	eventDispatcher.AddEventListener( OBJECT_EVENT,     static_cast<EventListenerPtr>( this ) );
 	eventDispatcher.AddEventListener( NETWORK_EVENT,    static_cast<EventListenerPtr>( this ) );
 
+	if( !objectManager.get() )
+	{
+		return;
+	}
+
+	lock_guard<mutex> objectManagerLock( objectManager->managerMutex );
+
 	// Create the root node
 	auto rootNode = std::make_shared<WorldNode>();
-	worldNodes.push_back( rootNode );
+	objectManager->worldNodes.push_back( rootNode );
 
 
 	// Create a test entity
@@ -76,8 +83,8 @@ void ServerGameState::Create()
 	cubeEntity->scale = { 0.5, 0.5, 0.5 };
 	cubeEntity->UpdateModelMatrix();
 
-	entities.push_back( cubeEntity );
-	worldNodes.push_back( cubeEntity );
+	objectManager->entities.push_back( cubeEntity );
+	objectManager->worldNodes.push_back( cubeEntity );
 	rootNode->children.push_back( cubeEntity );
 
 	auto cubeEntity2 = make_shared<Entity>();
@@ -87,8 +94,8 @@ void ServerGameState::Create()
 	cubeEntity2->scale = { 1.0, 1.0, 1.0 };
 	cubeEntity2->UpdateModelMatrix();
 
-	entities.push_back( cubeEntity2 );
-	worldNodes.push_back( cubeEntity2 );
+	objectManager->entities.push_back( cubeEntity2 );
+	objectManager->worldNodes.push_back( cubeEntity2 );
 	cubeEntity->children.push_back( cubeEntity2 );
 }
 
@@ -96,8 +103,6 @@ void ServerGameState::Create()
 
 void ServerGameState::Destroy()
 {
-	entities.clear();
-	worldNodes.clear();
 }
 
 
@@ -116,14 +121,28 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 
 	auto rot = glm::toQuat( rotation );
 
-	if( entities.size() >= 2 )
+	if( !objectManager.get() )
 	{
-		entities[0]->position.Update( glm::vec3( sin( cumulativeTime*2 )*2, 0, 0 ) );
-		entities[0]->rotation.Update( entities[0]->rotation.Get() * rot );
-		entities[1]->rotation.Update( entities[1]->rotation.Get() * rot );
+		return;
 	}
 
-	for( auto& node : worldNodes )
+	lock_guard<mutex> objectManagerLock( objectManager->managerMutex );
+
+
+	if( objectManager->entities.size() >= 2 )
+	{
+		objectManager->entities[0]->position.Update( glm::vec3( sin( cumulativeTime*2 )*2, 0, 0 ) );
+		objectManager->entities[0]->rotation.Update( objectManager->entities[0]->rotation.Get() * rot );
+		objectManager->entities[1]->rotation.Update( objectManager->entities[1]->rotation.Get() * glm::inverse( rot ) );
+	}
+
+	std::stringstream messageStream(
+		stringstream::in |
+		stringstream::out |
+		stringstream::binary
+	);
+
+	for( auto& node : objectManager->worldNodes )
 	{
 		if( node->parent == 0 )
 		{
@@ -137,19 +156,24 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 			stringstream::binary
 		);
 
+		// Create packet body
 		SerializeUint8( stream, (uint8_t)OBJECT_EVENT );
 		SerializeUint16( stream, (uint16_t)OBJECT_UPDATE );
 		SerializeUint32( stream, (uint32_t)node->id );
-		stream << node->Serialize( {"position", "rotation"} );
+		stream << node->Serialize( { "position", "rotation" } );
 
-		auto data = stream.str();
-		stream.clear();
+		// Add packet length
+		auto packet = stream.str();
+		SerializeUint16( messageStream, packet.size()+2 );
+		messageStream << packet;
+	}
 
-		lock_guard<mutex> clientListLock( server.clientListMutex );
-		for( auto &client : server.clientList )
-		{
-			client.second->Write( data );
-		}
+	auto updateMessage = messageStream.str();
+
+	lock_guard<mutex> clientListLock( server.clientListMutex );
+	for( auto &client : server.clientList )
+	{
+		client.second->Write( updateMessage );
 	}
 
 	std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
@@ -165,7 +189,20 @@ void ServerGameState::SendScene( unsigned int clientId )
 		return;
 	}
 
-	for( auto& node : worldNodes )
+	if( !objectManager.get() )
+	{
+		return;
+	}
+
+	lock_guard<mutex> lock{ objectManager->managerMutex };
+
+	std::stringstream messageStream(
+		stringstream::in |
+		stringstream::out |
+		stringstream::binary
+	);
+
+	for( auto& node : objectManager->worldNodes )
 	{
 		std::stringstream stream(
 			stringstream::in |
@@ -182,7 +219,7 @@ void ServerGameState::SendScene( unsigned int clientId )
 		{
 			case WORLD_NODE_OBJECT_TYPE:
 				SerializeUint8( stream, WORLD_NODE_OBJECT_TYPE );
-				stream << node->Serialize();    // Serialize all
+				stream << node->Serialize(); // Serialize all
 				break;
 
 			case ENTITY_OBJECT_TYPE:
@@ -195,12 +232,14 @@ void ServerGameState::SendScene( unsigned int clientId )
 				continue;
 		}
 
-		client->Write( stream.str() );
+		// Add packet length
+		auto packet = stream.str();
+		SerializeUint16( messageStream, packet.size()+2 );
+		messageStream << packet;
 	}
 
-
 	// Send hierarchy info
-	for( auto& node : worldNodes )
+	for( auto& node : objectManager->worldNodes )
 	{
 		std::stringstream stream(
 			stringstream::in |
@@ -208,27 +247,19 @@ void ServerGameState::SendScene( unsigned int clientId )
 			stringstream::binary
 		);
 
-		SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	   // Event type
+		SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	    // Event type
 		SerializeUint16( stream, (uint16_t)OBJECT_PARENT_ADD ); // Event sub type
 		SerializeUint32( stream, node->id );
 		SerializeUint32( stream, node->parent );
 
-		auto str = stream.str();
-		client->Write( str );
-
-		/*
-		for( auto &child : node->children )
-		{
-			SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	   // Event type
-			SerializeUint16( stream, (uint16_t)OBJECT_CHILD_ADD ); // Event sub type
-			SerializeUint32( stream, node->id );
-			SerializeUint32( stream, child->id );
-
-			client->Write( stream.str() );
-
-			stream.clear();
-		}*/
+		// Add packet length
+		auto packet = stream.str();
+		SerializeUint16( messageStream, packet.size()+2 );
+		messageStream << packet;
 	}
+
+	auto msg = messageStream.str();
+	client->Write( messageStream.str() );
 }
 
 
@@ -354,45 +385,6 @@ void ServerGameState::HandleDataInEvent( DataInEvent *e )
 		case OBJECT_EVENT:
 			switch( subType )
 			{
-				case( OBJECT_CREATE ):
-					create = new ObjectCreateEvent();
-					create->type = OBJECT_EVENT;
-					create->subType = OBJECT_CREATE;
-					create->objectType = static_cast<WorldObjectType>( UnserializeUint8( stream ) );
-
-					dataCount = stream.str().length() - 4;
-					stream.read( buffer, dataCount );
-					dataStream.write( buffer, dataCount );
-
-					create->data = dataStream.str();
-					eventQueue.AddEvent( create );
-					break;
-
-
-				case( OBJECT_DESTROY ):
-					destroy = new ObjectDestroyEvent();
-					destroy->type = OBJECT_EVENT;
-					destroy->subType = OBJECT_DESTROY;
-					destroy->objectId = UnserializeUint32( stream );
-					eventQueue.AddEvent( destroy );
-					break;
-
-
-				case( OBJECT_UPDATE ):
-					update = new ObjectUpdateEvent();
-					update->type = OBJECT_EVENT;
-					update->subType = OBJECT_UPDATE;
-					update->objectId = UnserializeUint32( stream );
-
-					dataCount = stream.str().length() - 7;
-					stream.read( buffer, dataCount );
-					dataStream.write( buffer, dataCount );
-
-					update->data = dataStream.str();
-					eventQueue.AddEvent( update );
-					break;
-
-
 				default:
 					break;
 			}

@@ -46,7 +46,7 @@ namespace
 	// Difference between quaternions
 	inline AngleAxis _minus( const glm::quat& lhs, const glm::quat& rhs )
 	{
-		auto quatDelta = rhs * glm::inverse(lhs);
+		auto quatDelta = lhs * glm::inverse(rhs);
 		return AngleAxis{ glm::angle( quatDelta ), glm::axis( quatDelta ) };;
 	}
 
@@ -129,15 +129,11 @@ struct Smooth
 	}
 
 
-	void Calculate()
+	void Calculate( const float& stepMultiplier={1.f} )
 	{
 		std::lock_guard<mutex> valueLock( mut );
 		auto deltaTime = DeltaTime( HiResTimePoint::clock::now() );
-		if( deltaTime < 0.01 )
-		{
-			return;
-		}
-		auto sum = _scalarMultiply( speed, deltaTime*0.5f );
+		auto sum = _scalarMultiply( speed, deltaTime*stepMultiplier );
 		guess    = _plus<ValueType>( value, sum );
 	}
 

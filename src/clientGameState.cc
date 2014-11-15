@@ -179,7 +179,7 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	objectManager->managerMutex.lock();
 	for( auto& node : objectManager->worldNodes )
 	{
-		node->position.Calculate();
+		node->position.Calculate( 0.9f );
 		node->rotation.Calculate();
 	}
 
@@ -391,127 +391,151 @@ void ClientGameState::HandleDataInEvent( DataInEvent *e )
 {
 	char buffer[USHRT_MAX];
 
-	stringstream stream(
-		stringstream::in |
-		stringstream::out |
-		stringstream::binary
-	);
-	stream << e->data;
+	size_t offset = 0;
 
-
-	EventType type = static_cast<EventType>(
-		UnserializeUint8( stream )
-	);
-
-	// Check the type
-	if( type >= EVENT_TYPE_COUNT )
+	while( e->data.size() > 0 )
 	{
-		LOG_ERROR( "Received invalid type(" << static_cast<unsigned int>( type ) << ")!" );
-		return;
-	}
+		stringstream stream(
+			stringstream::in |
+			stringstream::out |
+			stringstream::binary
+		);
 
+		stream << e->data;
 
-	EventSubType subType = static_cast<EventSubType>(
-		UnserializeUint16( stream )
-	);
+		// Get the length
+		auto packetLength = UnserializeUint16( stream );
+		offset += packetLength;
 
-	// Check the the sub type
-	if( subType >= EVENT_SUB_TYPE_COUNT )
-	{
-		LOG_ERROR( "Received invalid sub type(" << static_cast<unsigned int>( subType ) << ")!" );
-		return;
-	}
-
-	// Copy the data to the dataStream
-	stringstream dataStream(
-		stringstream::in |
-		stringstream::out |
-		stringstream::binary
-	);
-
-	ObjectCreateEvent    *create;
-	ObjectDestroyEvent   *destroy;
-	ObjectUpdateEvent    *update;
-	ObjectParentAddEvent *parentAdd;
-	ObjectChildAddEvent  *childAdd;
-
-	size_t dataCount;
-
-	// Construct the event
-	switch( type )
-	{
-		case OBJECT_EVENT:
-			switch( subType )
+		// Cap the packet length so it can't overflow
+		if( packetLength > e->data.size() )
+		{
+			if( e->data.size() >= 2 )
 			{
-				case( OBJECT_CREATE ):
-					create = new ObjectCreateEvent();
-					create->type = OBJECT_EVENT;
-					create->subType = OBJECT_CREATE;
-					create->objectType = static_cast<WorldObjectType>( UnserializeUint8( stream ) );
-
-					dataCount = stream.str().length() - 4;
-					stream.read( buffer, dataCount );
-					dataStream.write( buffer, dataCount );
-
-					create->data = dataStream.str();
-					eventQueue.AddEvent( create );
-					break;
-
-
-				case( OBJECT_DESTROY ):
-					destroy = new ObjectDestroyEvent();
-					destroy->type = OBJECT_EVENT;
-					destroy->subType = OBJECT_DESTROY;
-					destroy->objectId = UnserializeUint32( stream );
-					eventQueue.AddEvent( destroy );
-					break;
-
-
-				case( OBJECT_UPDATE ):
-					update = new ObjectUpdateEvent();
-					update->type = OBJECT_EVENT;
-					update->subType = OBJECT_UPDATE;
-					update->objectId = UnserializeUint32( stream );
-
-					dataCount = stream.str().length() - 7;
-					stream.read( buffer, dataCount );
-					dataStream.write( buffer, dataCount );
-
-					update->data = dataStream.str();
-					eventQueue.AddEvent( update );
-					break;
-
-
-				case( OBJECT_PARENT_ADD ):
-					parentAdd = new ObjectParentAddEvent();
-					parentAdd->type = OBJECT_EVENT;
-					parentAdd->subType = OBJECT_PARENT_ADD;
-					parentAdd->objectId = UnserializeUint32( stream );
-					parentAdd->parentId  = UnserializeUint32( stream );
-					eventQueue.AddEvent( parentAdd );
-					break;
-
-
-				case( OBJECT_CHILD_ADD ):
-					childAdd = new ObjectChildAddEvent();
-					childAdd->type = OBJECT_EVENT;
-					childAdd->subType = OBJECT_CHILD_ADD;
-					childAdd->objectId = UnserializeUint32( stream );
-					childAdd->childId  = UnserializeUint32( stream );
-					eventQueue.AddEvent( childAdd );
-					break;
-
-
-				default:
-					break;
+				packetLength = e->data.size() - 2;
 			}
-			break;
+			else
+			{
+				packetLength = 1;
+			}
+		}
+
+		auto currentPacket = e->data.substr( 2, packetLength-2 );
+		e->data = e->data.substr( packetLength );
+
+		// Get the type
+		EventType type = static_cast<EventType>(
+			UnserializeUint8( stream )
+		);
+
+		if( type >= EVENT_TYPE_COUNT )
+		{
+			LOG_ERROR( "Received invalid type(" << static_cast<unsigned int>( type ) << ")!" );
+			return;
+		}
+
+		// Get the sub type
+		EventSubType subType = static_cast<EventSubType>(
+			UnserializeUint16( stream )
+		);
+
+		if( subType >= EVENT_SUB_TYPE_COUNT )
+		{
+			LOG_ERROR( "Received invalid sub type(" << static_cast<unsigned int>( subType ) << ")!" );
+			continue;
+		}
+
+		// Copy the data to the dataStream
+		stringstream dataStream(
+			stringstream::in |
+			stringstream::out |
+			stringstream::binary
+		);
+
+		ObjectCreateEvent    *create;
+		ObjectDestroyEvent   *destroy;
+		ObjectUpdateEvent    *update;
+		ObjectParentAddEvent *parentAdd;
+		ObjectChildAddEvent  *childAdd;
+
+		size_t dataCount;
+
+		// Construct the event
+		switch( type )
+		{
+			case OBJECT_EVENT:
+				switch( subType )
+				{
+					case( OBJECT_CREATE ):
+						create = new ObjectCreateEvent();
+						create->type = OBJECT_EVENT;
+						create->subType = OBJECT_CREATE;
+						create->objectType = static_cast<WorldObjectType>( UnserializeUint8( stream ) );
+
+						dataCount = stream.str().length() - 4;
+						stream.read( buffer, dataCount );
+						dataStream.write( buffer, dataCount );
+
+						create->data = dataStream.str();
+						eventQueue.AddEvent( create );
+						break;
 
 
-		default:
-			LOG_ERROR( ToString( "Constructing event of type "
-			                     << EventTypeToStr( type )
-			                     << " not yet handled!" ) );
+					case( OBJECT_DESTROY ):
+						destroy = new ObjectDestroyEvent();
+						destroy->type = OBJECT_EVENT;
+						destroy->subType = OBJECT_DESTROY;
+						destroy->objectId = UnserializeUint32( stream );
+						eventQueue.AddEvent( destroy );
+						break;
+
+
+					case( OBJECT_UPDATE ):
+						update = new ObjectUpdateEvent();
+						update->type = OBJECT_EVENT;
+						update->subType = OBJECT_UPDATE;
+						update->objectId = UnserializeUint32( stream );
+
+						dataCount = stream.str().length() - 7;
+						stream.read( buffer, dataCount );
+						dataStream.write( buffer, dataCount );
+
+						update->data = dataStream.str();
+						eventQueue.AddEvent( update );
+						break;
+
+
+					case( OBJECT_PARENT_ADD ):
+						parentAdd = new ObjectParentAddEvent();
+						parentAdd->type = OBJECT_EVENT;
+						parentAdd->subType = OBJECT_PARENT_ADD;
+						parentAdd->objectId = UnserializeUint32( stream );
+						parentAdd->parentId  = UnserializeUint32( stream );
+						eventQueue.AddEvent( parentAdd );
+						break;
+
+
+					case( OBJECT_CHILD_ADD ):
+						childAdd = new ObjectChildAddEvent();
+						childAdd->type = OBJECT_EVENT;
+						childAdd->subType = OBJECT_CHILD_ADD;
+						childAdd->objectId = UnserializeUint32( stream );
+						childAdd->childId  = UnserializeUint32( stream );
+						eventQueue.AddEvent( childAdd );
+						break;
+
+
+					default:
+						break;
+				}
+				break;
+
+
+			default:
+				LOG_ERROR( ToString( "Constructing event of type "
+									 << EventTypeToStr( type )
+									 << " not yet handled!" ) );
+		}
 	}
 }
 
