@@ -73,7 +73,7 @@ void ServerGameState::Create()
 	cubeEntity->parent = rootNode->id;
 	cubeEntity->meshId = 0;
 	cubeEntity->textureId = 0;
-	cubeEntity->material.color = { 1.0, 0.0, 0.0, 1.0 };
+	cubeEntity->material.color = { 1.0, 0.0, 1.0, 1.0 };
 	cubeEntity->position = { 1.0, 0.0, 0.0 };
 	cubeEntity->scale = { 0.5, 0.5, 0.5 };
 	cubeEntity->UpdateModelMatrix();
@@ -86,7 +86,7 @@ void ServerGameState::Create()
 	cubeEntity2->parent = cubeEntity->id;
 	cubeEntity2->meshId = 0;
 	cubeEntity2->textureId = 0;
-	cubeEntity2->material.color = { 0.0, 0.0, 1.0, 1.0 };
+	cubeEntity2->material.color = { 0.0, 1.0, 1.0, 1.0 };
 	cubeEntity2->position = { 2.2, 0.0, 0.0 };
 	cubeEntity2->scale = { 1.0, 1.0, 1.0 };
 	cubeEntity2->UpdateModelMatrix();
@@ -186,8 +186,7 @@ void ServerGameState::SendScene( unsigned int clientId )
 		{
 			case WORLD_NODE_OBJECT_TYPE:
 				SerializeUint8( stream, WORLD_NODE_OBJECT_TYPE );
-				stream << node->Serialize( vector<string>{} );    // Serialize all
-				stream << node->Serialize();
+				stream << node->Serialize();    // Serialize all
 				break;
 
 			case ENTITY_OBJECT_TYPE:

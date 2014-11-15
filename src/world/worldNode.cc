@@ -11,8 +11,6 @@
 using namespace std;
 
 
-
-
 // Bundling few flags to clean a bit the creation of stringstreams:
 #define SS_RW_BIN std::stringstream::in | std::stringstream::out | std::stringstream::binary
 
@@ -39,15 +37,19 @@ WorldNode::~WorldNode()
 
 
 
+vector<string> WorldNode::GetDefaultFields()
+{
+	return vector<string>{ { "id", "position", "rotation", "scale" } };
+}
+
+
+
 string WorldNode::Serialize( vector<string> vars )
 {
 	// If we didn't receive any vars, serialize everything:
-	if( (vars.end() - vars.begin()) <= 0 )
+	if( vars.size() <= 0 )
 	{
-		vars.push_back( "id" );
-		vars.push_back( "position" );
-		vars.push_back( "rotation" );
-		vars.push_back( "scale" );
+		vars = GetDefaultFields();
 	}
 
 	// Stream for the serialized data
@@ -66,7 +68,6 @@ string WorldNode::Serialize( vector<string> vars )
 			fieldCount++;
 		}
 	}
-
 
 	// Create the header; it's just the count of fields
 	stringstream headerStream( SS_RW_BIN );
@@ -196,7 +197,10 @@ bool WorldNode::SerializeField( std::string &fieldName, std::stringstream &strea
 	fieldDataLength = fieldDataString.length();
 
 	// Do we have anything to serialize?
-	assert( fieldDataLength > 0 );
+	if( fieldDataLength <= 0 )
+	{
+		return false;
+	}
 
 	// Write the header / amount of data:
 	SerializeUint8( stream, fieldDataLength );

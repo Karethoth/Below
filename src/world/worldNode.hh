@@ -28,6 +28,9 @@ struct WorldNode: public Serializable
 	virtual bool SerializeField( std::string &fieldName, std::stringstream &stream );
 	virtual bool UnserializeField( std::string &fieldName, std::stringstream &stream  );
 
+	// Returns vector of the default fields to serialize
+	virtual std::vector<std::string> GetDefaultFields();
+
 	// For node and entity identification:
 	unsigned int id;
 

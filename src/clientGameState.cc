@@ -269,7 +269,7 @@ void ClientGameState::Render()
 		{
 			glUniformMatrix4fv( modelMatrixUniform, 1, GL_FALSE, &entity->modelMatrix[0][0] );
 
-			glUniform4fv( colorUniform, 1, &mat.color[0] );
+			glUniform4fv( colorUniform, 1, &entity->material.color[0] );
 
 			glDrawArrays( GL_TRIANGLES, 0, meshes[0]->vertices.size() );
 		}

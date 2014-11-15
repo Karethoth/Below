@@ -17,7 +17,9 @@ struct Entity : public WorldNode
 	Material     material;
 
 	// For serialization and unserialization:
-	//virtual std::string Serialize( std::vector<std::string> vars );
-	//virtual bool Unserialize( std::string data );
+	virtual bool SerializeField( std::string &fieldName, std::stringstream &stream ) override;
+	virtual bool UnserializeField( std::string &fieldName, std::stringstream &stream  ) override;
+
+	virtual std::vector<std::string> GetDefaultFields() override;
 };
 
