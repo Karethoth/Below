@@ -116,7 +116,7 @@ struct Smooth
 
 	void Update( const T& newValue )
 	{
-		std::lock_guard<mutex> valueLock( mut );
+		std::lock_guard<std::mutex> valueLock( mut );
 		auto currentTime = HiResTimePoint::clock::now();
 		auto deltaTime   = DeltaTime( currentTime );
 		DeltaType deltaValue = _minus( newValue, value );
@@ -131,7 +131,7 @@ struct Smooth
 
 	void Calculate( const float& stepMultiplier={1.f} )
 	{
-		std::lock_guard<mutex> valueLock( mut );
+		std::lock_guard<std::mutex> valueLock( mut );
 		auto deltaTime = DeltaTime( HiResTimePoint::clock::now() );
 		auto sum = _scalarMultiply( speed, deltaTime*stepMultiplier );
 		guess    = _plus<ValueType>( value, sum );
@@ -140,7 +140,7 @@ struct Smooth
 
 	inline T Get()
 	{
-		std::lock_guard<mutex> valueLock( mut );
+		std::lock_guard<std::mutex> valueLock( mut );
 		return guess;
 	}
 
