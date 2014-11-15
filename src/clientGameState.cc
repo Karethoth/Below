@@ -238,7 +238,7 @@ void ClientGameState::Render()
 	glEnable( GL_CULL_FACE );
 
 	auto totalMillis = chrono::duration_cast<chrono::milliseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() );
-	auto offset = static_cast<float>( totalMillis.count()/1000.f );
+	auto offset = static_cast<float>( totalMillis.count()%1000000 ) / 1000.f;
 	float color[3];
 	color[0] = sin( offset );
 	color[1] = sin( offset*1.5f );
