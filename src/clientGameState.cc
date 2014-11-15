@@ -86,7 +86,7 @@ void ClientGameState::Create()
 	eventDispatcher.AddEventListener( SDL_INPUT_EVENT,  static_cast<EventListenerPtr>( this ) );
 	eventDispatcher.AddEventListener( SDL_WINDOW_EVENT, static_cast<EventListenerPtr>( this ) );
 
-	SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
+	//SDL_SetWindowBordered( sdlWindow, SDL_bool( 0 ) );
 
 	// Create the root node
 	/*

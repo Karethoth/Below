@@ -126,9 +126,19 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 		return;
 	}
 
-	lock_guard<mutex> objectManagerLock( objectManager->managerMutex );
+
+	// Stream to hold update message
+	std::stringstream messageStream(
+		stringstream::in |
+		stringstream::out |
+		stringstream::binary
+	);
 
 
+	// Enter critical section
+	objectManager->managerMutex.lock();
+
+	// Update the scene
 	if( objectManager->entities.size() >= 2 )
 	{
 		objectManager->entities[0]->position.Update( glm::vec3( sin( cumulativeTime*2 )*2, 0, 0 ) );
@@ -136,12 +146,9 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 		objectManager->entities[1]->rotation.Update( objectManager->entities[1]->rotation.Get() * glm::inverse( rot ) );
 	}
 
-	std::stringstream messageStream(
-		stringstream::in |
-		stringstream::out |
-		stringstream::binary
-	);
-
+	// Calculate the model matrices for all entities
+	// and generate an update event for each of them
+	// to be broadcasted to the clients.
 	for( auto& node : objectManager->worldNodes )
 	{
 		if( node->parent == 0 )
@@ -168,12 +175,19 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 		messageStream << packet;
 	}
 
+	// Leave critical section
+	objectManager->managerMutex.unlock();
+
+
+	// Send the update message to every client
 	auto updateMessage = messageStream.str();
 
-	lock_guard<mutex> clientListLock( server.clientListMutex );
-	for( auto &client : server.clientList )
 	{
-		client.second->Write( updateMessage );
+		lock_guard<mutex> clientListLock( server.clientListMutex );
+		for( auto &client : server.clientList )
+		{
+			client.second->Write( updateMessage );
+		}
 	}
 
 	std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
