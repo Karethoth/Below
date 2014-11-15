@@ -10,8 +10,8 @@ void ServerObjectManager::HandleEvent( Event *e )
 	lock_guard<std::mutex> lock( managerMutex );
 
 	ObjectCreateEvent  *createEvent;
-	ObjectDestroyEvent *destroyEvent;
 	ObjectUpdateEvent  *updateEvent;
+	//ObjectDestroyEvent *destroyEvent;
 
 	if( e->type != OBJECT_EVENT )
 	{
@@ -34,8 +34,7 @@ void ServerObjectManager::HandleEvent( Event *e )
 
 
 		case OBJECT_DESTROY:
-			destroyEvent = static_cast<ObjectDestroyEvent*>( e );
-			//delete newNode;
+			//destroyEvent = static_cast<ObjectDestroyEvent*>( e );
 			LOG( "Object destroyed!" );
 			break;
 

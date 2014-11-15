@@ -8,7 +8,7 @@ void Mesh::GenerateBuffers()
 		return;
 	}
 
-	for( auto i=0; i < vertices.size(); i++ )
+	for( size_t i=0; i < vertices.size(); i++ )
 	{
 		vertexData.push_back( { vertices[i], normals[i], texCoords[i] } );
 	}

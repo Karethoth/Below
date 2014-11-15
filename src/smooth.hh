@@ -9,7 +9,7 @@
 
 
 // Helpers
-namespace
+namespace smoothHelpers
 {
 	// For differences between quaternions.
 	struct AngleAxis
@@ -20,31 +20,21 @@ namespace
 		AngleAxis( float _angle=0.0f, glm::vec3 _axis={} ) : angle(_angle), axis(_axis) {}
 	};
 
-	AngleAxis operator* ( const AngleAxis& lhs, float rhs )
-	{
-		AngleAxis result{ lhs.angle, lhs.axis };
-		result.angle *= rhs;
-		return result;
-	}
-
-	AngleAxis operator/ ( const AngleAxis& lhs, float rhs )
-	{
-		AngleAxis result{ lhs.angle, lhs.axis };
-		result.angle /= rhs;
-		return result;
-	}
+	// Required binary operators for AngleAxis
+	AngleAxis operator* ( const AngleAxis& lhs, float rhs );
+	AngleAxis operator/ ( const AngleAxis& lhs, float rhs );
 
 
 	// Difference
 	template <typename T>
-	inline T _minus( const T& lhs={}, const T& rhs={} )
+	inline T Minus( const T& lhs={}, const T& rhs={} )
 	{
 		return lhs - rhs;
 	}
 
 
 	// Difference between quaternions
-	inline AngleAxis _minus( const glm::quat& lhs, const glm::quat& rhs )
+	inline AngleAxis Minus( const glm::quat& lhs, const glm::quat& rhs )
 	{
 		auto quatDelta = lhs * glm::inverse(rhs);
 		return AngleAxis{ glm::angle( quatDelta ), glm::axis( quatDelta ) };;
@@ -53,14 +43,14 @@ namespace
 
 	// Addition
 	template <typename T, typename RHT=T>
-	inline T _plus( const T& lhs={}, const RHT& rhs={} )
+	inline T Plus( const T& lhs={}, const RHT& rhs={} )
 	{
 		return lhs + rhs;
 	}
 
 
 	template <>
-	inline glm::quat _plus( const glm::quat& lhs, const AngleAxis& rhs )
+	inline glm::quat Plus( const glm::quat& lhs, const AngleAxis& rhs )
 	{
 		auto rot = glm::angleAxis( rhs.angle, rhs.axis );
 		return lhs * rot;
@@ -69,7 +59,7 @@ namespace
 
 	// Division
 	template <typename T, typename S=float>
-	inline T _scalarDivide( const T& lhs={}, S rhs={1.f} )
+	inline T ScalarDivide( const T& lhs={}, S rhs={1.f} )
 	{
 		if( rhs == 0.0 ) rhs = S{ 1.f };
 		return lhs / rhs;
@@ -78,7 +68,7 @@ namespace
 
 	// Multiplying
 	template <typename T, typename S=float>
-	inline T _scalarMultiply( const T& lhs={}, S rhs={1.f} )
+	inline T ScalarMultiply( const T& lhs={}, S rhs={1.f} )
 	{
 		return lhs * rhs;
 	}
@@ -86,7 +76,10 @@ namespace
 
 
 
-template <typename T, typename DeltaType=decltype( _minus( T{}, T{} ) )>
+template <
+	typename T,
+	typename DeltaType=decltype( smoothHelpers::Minus( T{}, T{} ) )
+>
 struct Smooth
 {
 	typedef std::chrono::high_resolution_clock::time_point HiResTimePoint;
@@ -101,7 +94,7 @@ struct Smooth
 
 	Smooth( T&& startValue )
 	{
-		value = T{ std::forward( startValue ) };
+		value = startValue;
 		guess = value;
 	}
 
@@ -119,10 +112,10 @@ struct Smooth
 		std::lock_guard<std::mutex> valueLock( mut );
 		auto currentTime = HiResTimePoint::clock::now();
 		auto deltaTime   = DeltaTime( currentTime );
-		DeltaType deltaValue = _minus( newValue, value );
+		DeltaType deltaValue = smoothHelpers::Minus( newValue, value );
 
 		lastUpdate = currentTime;
-		speed = _scalarDivide( deltaValue, deltaTime );
+		speed = smoothHelpers::ScalarDivide( deltaValue, deltaTime );
 
 		value = newValue;
 		guess = newValue;
@@ -133,8 +126,8 @@ struct Smooth
 	{
 		std::lock_guard<std::mutex> valueLock( mut );
 		auto deltaTime = DeltaTime( HiResTimePoint::clock::now() );
-		auto sum = _scalarMultiply( speed, deltaTime*stepMultiplier );
-		guess    = _plus<ValueType>( value, sum );
+		auto sum = smoothHelpers::ScalarMultiply( speed, deltaTime*stepMultiplier );
+		guess    = smoothHelpers::Plus<ValueType>( value, sum );
 	}
 
 
@@ -158,4 +151,9 @@ struct Smooth
 	DeltaType speed;
 	std::mutex mut;
 };
+
+// Explicit template instantiations:
+// (Helps to supress clang warnings)
+template struct Smooth<glm::vec3>;
+template struct Smooth<glm::quat>;
 

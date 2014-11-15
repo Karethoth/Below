@@ -247,8 +247,6 @@ void ClientGameState::Render()
 	if( color[1] < 0 ) color[1] *= -1.0;
 	if( color[2] < 0 ) color[2] *= -1.0;
 
-	Material mat = { {1.0, 0.0, 1.0, 1.0} };
-
 	glClearColor( color[0], color[1], color[2], 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 

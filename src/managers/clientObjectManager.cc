@@ -11,8 +11,8 @@ void ClientObjectManager::HandleEvent( Event *e )
 	lock_guard<std::mutex> lock( managerMutex );
 
 	ObjectCreateEvent  *createEvent;
-	ObjectDestroyEvent *destroyEvent;
 	ObjectUpdateEvent  *updateEvent;
+	//ObjectDestroyEvent *destroyEvent;
 
 	ObjectParentAddEvent     *parentAddEvent;
 	ObjectParentRemoveEvent  *parentRemoveEvent;
@@ -57,7 +57,7 @@ void ClientObjectManager::HandleEvent( Event *e )
 
 
 		case OBJECT_DESTROY:
-			destroyEvent = static_cast<ObjectDestroyEvent*>( e );
+			//destroyEvent = static_cast<ObjectDestroyEvent*>( e );
 			LOG( "Object destroyed!" );
 			break;
 

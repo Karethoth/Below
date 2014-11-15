@@ -333,8 +333,6 @@ _unhandled:
 
 void ServerGameState::HandleDataInEvent( DataInEvent *e )
 {
-	char buffer[USHRT_MAX];
-
 	stringstream stream(
 		stringstream::in |
 		stringstream::out |
@@ -373,24 +371,9 @@ void ServerGameState::HandleDataInEvent( DataInEvent *e )
 		stringstream::binary
 	);
 
-	ObjectCreateEvent  *create;
-	ObjectDestroyEvent *destroy;
-	ObjectUpdateEvent  *update;
-
-	size_t dataCount;
-
 	// Construct the event
 	switch( type )
 	{
-		case OBJECT_EVENT:
-			switch( subType )
-			{
-				default:
-					break;
-			}
-			break;
-
-
 		default:
 			LOG_ERROR( ToString( "Constructing event of type "
 			                     << EventTypeToStr( type )

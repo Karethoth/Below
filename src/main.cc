@@ -626,8 +626,6 @@ int main( int argc, char *argv[] )
 
 	// For timing in the main loop
 	auto now        = chrono::steady_clock::now();
-	auto lastUpdate = chrono::steady_clock::now();
-
 
 	// Create the game state
 	gameState.objectManager = objectManager;
@@ -641,8 +639,6 @@ int main( int argc, char *argv[] )
 	{
 		// Calculate the delta time
 		now = chrono::steady_clock::now();
-		chrono::milliseconds deltaTime = chrono::duration_cast<chrono::milliseconds>( (now - lastUpdate) );
-		lastUpdate = now;
 
 		// Do the main stuff
 		HandleSdlEvents();
@@ -650,7 +646,7 @@ int main( int argc, char *argv[] )
 		// Update the current game state
 		gameState.Render();
 
-		this_thread::sleep_until( now + chrono::milliseconds( 20 ) );
+		this_thread::sleep_until( now + chrono::milliseconds( 30 ) );
 	}
 	while( !stopClient );
 

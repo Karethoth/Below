@@ -38,6 +38,7 @@ COMMON_OBJS=\
       $(OBJDIR)/statistics/executionTimer.o \
       $(OBJDIR)/gameState.o \
       $(OBJDIR)/logger.o \
+      $(OBJDIR)/smooth.o \
       $(OBJDIR)/task.o \
       $(OBJDIR)/taskQueue.o \
       $(OBJDIR)/threadPool.o
