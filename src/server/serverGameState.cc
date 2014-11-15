@@ -115,16 +115,16 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 	auto rotation = glm::rotate<float>(
 		glm::mat4{},
 		0.002*deltaTime.count(),
-		glm::normalize( glm::vec3{ 0.5, 0.5, 0.1 } )
+		glm::normalize( glm::vec3{ 0.5, 0.5, 0.0 } )
 	);
 
 	auto rot = glm::toQuat( rotation );
 
 	if( entities.size() >= 2 )
 	{
-		entities[0]->position.Update( glm::vec3( sin( cumulativeTime )*2, 0, 0 ) );
+		entities[0]->position.Update( glm::vec3( sin( cumulativeTime*2 )*2, 0, 0 ) );
 		entities[0]->rotation.Update( entities[0]->rotation.Get() * rot );
-		entities[1]->rotation.Update( entities[1]->rotation.Get() * glm::inverse( rot*rot ) );
+		entities[1]->rotation.Update( entities[1]->rotation.Get() * rot );
 	}
 
 	for( auto& node : worldNodes )
@@ -156,7 +156,7 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 		}
 	}
 
-	std::this_thread::sleep_for( std::chrono::milliseconds( 35 ) );
+	std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
 }
 
 

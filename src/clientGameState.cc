@@ -180,7 +180,7 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 	for( auto& node : objectManager->worldNodes )
 	{
 		node->position.Calculate();
-		//node->rotation.Calculate();
+		node->rotation.Calculate();
 	}
 
 	for( auto& node : objectManager->worldNodes )

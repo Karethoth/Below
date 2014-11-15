@@ -9,52 +9,80 @@
 
 
 // Helpers
-
-template <typename T>
-inline T _minus( const T& lhs={}, const T& rhs={} )
+namespace
 {
-	return lhs - rhs;
+	// For differences between quaternions.
+	struct AngleAxis
+	{
+		float     angle;
+		glm::vec3 axis;
+
+		AngleAxis( float _angle=0.0f, glm::vec3 _axis={} ) : angle(_angle), axis(_axis) {}
+	};
+
+	AngleAxis operator* ( const AngleAxis& lhs, float rhs )
+	{
+		AngleAxis result{ lhs.angle, lhs.axis };
+		result.angle *= rhs;
+		return result;
+	}
+
+	AngleAxis operator/ ( const AngleAxis& lhs, float rhs )
+	{
+		AngleAxis result{ lhs.angle, lhs.axis };
+		result.angle /= rhs;
+		return result;
+	}
+
+
+	// Difference
+	template <typename T>
+	inline T _minus( const T& lhs={}, const T& rhs={} )
+	{
+		return lhs - rhs;
+	}
+
+
+	// Difference between quaternions
+	inline AngleAxis _minus( const glm::quat& lhs, const glm::quat& rhs )
+	{
+		auto quatDelta = rhs * glm::inverse(lhs);
+		return AngleAxis{ glm::angle( quatDelta ), glm::axis( quatDelta ) };;
+	}
+
+
+	// Addition
+	template <typename T, typename RHT=T>
+	inline T _plus( const T& lhs={}, const RHT& rhs={} )
+	{
+		return lhs + rhs;
+	}
+
+
+	template <>
+	inline glm::quat _plus( const glm::quat& lhs, const AngleAxis& rhs )
+	{
+		auto rot = glm::angleAxis( rhs.angle, rhs.axis );
+		return lhs * rot;
+	}
+
+
+	// Division
+	template <typename T, typename S=float>
+	inline T _scalarDivide( const T& lhs={}, S rhs={1.f} )
+	{
+		if( rhs == 0.0 ) rhs = S{ 1.f };
+		return lhs / rhs;
+	}
+
+
+	// Multiplying
+	template <typename T, typename S=float>
+	inline T _scalarMultiply( const T& lhs={}, S rhs={1.f} )
+	{
+		return lhs * rhs;
+	}
 }
-
-
-inline glm::vec3 _minus( const glm::quat& lhs, const glm::quat& rhs )
-{
-	return glm::eulerAngles( lhs ) - glm::eulerAngles( rhs );
-}
-
-
-
-template <typename T, typename RHT=T>
-inline T _plus( const T& lhs={}, const RHT& rhs={} )
-{
-	return lhs + rhs;
-}
-
-
-template <>
-inline glm::quat _plus( const glm::quat& lhs, const glm::vec3& rhs )
-{
-	auto rot = glm::quat{ rhs };
-	return lhs * rot;
-}
-
-
-
-template <typename T, typename S=float>
-inline T _scalarDivide( const T& lhs={}, S rhs={1.f} )
-{
-	if( rhs == 0.0 ) rhs = S{ 1.f };
-	return lhs / rhs;
-}
-
-
-
-template <typename T, typename S=float>
-inline T _scalarMultiply( const T& lhs={}, S rhs={1.f} )
-{
-	return lhs * rhs;
-}
-
 
 
 
@@ -105,12 +133,11 @@ struct Smooth
 	{
 		std::lock_guard<mutex> valueLock( mut );
 		auto deltaTime = DeltaTime( HiResTimePoint::clock::now() );
-		if( deltaTime < 0.002 )
+		if( deltaTime < 0.01 )
 		{
 			return;
 		}
-
-		auto sum = _scalarMultiply( speed, deltaTime );
+		auto sum = _scalarMultiply( speed, deltaTime*0.5f );
 		guess    = _plus<ValueType>( value, sum );
 	}
 
@@ -128,7 +155,7 @@ struct Smooth
 
 	inline float DeltaTime( const HiResTimePoint& currentTime )
 	{
-		return std::chrono::duration_cast<std::chrono::milliseconds>( currentTime - lastUpdate ).count() / 10000.f;
+		return std::chrono::duration_cast<std::chrono::milliseconds>( currentTime - lastUpdate ).count() / 1000.f;
 	}
 
 	T value;
