@@ -238,14 +238,14 @@ void ClientGameState::Render()
 	glEnable( GL_CULL_FACE );
 
 	auto totalMillis = chrono::duration_cast<chrono::milliseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() );
-	auto offset = totalMillis.count()/1000.0;
+	auto offset = static_cast<float>( totalMillis.count()/1000.f );
 	float color[3];
 	color[0] = sin( offset );
-	color[1] = sin( offset*1.5 );
-	color[2] = sin( offset*1.7 );
-	if( color[0] < 0 ) color[0] *= -1.0;
-	if( color[1] < 0 ) color[1] *= -1.0;
-	if( color[2] < 0 ) color[2] *= -1.0;
+	color[1] = sin( offset*1.5f );
+	color[2] = sin( offset*1.7f );
+	if( color[0] < 0 ) color[0] *= -1.f;
+	if( color[1] < 0 ) color[1] *= -1.f;
+	if( color[2] < 0 ) color[2] *= -1.f;
 
 	glClearColor( color[0], color[1], color[2], 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );

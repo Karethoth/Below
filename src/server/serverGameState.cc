@@ -115,8 +115,8 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 	// Update scene
 	auto rotation = glm::rotate<float>(
 		glm::mat4{},
-		0.002*deltaTime.count(),
-		glm::normalize( glm::vec3{ 0.5, 0.5, 0.0 } )
+		0.002f*deltaTime.count(),
+		glm::normalize( glm::vec3{ 0.5f, 0.5f, 0.0f } )
 	);
 
 	auto rot = glm::toQuat( rotation );
@@ -374,6 +374,7 @@ void ServerGameState::HandleDataInEvent( DataInEvent *e )
 	// Construct the event
 	switch( type )
 	{
+		case OBJECT_EVENT:
 		default:
 			LOG_ERROR( ToString( "Constructing event of type "
 			                     << EventTypeToStr( type )

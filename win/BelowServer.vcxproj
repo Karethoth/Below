@@ -96,6 +96,7 @@
     <ClCompile Include="..\src\network\server.cc" />
     <ClCompile Include="..\src\server\main.cc" />
     <ClCompile Include="..\src\server\serverGameState.cc" />
+    <ClCompile Include="..\src\smooth.cc" />
     <ClCompile Include="..\src\statistics\executionTimer.cc" />
     <ClCompile Include="..\src\task.cc" />
     <ClCompile Include="..\src\taskQueue.cc" />

@@ -110,6 +110,9 @@
     <ClCompile Include="..\src\gameState.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\smooth.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\events\eventDispatcher.hh">
