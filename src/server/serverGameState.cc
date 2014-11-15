@@ -71,8 +71,6 @@ void ServerGameState::Create()
 	// Create a test entity
 	auto cubeEntity = make_shared<Entity>();
 	cubeEntity->parent = rootNode->id;
-	cubeEntity->meshId = 0;
-	cubeEntity->textureId = 0;
 	cubeEntity->material.color = { 1.0, 0.0, 1.0, 1.0 };
 	cubeEntity->position = { 1.0, 0.0, 0.0 };
 	cubeEntity->scale = { 0.5, 0.5, 0.5 };
@@ -84,8 +82,6 @@ void ServerGameState::Create()
 
 	auto cubeEntity2 = make_shared<Entity>();
 	cubeEntity2->parent = cubeEntity->id;
-	cubeEntity2->meshId = 0;
-	cubeEntity2->textureId = 0;
 	cubeEntity2->material.color = { 0.0, 1.0, 1.0, 1.0 };
 	cubeEntity2->position = { 2.2, 0.0, 0.0 };
 	cubeEntity2->scale = { 1.0, 1.0, 1.0 };

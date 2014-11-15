@@ -12,9 +12,9 @@ struct Entity : public WorldNode
 {
 	Entity();
 
-	unsigned int meshId;
-	unsigned int textureId;
-	Material     material;
+	std::string mesh;
+	std::string texture;
+	Material    material;
 
 	// For serialization and unserialization:
 	virtual bool SerializeField( std::string &fieldName, std::stringstream &stream ) override;

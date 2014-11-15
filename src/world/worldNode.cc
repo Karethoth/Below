@@ -105,19 +105,22 @@ bool WorldNode::Unserialize( string data )
 			break;
 		}
 
+
+		stringstream fieldDataStream( SS_RW_BIN );
+
 		// Calculate the amount of data and allocate the buffer:
 		uint8_t fieldDataLength = fieldLength - fieldName.length() - 1;
-		assert( fieldDataLength > 0 );
 
-		char *buffer = new char[fieldDataLength];
+		// If we have a value to be unserialized, push it to the stream
+		if( fieldDataLength > 0 )
+		{
+			char *buffer = new char[fieldDataLength];
 
-		// Copy the field data to other stream
-		stringstream fieldDataStream( SS_RW_BIN );
-		dataStream.read( buffer, fieldDataLength );
-		fieldDataStream.write( buffer, fieldDataLength );
+			dataStream.read( buffer, fieldDataLength );
+			fieldDataStream.write( buffer, fieldDataLength );
 
-		// Free the memory for buffer
-		delete[] buffer;
+			delete[] buffer;
+		}
 
 		// Unserialize and handle the field:
 		if( !UnserializeField( fieldName, fieldDataStream ) )
@@ -126,7 +129,7 @@ bool WorldNode::Unserialize( string data )
 		}
 	}
 
-	return false;
+	return true;
 }
 
 
@@ -219,7 +222,6 @@ bool WorldNode::UnserializeField( std::string &fieldName, std::stringstream &str
 	stream.seekp( 0, ios::end );
 	size_t streamLength = static_cast<size_t>( stream.tellp() );
 	stream.seekp( 0, ios::beg );
-	assert( streamLength > 0 );
 
 	// ID
 	if( !fieldName.compare( "id" ) )

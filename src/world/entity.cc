@@ -20,6 +20,8 @@ vector<string> Entity::GetDefaultFields()
 {
 	auto fields = WorldNode::GetDefaultFields();
 	fields.push_back( "material" );
+	fields.push_back( "texture" );
+	fields.push_back( "mesh" );
 	return fields;
 }
 
@@ -41,12 +43,25 @@ bool Entity::SerializeField( std::string &fieldName, std::stringstream &stream )
 		SerializeFloat( fieldStream, material.color.a );
 	}
 
+	// Texture
+	else if( !fieldName.compare( "texture" ) )
+	{
+		fieldStream << "texture:";
+		SerializeString( fieldStream, texture );
+	}
+
+	// Mesh
+	else if( !fieldName.compare( "mesh" ) )
+	{
+		fieldStream << "mesh:";
+		SerializeString( fieldStream, texture );
+	}
+
 	// No fitting field found?
 	else
 	{
 		return WorldNode::SerializeField( fieldName, stream );
 	}
-
 
 	// Handle the fieldStream to get the
 	// data as a string and the length of it.
@@ -76,7 +91,6 @@ bool Entity::UnserializeField( std::string &fieldName, std::stringstream &stream
 	stream.seekp( 0, ios::end );
 	size_t streamLength = static_cast<size_t>( stream.tellp() );
 	stream.seekp( 0, ios::beg );
-	assert( streamLength > 0 );
 
 	// Material
 	if( !fieldName.compare( "material" ) )
@@ -96,6 +110,30 @@ bool Entity::UnserializeField( std::string &fieldName, std::stringstream &stream
 		material.color.g = UnserializeFloat( stream );
 		material.color.b = UnserializeFloat( stream );
 		material.color.a = UnserializeFloat( stream );
+	}
+
+	else if( !fieldName.compare( "texture" ) )
+	{
+		if( streamLength > 0 )
+		{
+			texture = UnserializeString( stream );
+		}
+		else
+		{
+			texture = string{ "default" };
+		}
+	}
+
+	else if( !fieldName.compare( "mesh" ) )
+	{
+		if( streamLength > 0 )
+		{
+			mesh = UnserializeString( stream );
+		}
+		else
+		{
+			mesh = string{ "default" };
+		}
 	}
 
 	// No such field was found
