@@ -146,13 +146,12 @@ struct Smooth
 
 
  protected:
-	HiResTimePoint lastUpdate = HiResTimePoint::clock::now();
-
-
 	inline float DeltaTime( const HiResTimePoint& currentTime )
 	{
 		return std::chrono::duration_cast<std::chrono::milliseconds>( currentTime - lastUpdate ).count() / 1000.f;
 	}
+
+	HiResTimePoint lastUpdate = HiResTimePoint::clock::now();
 
 	T value;
 	T guess;
