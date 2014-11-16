@@ -12,8 +12,10 @@ DIRS = $(OBJDIR) \
 	   $(OBJDIR)/statistics \
 	   $(OBJDIR)/world
 
-CLIENT_LIBS = -lboost_system -lGL -lGLEW -lSDL2 -lX11 -lXxf86vm -lXrandr -pthread -lXi
-SERVER_LIBS = -lboost_system -lXxf86vm -lXrandr -pthread -lXi
+UBUNTU_LIBS = -lXxf86vm -lXrandr -lXi
+CLIENT_LIBS = -lboost_system -lGL -lGLEW -lSDL2 -lX11 -pthread $(UBUNTU_LIBS)
+SERVER_LIBS = -lboost_system -pthread $(UBUNTU_LIBS)
+
 
 CC = g++ -g
 
@@ -62,6 +64,10 @@ SERVER_OBJS=\
 
 
 all: $(TGTDIR)/$(CLIENT_TGT) $(TGTDIR)/$(SERVER_TGT)
+client: $(TGTDIR)/$(CLIENT_TGT)
+server: $(TGTDIR)/$(SERVER_TGT)
+
+
 
 
 $(TGTDIR)/$(CLIENT_TGT): $(DIRS) $(BINDIR)/$(CLIENT_TGT)
