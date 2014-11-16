@@ -25,7 +25,6 @@
     <ClCompile Include="..\src\managers\clientObjectManager.cc" />
     <ClCompile Include="..\src\managers\shaderProgramManager.cc" />
     <ClCompile Include="..\src\network\serializable.cc" />
-    <ClCompile Include="..\src\network\server.cc" />
     <ClCompile Include="..\src\network\serverConnection.cc" />
     <ClCompile Include="..\src\gameState.cc" />
     <ClCompile Include="..\src\smooth.cc" />

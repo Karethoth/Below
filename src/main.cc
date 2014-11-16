@@ -484,7 +484,12 @@ void GenerateVitalTasks()
 		IoStepTask
 	);
 	taskQueue.AddTask( ioTasker );
+}
 
+
+
+void GenerateUpdateTask()
+{
 	// Create scene/physics update task
 	Task *nextTick = new Task(
 		std::string( "SceneUpdateTask" ),
@@ -631,6 +636,8 @@ int main( int argc, char *argv[] )
 	gameState.objectManager = objectManager;
 	gameState.Create();
 
+	// Start update loop
+	GenerateUpdateTask();
 
 	// Main loop
 	LOG( "Starting the main loop" );
