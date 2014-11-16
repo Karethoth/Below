@@ -85,17 +85,10 @@ struct Smooth
 	typedef std::chrono::high_resolution_clock::time_point HiResTimePoint;
 	typedef T ValueType;
 
-	Smooth( T startValue={} )
+	Smooth( const T& startValue={} )
 	{
 		value = startValue;
 		guess = startValue;
-	}
-
-
-	Smooth( T&& startValue )
-	{
-		value = startValue;
-		guess = value;
 	}
 
 

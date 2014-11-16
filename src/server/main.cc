@@ -266,13 +266,13 @@ void Quit( int returnCode, bool noExit=false )
 	// Wait for the thread pool to empty
 	LOG( "Worker threads have been commanded to stop." );
 
-	while( threadPool.threads.size() > 0 )
-	{
-		// Remove unjoinable threads
-		threadPool.CleanThreads();
+	// Remove unjoinable threads
+	threadPool.CleanThreads();
 
-		std::this_thread::yield();
-	}
+	// Give threads few seconds of time to close themselves,
+	// we don't want to hang if a thread is blocking.
+	this_thread::sleep_for( chrono::seconds( 2 ) );
+
 	LOG( "Worker threads stopped!" );
 
 
