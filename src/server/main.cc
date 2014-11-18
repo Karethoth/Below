@@ -234,16 +234,6 @@ void GenerateVitalTasks()
 		EventHandlerGenerator
 	);
 	taskQueue.AddTask( eventTasker );
-
-
-	// Create a task to run the network io services
-	LOG( "Creating the network I/O tasker." );
-
-	Task *ioTasker = new Task(
-		std::string( "IoStepTask" ),
-		IoStepTask
-	);
-	taskQueue.AddTask( ioTasker );
 }
 
 
@@ -346,6 +336,17 @@ int main( int argc, char **argv )
 	{
 		stopServer = true;
 	}
+
+
+	// Create a task to run the network io services
+	LOG( "Creating the network I/O tasker." );
+
+	Task *ioTasker = new Task(
+		std::string( "IoStepTask" ),
+		IoStepTask
+	);
+	taskQueue.AddTask( ioTasker );
+
 
 	// Main loop
 	LOG( "Starting the main loop" );

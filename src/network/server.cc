@@ -97,6 +97,7 @@ void Client::Write( string msg )
 {
 	lock_guard<mutex> writeLock( writeMutex );
 
+
 	if( !m_socket.is_open() )
 	{
 		return;

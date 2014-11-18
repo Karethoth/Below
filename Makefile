@@ -28,22 +28,21 @@ TGTDIR = .
 
 
 COMMON_OBJS=\
-      $(OBJDIR)/events/event.o \
-      $(OBJDIR)/events/eventDispatcher.o \
-      $(OBJDIR)/events/eventFactory.o \
-      $(OBJDIR)/events/eventQueue.o \
-      $(OBJDIR)/network/server.o \
-      $(OBJDIR)/network/serverConnection.o \
-      $(OBJDIR)/network/serializable.o \
-      $(OBJDIR)/world/entity.o \
-      $(OBJDIR)/world/worldNode.o \
-      $(OBJDIR)/statistics/executionTimer.o \
-      $(OBJDIR)/gameState.o \
-      $(OBJDIR)/logger.o \
-      $(OBJDIR)/smooth.o \
-      $(OBJDIR)/task.o \
-      $(OBJDIR)/taskQueue.o \
-      $(OBJDIR)/threadPool.o
+	$(OBJDIR)/events/event.o \
+	$(OBJDIR)/events/eventDispatcher.o \
+	$(OBJDIR)/events/eventFactory.o \
+	$(OBJDIR)/events/eventQueue.o \
+	$(OBJDIR)/network/serverConnection.o \
+	$(OBJDIR)/network/serializable.o \
+	$(OBJDIR)/world/entity.o \
+	$(OBJDIR)/world/worldNode.o \
+	$(OBJDIR)/statistics/executionTimer.o \
+	$(OBJDIR)/gameState.o \
+	$(OBJDIR)/logger.o \
+	$(OBJDIR)/smooth.o \
+	$(OBJDIR)/task.o \
+	$(OBJDIR)/taskQueue.o \
+	$(OBJDIR)/threadPool.o
 
 CLIENT_OBJS=\
 	$(COMMON_OBJS) \
@@ -58,6 +57,7 @@ CLIENT_OBJS=\
 
 SERVER_OBJS=\
 	$(COMMON_OBJS) \
+	$(OBJDIR)/network/server.o \
 	$(OBJDIR)/managers/serverObjectManager.o \
 	$(OBJDIR)/server/serverGameState.o \
 	$(OBJDIR)/server/main.o
