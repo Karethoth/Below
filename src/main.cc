@@ -79,7 +79,7 @@ std::shared_ptr<ClientObjectManager>  objectManager;
 
 
 // SDL and OpenGL globals
-SDL_Window *sdlWindow = 0;
+SDL_Window *sdlWindow = nullptr;
 SDL_GLContext openglContext;
 
 
@@ -422,6 +422,7 @@ void HandleSdlEvents()
 						windowResize = new SdlWindowResizeEvent();
 						windowResize->width  = event.window.data1;
 						windowResize->height = event.window.data2;
+						glViewport( 0, 0, windowResize->width, windowResize->height );
 						eventQueue.AddEvent( windowResize );
 						break;
 
@@ -628,13 +629,12 @@ int main( int argc, char *argv[] )
 		Quit( 1 );
 	}
 
-
-	// For timing in the main loop
-	auto now        = chrono::steady_clock::now();
-
 	// Create the game state
 	gameState.objectManager = objectManager;
 	gameState.Create();
+
+	// Set minimum frame time
+	const auto frameMinLength = chrono::milliseconds{ 1000/60 };
 
 	// Start update loop
 	GenerateUpdateTask();
@@ -642,10 +642,10 @@ int main( int argc, char *argv[] )
 	// Main loop
 	LOG( "Starting the main loop" );
 
-	do
+	while( !stopClient )
 	{
 		// Calculate the delta time
-		now = chrono::steady_clock::now();
+		auto frameStart = chrono::steady_clock::now();
 
 		// Do the main stuff
 		HandleSdlEvents();
@@ -653,9 +653,8 @@ int main( int argc, char *argv[] )
 		// Update the current game state
 		gameState.Render();
 
-		this_thread::sleep_until( now + chrono::milliseconds( 30 ) );
+		this_thread::sleep_until( frameStart + frameMinLength );
 	}
-	while( !stopClient );
 
 	LOG( "Main loop ended!" );
 

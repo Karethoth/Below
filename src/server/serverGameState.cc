@@ -1,6 +1,5 @@
 #include "serverGameState.hh"
 
-#include "../network/serverConnection.hh"
 #include "../network/serializable.hh"
 #include "../world/objectEvents.hh"
 #include "../task.hh"
@@ -29,9 +28,6 @@ extern EventDispatcher eventDispatcher;
 extern io_service      ioService;
 
 extern std::shared_ptr<ShaderProgramManager> shaderProgramManager;
-
-std::shared_ptr<ServerConnection> connection;
-
 
 
 ServerGameState::ServerGameState()
@@ -141,9 +137,9 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 	// Update the scene
 	if( objectManager->entities.size() >= 2 )
 	{
-		objectManager->entities[0]->position.Update( glm::vec3( sin( cumulativeTime*2 )*2, 0, 0 ) );
+		objectManager->entities[0]->position.Update( glm::vec3( sin( cumulativeTime )*3, 0, cos( cumulativeTime )*3 ) );
 		objectManager->entities[0]->rotation.Update( objectManager->entities[0]->rotation.Get() * rot );
-		objectManager->entities[1]->rotation.Update( objectManager->entities[1]->rotation.Get() * glm::inverse( rot ) );
+		objectManager->entities[1]->rotation.Update( objectManager->entities[1]->rotation.Get() * glm::inverse( rot*rot ) );
 	}
 
 	// Calculate the model matrices for all entities
