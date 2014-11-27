@@ -131,6 +131,13 @@ struct Smooth
 	}
 
 
+	inline T Raw() const
+	{
+		std::lock_guard<std::mutex> valueLock( mut );
+		return value;
+	}
+
+
  protected:
 	inline float DeltaTime( const HiResTimePoint& currentTime )
 	{
@@ -142,7 +149,7 @@ struct Smooth
 	T value;
 	T guess;
 	DeltaType speed;
-	std::mutex mut;
+	mutable std::mutex mut;
 };
 
 // Explicit template instantiations:

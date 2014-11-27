@@ -102,7 +102,7 @@ void ClientGameState::Create()
 	);
 
 	cam.position         = glm::vec3( 0, 5, 0 );
-	cam.projectionMatrix = glm::perspective( 45.0f, 680.f/400.f, 0.1f, 100.0f );
+	cam.projectionMatrix = glm::perspective( 50.0f, 680.f/400.f, 0.1f, 100.0f );
 
 	// Create a test mesh
 	OBJ obj;
@@ -141,6 +141,8 @@ void ClientGameState::Destroy()
 	{
 		mesh->FreeVbo();
 	}
+
+	meshes.clear();
 }
 
 
@@ -357,7 +359,7 @@ void ClientGameState::HandleEvent( Event *e )
 				ratio = static_cast<float>( resizeEvent->width ) /
 				        static_cast<float>( resizeEvent->height );
 
-				cam.projectionMatrix = glm::perspective( 45.0f, ratio, 0.1f, 100.0f );
+				cam.projectionMatrix = glm::perspective( 50.0f, ratio, 0.1f, 100.0f );
 				break;
 
 			default:

@@ -15,7 +15,6 @@
 
 struct WorldNode: public Serializable
 {
- public:
 	 WorldNode();
 	 virtual ~WorldNode();
 

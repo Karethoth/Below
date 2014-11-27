@@ -94,6 +94,7 @@
     <ClCompile Include="..\src\managers\serverObjectManager.cc" />
     <ClCompile Include="..\src\network\serializable.cc" />
     <ClCompile Include="..\src\network\server.cc" />
+    <ClCompile Include="..\src\physics\collisionShapes.cc" />
     <ClCompile Include="..\src\server\main.cc" />
     <ClCompile Include="..\src\server\serverGameState.cc" />
     <ClCompile Include="..\src\smooth.cc" />
@@ -116,6 +117,8 @@
     <ClInclude Include="..\src\network\networkEvents.hh" />
     <ClInclude Include="..\src\network\serializable.hh" />
     <ClInclude Include="..\src\network\server.hh" />
+    <ClInclude Include="..\src\physics\collisionShapes.hh" />
+    <ClInclude Include="..\src\physics\physicsObject.hh" />
     <ClInclude Include="..\src\ringBuffer.hh" />
     <ClInclude Include="..\src\server\serverGameState.hh" />
     <ClInclude Include="..\src\statistics\executionTimer.hh" />
