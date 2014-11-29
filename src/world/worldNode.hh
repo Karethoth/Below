@@ -1,10 +1,11 @@
 #pragma once
 
+#define GLM_FORCE_RADIANS
+
 #include <vector>
 #include <memory>
 #include <sstream>
 
-#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 

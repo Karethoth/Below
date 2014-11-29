@@ -22,7 +22,6 @@ using namespace std;
 using boost::asio::ip::tcp;
 using boost::asio::io_service;
 
-
 extern bool stopClient;
 
 extern ThreadPool      threadPool;
@@ -37,6 +36,8 @@ extern std::shared_ptr<ShaderProgramManager> shaderProgramManager;
 
 std::shared_ptr<ServerConnection> connection;
 
+
+constexpr float ToRadians( float degrees ) { return degrees * (3.141592f/180.f); }
 
 
 ClientGameState::ClientGameState()
@@ -102,7 +103,7 @@ void ClientGameState::Create()
 	);
 
 	cam.position         = glm::vec3( 0, 5, 0 );
-	cam.projectionMatrix = glm::perspective( 50.0f, 680.f/400.f, 0.1f, 100.0f );
+	cam.projectionMatrix = glm::perspective( ToRadians( 50.0f ), 680.f/400.f, 0.1f, 100.0f );
 
 	// Create a test mesh
 	OBJ obj;
@@ -359,7 +360,7 @@ void ClientGameState::HandleEvent( Event *e )
 				ratio = static_cast<float>( resizeEvent->width ) /
 				        static_cast<float>( resizeEvent->height );
 
-				cam.projectionMatrix = glm::perspective( 50.0f, ratio, 0.1f, 100.0f );
+				cam.projectionMatrix = glm::perspective( ToRadians( 50.0f ), ratio, 0.1f, 100.0f );
 				break;
 
 			default:

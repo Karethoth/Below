@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
+#include <thread>
 
 using namespace std;
 
@@ -124,6 +125,7 @@ void ServerConnection::SetRead()
 			dataInEvent->clientId = 0;
 			dataInEvent->data     = packetStream.str();
 			eventQueue->AddEvent( dataInEvent );
+
 
 			// Set this as a callback again
 			SetRead();

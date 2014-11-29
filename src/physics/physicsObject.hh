@@ -1,5 +1,7 @@
 #pragma once
 
+#define GLM_FORCE_RADIANS
+
 #include "collisionShapes.hh"
 #include "../world/worldNode.hh"
 #include "../world/worldObjectTypes.hh"

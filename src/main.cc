@@ -212,7 +212,6 @@ void IoStepTask()
 static auto lastSceneUpdate = chrono::steady_clock::now();
 void SceneUpdateTask()
 {
-
 	// Calculate the delta time
 	auto now = chrono::steady_clock::now();
 	chrono::milliseconds deltaTime = chrono::duration_cast<chrono::milliseconds>( (now - lastSceneUpdate) );
@@ -475,16 +474,6 @@ void GenerateVitalTasks()
 		EventHandlerGenerator
 	);
 	taskQueue.AddTask( eventTasker );
-
-
-	// Create a task to run the network io services
-	LOG( "Creating the network I/O tasker." );
-
-	Task *ioTasker = new Task(
-		std::string( "IoStepTask" ),
-		IoStepTask
-	);
-	taskQueue.AddTask( ioTasker );
 }
 
 
@@ -641,6 +630,15 @@ int main( int argc, char *argv[] )
 
 	// Main loop
 	LOG( "Starting the main loop" );
+
+	// Create a task to run the network io services
+	LOG( "Creating the network I/O tasker." );
+
+	Task *ioTasker = new Task(
+		std::string( "IoStepTask" ),
+		IoStepTask
+	);
+	taskQueue.AddTask( ioTasker );
 
 	while( !stopClient )
 	{

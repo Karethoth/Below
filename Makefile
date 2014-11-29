@@ -32,7 +32,6 @@ COMMON_OBJS=\
 	$(OBJDIR)/events/eventDispatcher.o \
 	$(OBJDIR)/events/eventFactory.o \
 	$(OBJDIR)/events/eventQueue.o \
-	$(OBJDIR)/network/serverConnection.o \
 	$(OBJDIR)/network/serializable.o \
 	$(OBJDIR)/world/entity.o \
 	$(OBJDIR)/world/worldNode.o \
@@ -50,6 +49,7 @@ CLIENT_OBJS=\
 	$(OBJDIR)/graphics/mesh.o \
 	$(OBJDIR)/graphics/obj.o \
 	$(OBJDIR)/graphics/shaderProgram.o \
+	$(OBJDIR)/network/serverConnection.o \
 	$(OBJDIR)/managers/shaderProgramManager.o \
 	$(OBJDIR)/managers/clientObjectManager.o \
 	$(OBJDIR)/clientGameState.o \

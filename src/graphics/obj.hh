@@ -1,5 +1,7 @@
 #pragma once
 
+#define GLM_FORCE_RADIANS
+
 #include <vector>
 #include <glm/glm.hpp>
 #include <iostream>
