@@ -28,6 +28,7 @@
     <ClCompile Include="..\src\network\serverConnection.cc" />
     <ClCompile Include="..\src\gameState.cc" />
     <ClCompile Include="..\src\physics\collisionShapes.cc" />
+    <ClCompile Include="..\src\physics\physicsObject.cc" />
     <ClCompile Include="..\src\smooth.cc" />
     <ClCompile Include="..\src\statistics\executionTimer.cc" />
     <ClCompile Include="..\src\task.cc" />

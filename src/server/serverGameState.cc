@@ -6,6 +6,7 @@
 #include "../logger.hh"
 #include "../threadPool.hh"
 #include "../managers/shaderProgramManager.hh"
+#include "../physics/physicsObject.hh"
 
 #include <thread>
 #include <chrono>
@@ -72,19 +73,20 @@ void ServerGameState::Create()
 
 
 	// Create a test entity
-	auto cubeEntity = make_shared<Entity>();
+	auto cubeEntity = make_shared<PhysicsObject>();
 	cubeEntity->parent = rootNode->id;
 	cubeEntity->material.color = { 1.0, 0.0, 1.0, 1.0 };
 	cubeEntity->position = { 1.0, 0.0, 0.0 };
-	cubeEntity->scale = { 0.5, 0.5, 0.5 };
+	cubeEntity->scale = { 1.f, 1.f, 1.f };
 	cubeEntity->UpdateModelMatrix();
 
 	objectManager->entities.push_back( cubeEntity );
 	objectManager->worldNodes.push_back( cubeEntity );
 	rootNode->children.push_back( cubeEntity );
 
-	auto cubeEntity2 = make_shared<Entity>();
-	cubeEntity2->parent = cubeEntity->id;
+	// Create other one
+	auto cubeEntity2 = make_shared<PhysicsObject>();
+	cubeEntity2->parent = rootNode->id;
 	cubeEntity2->material.color = { 0.0, 1.0, 1.0, 1.0 };
 	cubeEntity2->position = { 2.2, 0.0, 0.0 };
 	cubeEntity2->scale = { 1.0, 1.0, 1.0 };
@@ -138,6 +140,7 @@ void ServerGameState::Tick( std::chrono::milliseconds deltaTime )
 	if( objectManager->entities.size() >= 2 )
 	{
 		objectManager->entities[0]->position.Update( glm::vec3( sin( cumulativeTime )*3, 0, cos( cumulativeTime )*3 ) );
+		objectManager->entities[1]->position.Update( glm::vec3( sin( cumulativeTime )*3, 0, -cos( cumulativeTime )*3 ) );
 		objectManager->entities[0]->rotation.Update( objectManager->entities[0]->rotation.Get() * rot );
 		objectManager->entities[1]->rotation.Update( objectManager->entities[1]->rotation.Get() * glm::inverse( rot*rot ) );
 	}
@@ -223,8 +226,6 @@ void ServerGameState::SendScene( unsigned int clientId )
 		SerializeUint8( stream, (uint8_t)OBJECT_EVENT );	// Event type
 		SerializeUint16( stream, (uint16_t)OBJECT_CREATE ); // Event sub type
 
-		std::shared_ptr<Entity> entity;
-
 		switch( node->type )
 		{
 			case WORLD_NODE_OBJECT_TYPE:
@@ -234,11 +235,16 @@ void ServerGameState::SendScene( unsigned int clientId )
 
 			case ENTITY_OBJECT_TYPE:
 				SerializeUint8( stream, ENTITY_OBJECT_TYPE );
-				entity = static_pointer_cast<Entity>( node );
-				stream << entity->Serialize();
+				stream << node->Serialize();
+				break;
+
+			case PHYSICS_OBJECT_TYPE:
+				SerializeUint8( stream, PHYSICS_OBJECT_TYPE );
+				stream << node->Serialize();
 				break;
 
 			default:
+				LOG_ERROR( "Unhandled node type(" << node->type << ")!" );
 				continue;
 		}
 

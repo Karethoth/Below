@@ -2,6 +2,7 @@
 #include "../logger.hh"
 #include "../world/objectEvents.hh"
 #include "../world/entity.hh"
+#include "../physics/physicsObject.hh"
 
 using namespace std;
 
@@ -25,8 +26,9 @@ void ClientObjectManager::HandleEvent( Event *e )
 		return;
 	}
 
-	shared_ptr<WorldNode> newNode;
-	shared_ptr<Entity>    newEntity;
+	shared_ptr<WorldNode>     newNode;
+	shared_ptr<Entity>        newEntity;
+	shared_ptr<PhysicsObject> newPhysicsObject;
 
 	switch( e->subType )
 	{
@@ -43,11 +45,19 @@ void ClientObjectManager::HandleEvent( Event *e )
 			{
 				newEntity = make_shared<Entity>();
 				newEntity->Unserialize( createEvent->data );
-				newNode = static_pointer_cast<WorldNode>( newEntity );
+				newNode = newEntity;
 				entities.push_back( newEntity );
+			}
+			else if( createEvent->objectType == PHYSICS_OBJECT_TYPE )
+			{
+				newPhysicsObject = make_shared<PhysicsObject>();
+				newPhysicsObject->Unserialize( createEvent->data );
+				newNode = newPhysicsObject;
+				entities.push_back( newPhysicsObject );
 			}
 			else
 			{
+				LOG_ERROR( "OBJECT_CREATE: Unhandled object type(" << createEvent->objectType << ")!" );
 				break;
 			}
 

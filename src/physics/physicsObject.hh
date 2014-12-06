@@ -14,13 +14,21 @@
 struct PhysicsObject : public Entity
 {
 	glm::vec3 velocity;
-	glm::vec3 angularVelocity;
-
+	glm::quat angularVelocity;
 	float mass;
+	CollisionShape collisionShape;
 
-	std::unique_ptr<CollisionShape> collisionShape;
 
-	virtual bool SerializeField( std::string &fieldName, std::stringstream &stream ) override;
-	virtual bool UnserializeField( std::string &fieldName, std::stringstream &stream  ) override;
+	PhysicsObject();
+
+	virtual std::vector<std::string> PhysicsObject::GetDefaultFields() override;
+
+	virtual bool PhysicsObject::SerializeField( std::string&, std::stringstream& ) override;
+	virtual bool PhysicsObject::UnserializeField( std::string&, std::stringstream& ) override;
 };
+
+
+
+// Collision checking
+bool Collides( const PhysicsObject&, const PhysicsObject& );
 

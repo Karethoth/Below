@@ -8,6 +8,7 @@
 #include "threadPool.hh"
 #include "managers/shaderProgramManager.hh"
 #include "sdlEvents.hh"
+#include "physics/physicsObject.hh"
 
 #include "graphics/obj.hh"
 
@@ -37,7 +38,8 @@ extern std::shared_ptr<ShaderProgramManager> shaderProgramManager;
 std::shared_ptr<ServerConnection> connection;
 
 
-constexpr float ToRadians( float degrees ) { return degrees * (3.141592f/180.f); }
+
+#define ToRadians( degrees ) degrees*(3.141592f/180.f)
 
 
 ClientGameState::ClientGameState()
@@ -193,6 +195,73 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 			node->UpdateModelMatrix();
 		}
 	}
+
+	// Check for collisions:
+	// NOTE: This is just temporarily here
+
+	// Little container for noticed collisions on this tick
+	vector<pair<unsigned int, unsigned int>> collisionPairs{ 10 };
+
+	for( auto& a : objectManager->worldNodes )
+	{
+		if( a->type != PHYSICS_OBJECT_TYPE )
+		{
+			continue;
+		}
+
+		for( auto& b : objectManager->worldNodes )
+		{
+			if( b->type != PHYSICS_OBJECT_TYPE ||
+			    a->id == b->id )
+			{
+				continue;
+			}
+
+			// Check if we've already done this pair
+			auto found = false;
+			for( auto& p : collisionPairs )
+			{
+				if( p.first == b->id && p.second == a->id ||
+				    p.first == a->id && p.second == b->id )
+				{
+					found = true;
+					break;
+				}
+			}
+
+			if( found )
+			{
+				continue;
+			}
+
+			// New collision for this frame:
+			collisionPairs.push_back( { a->id, b->id } );
+
+			auto objectA = static_cast<PhysicsObject*>( a.get() );
+			auto objectB = static_cast<PhysicsObject*>( b.get() );
+
+			auto collide = Collides(
+				*objectA,
+				*objectB
+			);
+
+
+			// If we have a collision, print the debug info and colorize the objects
+			// NOTE: We lose the material.color information in this process, but that's ok.
+			if( collide )
+			{
+				cout << "Collision between " << a->id << " & " << b->id << endl;
+				objectA->material.color = { 1.f, 0.f, 0.f, 1.f };
+				objectB->material.color = { 1.f, 0.7f, 0.f, 1.f };
+			}
+			else
+			{
+				objectA->material.color = { 0.f, 0.f, 1.f, 1.f };
+				objectB->material.color = { 0.f, 0.0f, 1.f, 1.f };
+			}
+		}
+	}
+
 	objectManager->managerMutex.unlock();
 }
 
