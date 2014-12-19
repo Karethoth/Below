@@ -10,7 +10,8 @@ DIRS = $(OBJDIR) \
 	   $(OBJDIR)/network \
 	   $(OBJDIR)/server \
 	   $(OBJDIR)/statistics \
-	   $(OBJDIR)/world
+	   $(OBJDIR)/world \
+	   $(OBJDIR)/physics
 
 UBUNTU_LIBS = -lXxf86vm -lXrandr -lXi
 CLIENT_LIBS = -lboost_system -lGL -lGLEW -lSDL2 -lX11 -pthread $(UBUNTU_LIBS)
@@ -35,6 +36,7 @@ COMMON_OBJS=\
 	$(OBJDIR)/network/serializable.o \
 	$(OBJDIR)/world/entity.o \
 	$(OBJDIR)/world/worldNode.o \
+	$(OBJDIR)/physics/physicsObject.o \
 	$(OBJDIR)/statistics/executionTimer.o \
 	$(OBJDIR)/gameState.o \
 	$(OBJDIR)/logger.o \

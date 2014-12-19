@@ -221,8 +221,8 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 			auto found = false;
 			for( auto& p : collisionPairs )
 			{
-				if( p.first == b->id && p.second == a->id ||
-				    p.first == a->id && p.second == b->id )
+				if( (p.first == b->id && p.second == a->id) ||
+				    (p.first == a->id && p.second == b->id) )
 				{
 					found = true;
 					break;
@@ -250,7 +250,7 @@ void ClientGameState::Tick( std::chrono::milliseconds deltaTime )
 			// NOTE: We lose the material.color information in this process, but that's ok.
 			if( collide )
 			{
-				cout << "Collision between " << a->id << " & " << b->id << endl;
+				//cout << "Collision between " << a->id << " & " << b->id << endl;
 				objectA->material.color = { 1.f, 0.f, 0.f, 1.f };
 				objectB->material.color = { 1.f, 0.7f, 0.f, 1.f };
 			}

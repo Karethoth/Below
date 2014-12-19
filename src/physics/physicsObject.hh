@@ -21,10 +21,10 @@ struct PhysicsObject : public Entity
 
 	PhysicsObject();
 
-	virtual std::vector<std::string> PhysicsObject::GetDefaultFields() override;
+	virtual std::vector<std::string> GetDefaultFields() override;
 
-	virtual bool PhysicsObject::SerializeField( std::string&, std::stringstream& ) override;
-	virtual bool PhysicsObject::UnserializeField( std::string&, std::stringstream& ) override;
+	virtual bool SerializeField( std::string&, std::stringstream& ) override;
+	virtual bool UnserializeField( std::string&, std::stringstream& ) override;
 };
 
 

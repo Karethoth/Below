@@ -77,7 +77,7 @@ void ServerGameState::Create()
 	cubeEntity->parent = rootNode->id;
 	cubeEntity->material.color = { 1.0, 0.0, 1.0, 1.0 };
 	cubeEntity->position = { 1.0, 0.0, 0.0 };
-	cubeEntity->scale = { 1.f, 1.f, 1.f };
+	cubeEntity->scale = { 1.f, 0.5f, 1.f };
 	cubeEntity->UpdateModelMatrix();
 
 	objectManager->entities.push_back( cubeEntity );
